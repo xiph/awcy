@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Are We Compressed Yet?</title>
+<script src="jquery-2.1.1.js"></script>
+<script>
+$(function() {
+  $.getJSON('/run_list.json', function(data) {
+    for (i in data) {
+      var run = $('<a>').html(data[i]);
+      run.attr('class','run');
+      run.attr('href','#');
+      run.on('click',function() {
+        var run_name = $(this).html();
+        $.get('/runs/'+run_name+'/video-1-short/akiyo_cif_short.y4m-daala.out',function (data) {
+          $('#raw').html(data);
+        });
+        return false;
+      });
+      $('#runs').append(run);
+    }
+  });
+});
+</script>
+<link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print">
+<style type="text/css">
+header h1 {
+  color: white;
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+.run {
+  
+}
+</style>
+</head>
+<body>
+<header>
+<div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="//icecast.org/assets/img/xiph-community.svg" alt="the xiph open source community"></a>
+        <ul>
+          
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+          
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+          
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+          
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+          
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+          
+            <li><a href="http://www.theora.org/">Theora</a></li>
+          
+            <li><a href="http://www.speex.org/">Speex</a></li>
+          
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+          
+        </ul>
+      </div>
+</div>    
+<h1>Are We Compressed Yet?</h1>
+</header>
+<noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
+<h2>Tests</h2>
+<div id="runs">
+</div>
+<h2>Raw data</h2>
+<pre id="raw">
+</pre>
+</body>
+</html>
