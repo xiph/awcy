@@ -2,9 +2,15 @@
 <html>
 <head>
 <title>Are We Compressed Yet?</title>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <script src="jquery-2.1.1.js"></script>
+<script src="https://login.persona.org/include.js"></script>
 <script>
 $(function() {
+  var signinLink = document.getElementById('signin');
+  if (signinLink) {
+    signinLink.onclick = function() { navigator.id.request(); };
+  }
   $.getJSON('/run_list.json', function(data) {
     for (i in data) {
       var run = $('<a>').html(data[i]);
@@ -65,9 +71,12 @@ header h1 {
             <li><a href="http://www.xspf.org/">XSPF</a></li>
           
         </ul>
+        
       </div>
-</div>    
+</div>
+<div>    
 <h1>Are We Compressed Yet?</h1>
+</div>
 </header>
 <noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
 <h2>Tests</h2>
