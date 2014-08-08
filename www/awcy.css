@@ -1,0 +1,39 @@
+header h1 {
+  color: white;
+  margin: 0px;
+  padding: 1em;
+}
+article {
+  display: flex;
+}
+#runbox {
+  float: left;
+  width: 200px;
+}
+#runs {
+}
+#graphbox {
+  width: 500px;
+}
+.run {
+  display: block;
+  background-color: white;
+  color: black;
+  margin: 5px;
+  padding: 5px;
+  box-shadow: 0px 0px 0.2em rgba(0,0,0,0.3);
+}
+.run:hover {
+  box-shadow: 0px 0px 0.2em rgba(0,0,0,0.5);
+}
+#rd_graph {
+  height: 500px;
+  background-color: white;
+}
+.selected {
+  background-color: green;
+}
+header {
+  background-color: #5F007D;
+  box-shadow: 0px 0px 5em #2A0038 inset;
+}

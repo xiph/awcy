@@ -4,51 +4,91 @@
 <title>Are We Compressed Yet?</title>
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <script src="jquery-2.1.1.js"></script>
+<script src="jquery.flot.js"></script>
 <script src="https://login.persona.org/include.js"></script>
 <script>
+
+function regenerate_graph() {
+  var selected_graphs = [];
+  $('.run').each(function() {
+    if ($(this).hasClass('selected')) {
+      selected_graphs.push($(this).html());
+    }
+  });
+  if (selected_graphs.length < 2) {
+    $("#rd_graph").html('Please select 2 or more runs.');
+    return;
+  }
+  $("#rd_graph").html('');
+  var graph_requests = [];
+  for (var i in selected_graphs) {
+    graph_requests.push($.get('/runs/'+selected_graphs[i]+'/video-1-short/akiyo_cif_short.y4m-daala.out'));
+  }
+  $.when.apply($,graph_requests).done(function() {
+    // draw chart
+    var curves = [];
+    for (var j in arguments) {
+      var curve = [];
+      var data = arguments[j][0];
+      var lines = data.split('\n');
+      for (var i in lines) {
+        var line = lines[i].split(' ');
+        var point = [line[2]/line[1],line[3]];
+        curve.push(point);
+      }
+      var series = {
+        data: curve,
+        label: selected_graphs[j]
+      };
+      curves.push(series);
+    }
+    var options = {
+      xaxis: {
+          transform: function (v) { return Math.log(v); },
+          inverseTransform: function (v) { return Math.exp(v); }
+      },
+      legend: {
+        show: true
+      }
+    };
+    $.plot('#rd_graph',curves,options);
+  });
+};
+function load_job_queue() {
+  $.getJSON('/job_queue.json', function(data) {
+    for (var i in data) {
+      var job = data[i];
+      var job_div = $('<div>');
+      job_div.html(job.run_id);
+      $('#job_queue').append(job_div);
+    }
+  });
+}
 $(function() {
   var signinLink = document.getElementById('signin');
   if (signinLink) {
     signinLink.onclick = function() { navigator.id.request(); };
   }
   $.getJSON('/run_list.json', function(data) {
-    for (i in data) {
-      var run = $('<a>').html(data[i]);
+    for (var i in data) {
+      var run = $('<div>').html(data[i]);
       run.attr('class','run');
-      run.attr('href','#');
       run.on('click',function() {
-        var run_name = $(this).html();
-        $.get('/runs/'+run_name+'/video-1-short/akiyo_cif_short.y4m-daala.out',function (data) {
-          $('#raw').html(data);
-        });
+        $(this).toggleClass('selected');
+        regenerate_graph();
         return false;
       });
       $('#runs').append(run);
     }
   });
+  load_job_queue();
 });
 </script>
-<link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print">
-<style type="text/css">
-header h1 {
-  color: white;
-  padding-top: 1em;
-  padding-bottom: 1em;
-}
-.run {
-  display: block;
-  background-color: white;
-  color: black;
-  margin: 5px;
-  padding: 5px;
-}
-.run:hover {
-  box-shadow: 0px 0px 1em rgba(0,0,0,0.3);
-}
-</style>
+<!-- <link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print"> -->
+<link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
+<link type="text/css" rel="stylesheet" href="awcy.css"></link>
 </head>
 <body>
-<header>
 <div id="xiphbar">
       <div>
         <a href="http://www.xiph.org/"><img src="//icecast.org/assets/img/xiph-community.svg" alt="the xiph open source community"></a>
@@ -74,16 +114,24 @@ header h1 {
         
       </div>
 </div>
-<div>    
+<header>
 <h1>Are We Compressed Yet?</h1>
-</div>
 </header>
+<article>
 <noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
-<h2>Tests</h2>
-<div id="runs">
+<div id="runbox">
+  <h2>Runs</h2>
+  <div id="runs">
+  </div>
 </div>
-<h2>Raw data</h2>
-<pre id="raw">
-</pre>
+<div id="graphbox">
+<h2>Graph</h2>
+<div id="rd_graph"></div>
+</div>
+</article>
+<div>
+<h2>Job queue</h2>
+<div id="job_queue"></div>
+</div>
 </body>
 </html>

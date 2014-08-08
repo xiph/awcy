@@ -1,0 +1,55 @@
+body {
+  margin: 0px;
+}
+
+#xiphbar {
+	background-color: #666666;
+	height: 2.25em;
+}
+#xiphbar > div {
+	width: 75%;
+	margin: 0 auto;
+	position: relative;
+}
+#xiphbar > div > * {
+	position: absolute;
+	top: 0.5em;
+}
+#xiphbar > div > a {
+	display: block;
+}
+#xiphbar img {
+	width: auto;
+	height: 1.25em;
+}
+#xiphbar > div > ul {
+	right: 0;
+	margin: 0;
+	display: -webkit-box;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: flex;
+	flex-direction: row;
+	list-style: none;
+}
+#xiphbar li {
+	font-size: 14px;
+	margin: 0;
+}
+#xiphbar li:not(:first-child) {
+	margin-left: 1em;
+}
+#xiphbar a:link,
+#xiphbar a:visited {
+	color: #ffcc66;
+	text-decoration: none;
+	text-transform: uppercase;
+	border: none;
+}
+#xiphbar a:hover,
+#xiphbar a:focus {
+	color: #ffe6b3;
+}
+#xiphbar a:active {
+	color: #FFFFFF;
+}
