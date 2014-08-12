@@ -48,7 +48,8 @@ function regenerate_graph() {
           inverseTransform: function (v) { return Math.exp(v); }
       },
       legend: {
-        show: true
+        show: true,
+        position: 'se'
       }
     };
     $.plot('#rd_graph',curves,options);

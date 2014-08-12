@@ -15,7 +15,7 @@ article {
 #runs {
 }
 #graphbox {
-  width: 500px;
+  width: 100%;
 }
 .run {
   display: block;
