@@ -5,6 +5,8 @@ header h1 {
 }
 article {
   display: flex;
+  padding-left: 1em;
+  padding-right: 1em;
 }
 #runbox {
   float: left;
