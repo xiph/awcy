@@ -13,4 +13,4 @@ git checkout -b t-$TESTNAME
 git clean -d -x -f
 
 cd ..
-mkdir runs/$TESTNAME
+mkdir -p runs/$TESTNAME
