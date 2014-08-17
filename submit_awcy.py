@@ -28,5 +28,5 @@ user = args.prefix
 run_id = user+'-'+date_short+'-'+short
 
 print('Creating run '+run_id)
-r = requests.post("http://localhost:3000/submit_job", {'run_id': run_id, 'commit': commit})
+r = requests.post("http://localhost:3000/submit/job", {'run_id': run_id, 'commit': commit, 'key': 'anotherdayanotherdaala'})
 print(r)

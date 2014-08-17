@@ -18,6 +18,18 @@ var job;
 var job_queue = [];
 var job_in_progress = false;
 
+var key = fs.readFileSync('secret_key', {encoding: 'utf8'}).trim();
+
+function check_key(req,res,next) {
+  if (key != req.body.key) {
+    console.log(req.body.key.trim());
+    console.log(key);
+    res.status(403).send('Key verification failed.\n');
+    return;
+  }
+  next();
+};
+
 function process_queue() {
   if (job_in_progress) { return; };
   job_in_progress = true;
@@ -27,6 +39,7 @@ function process_queue() {
     cp.execFile('./run_video_test.sh',[job.commit,job.run_id,job.task],function(error,stdout,stderr) {
       if (error == null) {
         console.log('video test succeeded');
+        ircclient.say('#daala','AWCY: Finished '+job.run_id);
       } else {
         console.log(stdout);
         console.log(stderr);
@@ -55,7 +68,9 @@ app.get('/job',function(req,res) {
   res.send(JSON.stringify(job));
 });
 
-app.post('/submit_job',function(req,res) {
+app.use('/submit',check_key);
+
+app.post('/submit/job',function(req,res) {
   // todo: check secret key
   var job = {};
   job.codec = 'daala';
