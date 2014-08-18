@@ -32,8 +32,8 @@ function check_key(req,res,next) {
 
 function process_queue() {
   if (job_in_progress) { return; };
-  job_in_progress = true;
   if (job_queue.length > 0) {
+    job_in_progress = true;
     job = job_queue.pop();
     console.log('Starting job '+job.run_id);
     cp.execFile('./run_video_test.sh',[job.commit,job.run_id,job.task],function(error,stdout,stderr) {
