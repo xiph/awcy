@@ -10,6 +10,7 @@
 
 function regenerate_graph() {
   var selected_graphs = [];
+  var metric_index = parseInt($('#metric').val());
   $('.run').each(function() {
     if ($(this).hasClass('selected')) {
       selected_graphs.push($(this).html());
@@ -33,7 +34,7 @@ function regenerate_graph() {
       var lines = data.split('\n');
       for (var i in lines) {
         var line = lines[i].split(' ');
-        var point = [line[2]/line[1],line[3]];
+        var point = [line[2]/line[1],line[3+metric_index]];
         curve.push(point);
       }
       var series = {
@@ -127,6 +128,12 @@ $(function() {
 </div>
 <div id="graphbox">
 <h2>Graph</h2>
+<select id="metric" onChange="regenerate_graph()">
+<option value="0">PSNR</option>
+<option value="1">PSNR-HVS</option>
+<option value="2">SSIM</option>
+<option value="3">FASTSSIM</option>
+</select>
 <div id="rd_graph"></div>
 </div>
 </article>
