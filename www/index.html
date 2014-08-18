@@ -22,7 +22,7 @@ function regenerate_graph() {
   $("#rd_graph").html('');
   var graph_requests = [];
   for (var i in selected_graphs) {
-    graph_requests.push($.get('/runs/'+selected_graphs[i]+'/video-1-short/akiyo_cif_short.y4m-daala.out'));
+    graph_requests.push($.get('/runs/'+selected_graphs[i]+'/video-1-short/total.out'));
   }
   $.when.apply($,graph_requests).done(function() {
     // draw chart
