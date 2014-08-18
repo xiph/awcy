@@ -12,6 +12,9 @@ if 'DAALA_ROOT' not in os.environ:
     print("Please specify the DAALA_ROOT environment variable to use this tool.")
     sys.exit(1)
 
+keyfile = open('secret_key','r')
+key = keyfile.read().strip()
+
 daala_root = os.environ['DAALA_ROOT']
 os.chdir(daala_root)
 
@@ -28,5 +31,5 @@ user = args.prefix
 run_id = user+'-'+date_short+'-'+short
 
 print('Creating run '+run_id)
-r = requests.post("http://localhost:3000/submit/job", {'run_id': run_id, 'commit': commit, 'key': 'anotherdayanotherdaala'})
+r = requests.post("http://localhost:3000/submit/job", {'run_id': run_id, 'commit': commit, 'key': key})
 print(r)
