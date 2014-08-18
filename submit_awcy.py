@@ -18,14 +18,16 @@ key = keyfile.read().strip()
 daala_root = os.environ['DAALA_ROOT']
 os.chdir(daala_root)
 
+branch = subprocess.check_output('git symbolic-ref -q --short HEAD',shell=True).strip()
+
 parser = argparse.ArgumentParser(description='Submit test to arewecompressedyet.com')
-parser.add_argument('-prefix',default=os.getlogin())
+parser.add_argument('-prefix',default=branch)
 args = parser.parse_args()
 
 commit = subprocess.check_output('git rev-parse HEAD',shell=True).strip()
 short = subprocess.check_output('git rev-parse --short HEAD',shell=True).strip()
 date = subprocess.check_output(['git','show','-s','--format=%ci',commit]).strip()
-date_short = date.split()[0];
+date_short = date.split()[0];	
 user = args.prefix  
 
 run_id = user+'-'+date_short+'-'+short
