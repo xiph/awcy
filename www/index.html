@@ -66,6 +66,16 @@ function load_job_queue() {
       $('#job_queue').append(job_div);
     }
   });
+  $.getJSON('/job', function(data) {
+    var job = data;
+    console.log(job);
+    var job_div = $('#current_job');
+    if (job) {
+      job_div.html(job.run_id);
+    } else {
+      job_div.html('No jobs running');
+    }
+  });
 }
 function baseName(str)
 {
@@ -162,6 +172,10 @@ $(function() {
 <div id="rd_graph"></div>
 </div>
 </article>
+<div>
+<h2>Current job</h2>
+<div id="current_job">No jobs running</div>
+</div>
 <div>
 <h2>Job queue</h2>
 <div id="job_queue"></div>
