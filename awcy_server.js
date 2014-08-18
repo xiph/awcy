@@ -54,6 +54,7 @@ function process_queue() {
 
 app.use(express.static(__dirname + '/www'));
 app.use('/runs',express.static(__dirname + '/runs'));
+app.use('/sets.json',express.static(__dirname + '/rd_tool/sets.json'));
 
 app.get('/run_list.json',function(req,res) {
   fs.readdir('runs',function(err,files) {

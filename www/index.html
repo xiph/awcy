@@ -22,8 +22,9 @@ function regenerate_graph() {
   }
   $("#rd_graph").html('');
   var graph_requests = [];
+  var outfile = $("#video_name").val();
   for (var i in selected_graphs) {
-    graph_requests.push($.get('/runs/'+selected_graphs[i]+'/video-1-short/total.out'));
+    graph_requests.push($.get('/runs/'+selected_graphs[i]+'/video-1-short/'+outfile));
   }
   $.when.apply($,graph_requests).done(function() {
     // draw chart
@@ -66,6 +67,24 @@ function load_job_queue() {
     }
   });
 }
+function baseName(str)
+{
+   var base = new String(str).substring(str.lastIndexOf('/') + 1); 
+    if(base.lastIndexOf(".") != -1)       
+        base = base.substring(0, base.lastIndexOf("."));
+   return base;
+}
+function load_sets() {
+  $.getJSON('/sets.json', function(data) {
+    for (var i in data['video-1-short']) {
+      var file_in_set = baseName(data['video-1-short'][i]);
+      var file_option = $('<option>');
+      file_option.html(file_in_set);
+      file_option.attr('value',file_in_set+'.y4m-daala.out');
+      $('#video_name').append(file_option);
+    }
+  });
+}
 $(function() {
   var signinLink = document.getElementById('signin');
   if (signinLink) {
@@ -84,6 +103,7 @@ $(function() {
     }
   });
   load_job_queue();
+  load_sets();
 });
 </script>
 <!-- <link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print"> -->
@@ -133,6 +153,9 @@ $(function() {
 <option value="1">PSNR-HVS</option>
 <option value="2">SSIM</option>
 <option value="3">FASTSSIM</option>
+</select>
+<select id="video_name" onChange="regenerate_graph()" style="width: 300px">
+<option value="total.out">Total</option>
 </select>
 <div id="rd_graph"></div>
 </div>
