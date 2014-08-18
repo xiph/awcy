@@ -102,6 +102,8 @@ $(function() {
       $('#runs').append(run);
     }
   });
+  var date = new Date();
+  $('#run_id').val(date.toISOString());
   load_job_queue();
   load_sets();
 });
@@ -166,7 +168,7 @@ $(function() {
 </div>
 <h2>Submit job</h2>
 <form action="submit/job" method="post">
-<label>Run ID<input name="run_id"></input></label>
+<label>Run ID<input name="run_id" id="run_id"></input></label>
 <label>Commit Hash<input name="commit"></input></label>
 <label>Key<input name="key"></input></label>
 <input type="submit">Submit job</input>
