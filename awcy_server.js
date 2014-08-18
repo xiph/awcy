@@ -43,6 +43,7 @@ function process_queue() {
       } else {
         console.log(stdout);
         console.log(stderr);
+        ircclient.say('#daala','AWCY: Exploded '+job.run_id);
       }
       job_in_progress = false;
       job = null;
