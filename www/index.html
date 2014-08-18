@@ -103,7 +103,7 @@ $(function() {
     }
   });
   var date = new Date();
-  $('#run_id').val(date.toISOString());
+  $('#run_id').val(date.toISOString().replace(/:/g,'-'));
   load_job_queue();
   load_sets();
 });
