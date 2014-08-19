@@ -5,6 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <script src="jquery-2.1.1.js"></script>
 <script src="jquery.flot.js"></script>
+<script src="jquery.flot.axislabels.js"></script>
 <script src="https://login.persona.org/include.js"></script>
 <script>
 
@@ -46,8 +47,12 @@ function regenerate_graph() {
     }
     var options = {
       xaxis: {
-          transform: function (v) { return Math.log(v); },
-          inverseTransform: function (v) { return Math.exp(v); }
+        transform: function (v) { return Math.log(v); },
+        inverseTransform: function (v) { return Math.exp(v); },
+        axisLabel: 'Bits per Pixel'
+      },
+      yaxis: {
+        axisLabel: 'Picture quality (dB)'
       },
       legend: {
         show: true,
@@ -175,7 +180,9 @@ $(function() {
 <select id="video_name" onChange="regenerate_graph()" style="width: 300px">
 <option value="total.out">Total</option>
 </select>
+<div class="graph_box">
 <div id="rd_graph"></div>
+</div>
 </div>
 </article>
 <div>
