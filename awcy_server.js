@@ -103,4 +103,12 @@ app.post('/submit/job',function(req,res) {
   ircclient.say('#daala','AWCY: Starting '+job.run_id);
 });
 
+app.post('/submit/delete',function(req,res) {
+  var run = path.basename(req.body.run_id);
+  cp.execFile('nuke_branch.sh',[run],
+              function(error,stdout,stderr) {
+    res.send(stderr+stdout);
+  });
+});
+
 app.listen(3000);
