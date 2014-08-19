@@ -52,6 +52,12 @@ function regenerate_graph() {
       legend: {
         show: true,
         position: 'se'
+      },
+      series: {
+        lines: {
+          lineWidth: 1
+        },
+        shadowSize: 0
       }
     };
     $.plot('#rd_graph',curves,options);
