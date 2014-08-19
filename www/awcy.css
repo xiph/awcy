@@ -5,17 +5,20 @@ header h1 {
 }
 article {
   display: flex;
+}
+.controlarea {
+  display: flex;
   padding-left: 1em;
   padding-right: 1em;
 }
 #runbox {
-  float: left;
   width: 200px;
 }
 #runs {
 }
 #graphbox {
   width: 100%;
+  max-width: 100%;
 }
 .run {
   display: block;
@@ -38,4 +41,8 @@ article {
 header {
   background-color: #5F007D;
   box-shadow: 0px 0px 5em #2A0038 inset;
+}
+.controlbox {
+  width: 300px;
+  flex-wrap: wrap;
 }

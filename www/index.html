@@ -178,49 +178,55 @@ $(function() {
 <header>
 <h1>Are We Compressed Yet?</h1>
 </header>
-<article>
 <noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
-<div id="runbox">
-  <h2>Runs</h2>
-  <div id="runs">
+<article>
+  <div id="runbox">
+    <h2>Runs</h2>
+    <div id="runs">
+    </div>
   </div>
-</div>
-<div id="graphbox">
-<h2>Graph</h2>
-<select id="metric" onChange="regenerate_graph()">
-<option value="0">PSNR</option>
-<option value="1">PSNR-HVS</option>
-<option value="2">SSIM</option>
-<option value="3">FASTSSIM</option>
-</select>
-<select id="video_name" onChange="regenerate_graph()" style="width: 300px">
-<option value="total.out">Total</option>
-</select>
-<div class="graph_box">
-<div id="rd_graph"></div>
-<label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input>Logarithmic</label>
-</div>
-</div>
+  <div id="graphbox">
+    <h2>Graph</h2>
+    <select id="metric" onChange="regenerate_graph()">
+      <option value="0">PSNR</option>
+      <option value="1">PSNR-HVS</option>
+      <option value="2">SSIM</option>
+      <option value="3">FASTSSIM</option>
+    </select>
+    <select id="video_name" onChange="regenerate_graph()" style="width: 300px">
+      <option value="total.out">Total</option>
+    </select>
+    <div class="graph_box">
+      <div id="rd_graph"></div>
+      <label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input>Logarithmic</label>
+    </div>
+    <div class="controlarea">
+      <div class="controlbox">
+        <h2>BD rate</h2>
+        <p id="bd_rate_title"></p>
+        <pre id="bd_rate"></pre>
+      </div>
+      <div class="controlbox">
+        <h2>Current job</h2>
+        <div id="current_job">No jobs running</div>
+      </div>
+      <div class="controlbox">
+        <h2>Job queue</h2>
+        <div id="job_queue"></div>
+      </div>
+    </div>
+    <div class="controlarea">
+      <div>
+        <h2>Submit job</h2>
+        <form action="submit/job" method="post">
+          <label>Run ID<input name="run_id" id="run_id"></input></label>
+          <label>Commit Hash<input name="commit"></input></label>
+          <label>Key<input name="key"></input></label>
+          <input type="submit"></input>
+        </form>
+      </div>
+    </div>
+  </div>
 </article>
-<div>
-<h2>BD rate</h2>
-<h4 id="bd_rate_title"></h4>
-<pre id="bd_rate"></pre>
-</div>
-<div>
-<h2>Current job</h2>
-<div id="current_job">No jobs running</div>
-</div>
-<div>
-<h2>Job queue</h2>
-<div id="job_queue"></div>
-</div>
-<h2>Submit job</h2>
-<form action="submit/job" method="post">
-<label>Run ID<input name="run_id" id="run_id"></input></label>
-<label>Commit Hash<input name="commit"></input></label>
-<label>Key<input name="key"></input></label>
-<input type="submit">Submit job</input>
-</form>
 </body>
 </html>
