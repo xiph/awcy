@@ -1,4 +1,5 @@
 var express = require('express');
+var path = require('path');
 var bodyParser = require('body-parser')
 var fs = require('fs');
 var cp = require('child_process');
@@ -71,9 +72,9 @@ app.get('/job',function(req,res) {
 });
 
 app.get('/bd_rate',function(req,res) {
-  var a = req.query['a'];
-  var b = req.query['b'];
-  var file = req.query['file'];
+  var a = path.basename(req.query['a']);
+  var b = path.basename(req.query['b']);
+  var file = path.basename(req.query['file']);
   var a_file = 'runs/'+a+'/video-1-short/'+file;
   var b_file = 'runs/'+b+'/video-1-short/'+file;
   cp.execFile('daalatool/tools/bd_rate.sh',[a_file,b_file],
