@@ -21,6 +21,7 @@ function regenerate_graph() {
     $("#rd_graph").html('Please select 2 or more runs.');
     return;
   }
+  bd_rate(selected_graphs);
   $("#rd_graph").html('');
   var graph_requests = [];
   var outfile = $("#video_name").val();
@@ -91,6 +92,17 @@ function load_job_queue() {
     }
   });
 }
+function bd_rate(selected_graphs) {
+  if (selected_graphs.length < 2) return;
+  var req = {};
+  req['a'] = selected_graphs[0];
+  req['b'] = selected_graphs[1];
+  req['file'] = 'total.out';
+  $.get('/bd_rate',req,function(data) {
+    $('#bd_rate').html(data);
+  });
+}
+  
 function baseName(str)
 {
    var base = new String(str).substring(str.lastIndexOf('/') + 1); 
@@ -189,6 +201,10 @@ $(function() {
 </div>
 </div>
 </article>
+<div>
+<h2>BD rate</h2>
+<pre id="bd_rate"></pre>
+</div>
 <div>
 <h2>Current job</h2>
 <div id="current_job">No jobs running</div>
