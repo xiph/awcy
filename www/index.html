@@ -97,6 +97,7 @@ function bd_rate(selected_graphs,outfile) {
   var req = {};
   req['a'] = selected_graphs[0];
   req['b'] = selected_graphs[1];
+  $('#bd_rate_title').html(req['a']+' ❱ '+req['b']);
   req['file'] = outfile;
   $.get('/bd_rate',req,function(data) {
     $('#bd_rate').html(data);
@@ -203,6 +204,7 @@ $(function() {
 </article>
 <div>
 <h2>BD rate</h2>
+<h4 id="bd_rate_title"></h4>
 <pre id="bd_rate"></pre>
 </div>
 <div>
