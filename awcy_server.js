@@ -73,7 +73,6 @@ app.get('/job',function(req,res) {
 app.use('/submit',check_key);
 
 app.post('/submit/job',function(req,res) {
-  // todo: check secret key
   var job = {};
   job.codec = 'daala';
   job.commit = req.body.commit;
