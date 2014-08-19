@@ -24,6 +24,7 @@ function regenerate_graph() {
   $("#rd_graph").html('');
   var graph_requests = [];
   var outfile = $("#video_name").val();
+  var logarithmic = $('#logarithmic').prop('checked');
   for (var i in selected_graphs) {
     graph_requests.push($.get('/runs/'+selected_graphs[i]+'/video-1-short/'+outfile));
   }
@@ -47,8 +48,6 @@ function regenerate_graph() {
     }
     var options = {
       xaxis: {
-        transform: function (v) { return Math.log(v); },
-        inverseTransform: function (v) { return Math.exp(v); },
         axisLabel: 'Bits per Pixel'
       },
       yaxis: {
@@ -65,6 +64,10 @@ function regenerate_graph() {
         shadowSize: 0
       }
     };
+    if (logarithmic) {
+      options.xaxis.transform = function (v) { return Math.log(v); };
+      options.xaxis.inverseTransform = function (v) { return Math.exp(v); };
+    }
     $.plot('#rd_graph',curves,options);
   });
 };
@@ -182,6 +185,7 @@ $(function() {
 </select>
 <div class="graph_box">
 <div id="rd_graph"></div>
+<label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input>Logarithmic</label>
 </div>
 </div>
 </article>
