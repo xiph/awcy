@@ -21,10 +21,10 @@ function regenerate_graph() {
     $("#rd_graph").html('Please select 2 or more runs.');
     return;
   }
-  bd_rate(selected_graphs);
   $("#rd_graph").html('');
   var graph_requests = [];
   var outfile = $("#video_name").val();
+  bd_rate(selected_graphs,outfile);
   var logarithmic = $('#logarithmic').prop('checked');
   for (var i in selected_graphs) {
     graph_requests.push($.get('/runs/'+selected_graphs[i]+'/video-1-short/'+outfile));
@@ -92,12 +92,12 @@ function load_job_queue() {
     }
   });
 }
-function bd_rate(selected_graphs) {
+function bd_rate(selected_graphs,outfile) {
   if (selected_graphs.length < 2) return;
   var req = {};
   req['a'] = selected_graphs[0];
   req['b'] = selected_graphs[1];
-  req['file'] = 'total.out';
+  req['file'] = outfile;
   $.get('/bd_rate',req,function(data) {
     $('#bd_rate').html(data);
   });
