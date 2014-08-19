@@ -70,6 +70,19 @@ app.get('/job',function(req,res) {
   res.send(JSON.stringify(job));
 });
 
+app.get('/bd_rate',function(req,res) {
+  var a = req.query['a'];
+  var b = req.query['b'];
+  var file = req.query['file'];
+  var a_file = 'runs/'+a+'/video-1-short/'+file;
+  var b_file = 'runs/'+b+'/video-1-short/'+file;
+  cp.execFile('daalatool/tools/bd_rate.sh',[a_file,b_file],
+              {env: {'BUILD_ROOT': 'daalatool/'}},
+              function(error,stdout,stderr) {
+    res.send(stderr+stdout);
+  });
+});
+
 app.use('/submit',check_key);
 
 app.post('/submit/job',function(req,res) {
