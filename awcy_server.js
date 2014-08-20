@@ -91,7 +91,11 @@ app.post('/submit/job',function(req,res) {
   job.codec = 'daala';
   job.commit = req.body.commit;
   job.run_id = req.body.run_id;
-  job.task = 'video-1-short';
+  if (req.body.task) {
+    job.task = req.body.task;
+  } else {
+    job.task = 'video-1-short';
+  }
   job.task_type = 'video';
   if (fs.existsSync('runs/'+job.run_id)) {
     res.status(400).send('ID is not unique! Choose another.\n');

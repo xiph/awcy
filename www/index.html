@@ -223,6 +223,15 @@ $(function() {
         <form action="submit/job" method="post">
           <label>Run ID<input name="run_id" id="run_id"></input></label>
           <label>Commit Hash<input name="commit"></input></label>
+          <label>Subset
+            <select name="task">
+              <option value="video-1-short">video-1-short</option>
+              <option value="subset1">subset1</option>
+              <option value="subset2">subset2</option>
+              <option value="subset3">subset3</option>
+              <option value="subset4">subset4</option>
+            </select>
+          </label>
           <label>Key<input name="key"></input></label>
           <input type="submit"></input>
         </form>
