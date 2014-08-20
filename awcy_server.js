@@ -32,6 +32,7 @@ function check_key(req,res,next) {
 };
 
 function process_queue() {
+  cp.exec('node generate_list.js');
   if (job_in_progress) { return; };
   if (job_queue.length > 0) {
     job_in_progress = true;
@@ -59,6 +60,7 @@ app.use(express.static(__dirname + '/www'));
 app.use('/runs',express.static(__dirname + '/runs'));
 app.use('/sets.json',express.static(__dirname + '/rd_tool/sets.json'));
 app.use('/error',express.static(__dirname + '/error'));
+app.use('/list.json',express.static(__dirname + '/list.json'));
 
 app.get('/run_list.json',function(req,res) {
   fs.readdir('runs',function(err,files) {
@@ -78,12 +80,12 @@ app.get('/bd_rate',function(req,res) {
   var a = path.basename(req.query['a']);
   var b = path.basename(req.query['b']);
   var file = path.basename(req.query['file']);
-  var a_file = 'runs/'+a+'/video-1-short/'+file;
-  var b_file = 'runs/'+b+'/video-1-short/'+file;
-  cp.execFile('daalatool/tools/bd_rate.sh',[a_file,b_file],
-              {env: {'BUILD_ROOT': 'daalatool/'}},
+  var a_file = __dirname+'/runs/'+a+'/video-1-short/'+file;
+  var b_file = __dirname+'/runs/'+b+'/video-1-short/'+file;
+  cp.execFile('./bd_rate.m',[a_file,b_file],
+              {env: {'BUILD_ROOT': 'daalatool/'}, cwd: __dirname+'/daalatool/tools/matlab/'},
               function(error,stdout,stderr) {
-    res.send(stderr+stdout);
+    res.send(stdout);
   });
 });
 
