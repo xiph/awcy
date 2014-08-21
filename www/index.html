@@ -122,23 +122,32 @@ function load_sets() {
     }
   });
 }
+function load_runs() {
+  var filter_task = $('#run_filter_task').val();
+  $.getJSON('/list.json', function(data) {
+    $('#runs').html('');
+    for (var i in data) {
+      var job = data[i];
+      if (job.tasks.indexOf(filter_task) != -1) {
+        var run = $('<div>').html(job.run_id);
+        run.attr('class','run');
+        run.on('click',function() {
+          $(this).toggleClass('selected');
+          regenerate_graph();
+          return false;
+        });
+        $('#runs').append(run);
+      }
+    }
+  });
+}
+
 $(function() {
   var signinLink = document.getElementById('signin');
   if (signinLink) {
     signinLink.onclick = function() { navigator.id.request(); };
   }
-  $.getJSON('/run_list.json', function(data) {
-    for (var i in data) {
-      var run = $('<div>').html(data[i]);
-      run.attr('class','run');
-      run.on('click',function() {
-        $(this).toggleClass('selected');
-        regenerate_graph();
-        return false;
-      });
-      $('#runs').append(run);
-    }
-  });
+  load_runs();
   var date = new Date();
   $('#run_id').val(date.toISOString().replace(/:/g,'-'));
   load_job_queue();
@@ -182,6 +191,13 @@ $(function() {
 <article>
   <div id="runbox">
     <h2>Runs</h2>
+    <select id="run_filter_task" onChange="load_runs()">
+      <option value="video-1-short">video-1-short</option>
+      <option value="subset1">subset1</option>
+      <option value="subset2">subset2</option>
+      <option value="subset3">subset3</option>
+      <option value="subset4">subset4</option>
+    </select>
     <div id="runs">
     </div>
   </div>
