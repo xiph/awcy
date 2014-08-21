@@ -112,9 +112,15 @@ function baseName(str)
    return base;
 }
 function load_sets() {
+  var filter_task = $('#run_filter_task').val();
   $.getJSON('/sets.json', function(data) {
-    for (var i in data['video-1-short']) {
-      var file_in_set = baseName(data['video-1-short'][i]);
+    $('#video_name').html('');
+    var total_option = $('<option>');
+    total_option.html('Total');
+    total_option.attr('value','total.out');
+    $('#video_name').append(total_option);
+    for (var i in data[filter_task]) {
+      var file_in_set = baseName(data[filter_task][i]);
       var file_option = $('<option>');
       file_option.html(file_in_set);
       file_option.attr('value',file_in_set+'.y4m-daala.out');
@@ -124,6 +130,7 @@ function load_sets() {
 }
 function load_runs() {
   var filter_task = $('#run_filter_task').val();
+  load_sets();
   $.getJSON('/list.json', function(data) {
     $('#runs').html('');
     for (var i in data) {
