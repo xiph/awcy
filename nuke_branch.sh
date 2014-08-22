@@ -8,3 +8,5 @@ if [ -n "$TESTNAME" ] ; then
   cd daala
   git branch -D t-$TESTNAME  
 fi
+
+node generate_list.js
