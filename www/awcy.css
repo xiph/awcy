@@ -17,6 +17,7 @@ article {
 }
 #runbox {
   width: 200px;
+  flex-shrink: 0;
 }
 #runs {
 }
