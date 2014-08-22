@@ -96,8 +96,8 @@ function bd_rate(selected_graphs,outfile) {
   var filter_task = $('#run_filter_task').val();
   if (selected_graphs.length < 2) return;
   var req = {};
-  req['a'] = selected_graphs[0];
-  req['b'] = selected_graphs[1];
+  req['a'] = selected_graphs[1];
+  req['b'] = selected_graphs[0];
   req['set'] = filter_task;
   $('#bd_rate_title').html(req['a']+' ❱ '+req['b']);
   req['file'] = outfile;
