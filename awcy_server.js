@@ -38,6 +38,7 @@ function process_queue() {
     job_in_progress = true;
     job = job_queue.pop();
     console.log('Starting job '+job.run_id);
+    ircclient.say('#daala','AWCY: Starting '+job.run_id);
     cp.execFile('./run_video_test.sh',[job.commit,job.run_id,job.task],
     { env: { 'PYTHONIOENCODING': 'utf-8' } }, function(error,stdout,stderr) {
       if (error == null) {
@@ -111,7 +112,6 @@ app.post('/submit/job',function(req,res) {
   job_queue.push(job);
   process_queue();
   res.send('ok');
-  ircclient.say('#daala','AWCY: Starting '+job.run_id);
 });
 
 app.post('/submit/delete',function(req,res) {
