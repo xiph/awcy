@@ -48,8 +48,8 @@ function process_queue() {
         console.log(stdout);
         console.log(stderr);
         ircclient.say('#daala','AWCY: Exploded '+job.run_id+
-          ' see https://arewecompressedyet.com/error');
-        fs.writeFile('error',stdout+stderr);
+          ' see https://arewecompressedyet.com/error.txt');
+        fs.writeFile('error.txt',stdout+stderr);
       }
       job_in_progress = false;
       job = null;
@@ -61,7 +61,7 @@ function process_queue() {
 app.use(express.static(__dirname + '/www'));
 app.use('/runs',express.static(__dirname + '/runs'));
 app.use('/sets.json',express.static(__dirname + '/rd_tool/sets.json'));
-app.use('/error',express.static(__dirname + '/error'));
+app.use('/error.txt',express.static(__dirname + '/error.txt'));
 app.use('/list.json',express.static(__dirname + '/list.json'));
 
 app.get('/run_list.json',function(req,res) {
