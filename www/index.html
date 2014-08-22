@@ -99,7 +99,7 @@ function bd_rate(selected_graphs,outfile) {
   req['a'] = selected_graphs[1];
   req['b'] = selected_graphs[0];
   req['set'] = filter_task;
-  $('#bd_rate_title').html(req['a']+' ❱ '+req['b']);
+  $('#bd_rate_title').html(req['a']+' → '+req['b']);
   req['file'] = outfile;
   $.get('/bd_rate',req,function(data) {
     $('#bd_rate').html(data);
