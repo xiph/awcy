@@ -25,9 +25,10 @@ function regenerate_graph() {
   var graph_requests = [];
   var outfile = $("#video_name").val();
   bd_rate(selected_graphs,outfile);
+  var filter_task = $('#run_filter_task').val();
   var logarithmic = $('#logarithmic').prop('checked');
   for (var i in selected_graphs) {
-    graph_requests.push($.get('/runs/'+selected_graphs[i]+'/video-1-short/'+outfile));
+    graph_requests.push($.get('/runs/'+selected_graphs[i]+'/'+filter_task+'/'+outfile));
   }
   $.when.apply($,graph_requests).done(function() {
     // draw chart
