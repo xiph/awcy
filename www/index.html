@@ -6,7 +6,6 @@
 <script src="jquery-2.1.1.js"></script>
 <script src="jquery.flot.js"></script>
 <script src="jquery.flot.axislabels.js"></script>
-<script src="https://login.persona.org/include.js"></script>
 <script>
 
 function regenerate_graph() {
@@ -156,10 +155,6 @@ function load_runs() {
 }
 
 $(function() {
-  var signinLink = document.getElementById('signin');
-  if (signinLink) {
-    signinLink.onclick = function() { navigator.id.request(); };
-  }
   load_runs();
   var date = new Date();
   $('#run_id').val(date.toISOString().replace(/:/g,'-'));
