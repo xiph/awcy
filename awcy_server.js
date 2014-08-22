@@ -104,6 +104,19 @@ app.post('/submit/job',function(req,res) {
   } else {
     job.task = 'video-1-short';
   }
+  if (req.body.codec) {
+    job.codec = req.body.codec;
+  } else {
+    job.codec = 'daala';
+  }
+  if (req.body.nick) {
+    job.nick = req.body.nick;
+  } else {
+    job.nick = 'AWCY';
+  }
+  if (req.body.master) {
+    job.master = req.body.master;
+  }
   job.task_type = 'video';
   if (fs.existsSync('runs/'+job.run_id)) {
     res.status(400).send('ID is not unique! Choose another.\n');
