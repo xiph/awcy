@@ -38,7 +38,7 @@ function regenerate_graph() {
       var lines = data.split('\n');
       for (var i in lines) {
         var line = lines[i].split(' ');
-        var point = [line[2]/line[1],line[3+metric_index]];
+        var point = [line[2]*8/line[1],line[3+metric_index]];
         curve.push(point);
       }
       var series = {
