@@ -132,6 +132,9 @@ function load_runs() {
   var filter_task = $('#run_filter_task').val();
   load_sets();
   $.getJSON('/list.json', function(data) {
+    data.sort(function(a,b) {
+      return new Date(b.date) - new Date(a.date);
+    });
     $('#runs').html('');
     for (var i in data) {
       var job = data[i];
