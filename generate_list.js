@@ -7,7 +7,7 @@ fs.readdirSync('runs').forEach(function(run_id) {
   job.run_id = run_id;
   job.tasks = fs.readdirSync('runs/'+run_id);
   var stat = fs.statSync('runs/'+run_id);
-  job.date = stat.ctime;
+  job.date = stat.mtime;
   jobs.push(job);
 });
 
