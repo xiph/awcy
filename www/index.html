@@ -153,13 +153,28 @@ function load_runs() {
     }
   });
 }
-
+function load_aws() {
+  $.getJSON('/describeAutoScalingInstances',function(data) {
+    var table = $('#machineinfo');
+    data.AutoScalingInstances.forEach(function(instance) {
+      console.log(instance);
+      var instance_row = $('<tr>');
+      var instance_id = $('<td>');
+      instance_id.html(instance.InstanceId);
+      instance_row.append(instance_id);
+      instance_row.append($('<td>').html(instance.HealthStatus));
+      instance_row.append($('<td>').html(instance.LifecycleState));
+      table.append(instance_row);
+    });
+  });
+}
 $(function() {
   load_runs();
   var date = new Date();
   $('#run_id').val(date.toISOString().replace(/:/g,'-'));
   load_job_queue();
   load_sets();
+  load_aws();
 });
 </script>
 <!-- <link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print"> -->
@@ -258,6 +273,12 @@ $(function() {
           <label>Key<input name="key"></input></label>
           <input type="submit"></input>
         </form>
+      </div>
+      <div class="controlbox">
+        <h2>Machine info</h2>
+        <table id="machineinfo">
+        </table>
+      </div>
       </div>
     </div>
   </div>
