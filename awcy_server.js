@@ -4,7 +4,10 @@ var bodyParser = require('body-parser')
 var fs = require('fs');
 var cp = require('child_process');
 var irc = require('irc');
+var AWS = require('aws-sdk');
 var app = express();
+
+AWS.config.loadFromPath('./aws.json');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -76,6 +79,13 @@ app.get('/job_queue.json',function(req,res) {
 
 app.get('/job',function(req,res) {
   res.send(JSON.stringify(job));
+});
+
+app.get('/describeAutoScalingInstances',function(req,res) {
+  var autoscaling = new AWS.AutoScaling();
+  autoscaling.describeAutoScalingInstances({},function(err,data) {
+    res.send(JSON.stringify(data));
+  });
 });
 
 app.get('/bd_rate',function(req,res) {
