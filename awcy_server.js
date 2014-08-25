@@ -38,16 +38,16 @@ function process_queue() {
     job_in_progress = true;
     job = job_queue.pop();
     console.log('Starting job '+job.run_id);
-    ircclient.say('#daala','AWCY: Starting '+job.run_id);
+    ircclient.say('#daala',job.nick+': Starting '+job.run_id);
     cp.execFile('./run_video_test.sh',[job.commit,job.run_id,job.task],
     { env: { 'PYTHONIOENCODING': 'utf-8' } }, function(error,stdout,stderr) {
       if (error == null) {
         console.log('video test succeeded');
-        ircclient.say('#daala','AWCY: Finished '+job.run_id);
+        ircclient.say('#daala',job.nick+': Finished '+job.run_id);
       } else {
         console.log(stdout);
         console.log(stderr);
-        ircclient.say('#daala','AWCY: Exploded '+job.run_id+
+        ircclient.say('#daala',job.nick+': Exploded '+job.run_id+
           ' see https://arewecompressedyet.com/error.txt');
         fs.writeFile('error.txt',stdout+stderr);
       }
