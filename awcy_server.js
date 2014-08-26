@@ -132,6 +132,8 @@ app.post('/submit/job',function(req,res) {
     res.status(400).send('ID is not unique! Choose another.\n');
     return;
   }
+  fs.mkdirSync('runs/'+job.run_id);
+  fs.writeFile('runs/'+job.run_id+'/info.json',JSON.stringify(job));
   job_queue.push(job);
   process_queue();
   res.send('ok');
