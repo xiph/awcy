@@ -6,6 +6,7 @@
 <script src="jquery-2.1.1.js"></script>
 <script src="jquery.flot.js"></script>
 <script src="jquery.flot.axislabels.js"></script>
+<script src="jquery.flot.navigate.js"></script>
 <script>
 
 function regenerate_graph() {
@@ -63,6 +64,12 @@ function regenerate_graph() {
           lineWidth: 1
         },
         shadowSize: 0
+      },
+      zoom: {
+        interactive: true
+      },
+      pan: {
+        interactive: true
       }
     };
     if (logarithmic) {
