@@ -1,6 +1,7 @@
 var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser')
+var cookieParser = require('cookie-parser')
 var fs = require('fs');
 var cp = require('child_process');
 var irc = require('irc');
@@ -10,6 +11,7 @@ var app = express();
 AWS.config.loadFromPath('./aws.json');
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser())
 
 var ircclient = new irc.Client('irc.freenode.net', 'XiphAWCY', {
     channels: ['#daala'],
@@ -26,13 +28,16 @@ var job_child_process = null;
 var key = fs.readFileSync('secret_key', {encoding: 'utf8'}).trim();
 
 function check_key(req,res,next) {
-  if (key != req.body.key) {
-    console.log(req.body.key.trim());
-    console.log(key);
+  if (req.cookies.key == key) {	
+    next();
+    return;
+  } else if (key == req.body.key) {
+    next();
+    return;
+  } else {
     res.status(403).send('Key verification failed.\n');
     return;
   }
-  next();
 };
 
 function process_queue() {
