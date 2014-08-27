@@ -257,6 +257,10 @@ $(function() {
       <div class="controlbox">
         <h2>Current job</h2>
         <div id="current_job">No jobs running</div>
+        <form action="submit/kill" method="post">
+          <label>Key<input name="key"></input></label>
+          <input type="submit" value="Kill"></input>
+        </form>
       </div>
       <div class="controlbox">
         <h2>Job queue</h2>
