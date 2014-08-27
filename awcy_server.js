@@ -21,6 +21,7 @@ ircclient.addListener('error', function(message) {
 var job;
 var job_queue = [];
 var job_in_progress = false;
+var job_child_process = null;
 
 var key = fs.readFileSync('secret_key', {encoding: 'utf8'}).trim();
 
@@ -42,8 +43,10 @@ function process_queue() {
     job = job_queue.pop();
     console.log('Starting job '+job.run_id);
     ircclient.say('#daala',job.nick+': Starting '+job.run_id);
-    cp.execFile('./run_video_test.sh',[job.commit,job.run_id,job.task],
-    { env: { 'PYTHONIOENCODING': 'utf-8' } }, function(error,stdout,stderr) {
+    job_child_process = cp.execFile('./run_video_test.sh',
+      [job.commit,job.run_id,job.task],
+      { env: { 'PYTHONIOENCODING': 'utf-8' } },
+      function(error,stdout,stderr) {
       if (error == null) {
         console.log('video test succeeded');
         ircclient.say('#daala',job.nick+': Finished '+job.run_id);
@@ -145,6 +148,10 @@ app.post('/submit/delete',function(req,res) {
               function(error,stdout,stderr) {
     res.send(stderr+stdout);
   });
+});
+
+app.post('/submit/kill',function(req,res) {
+  job_child_process.kill();
 });
 
 app.listen(3000);
