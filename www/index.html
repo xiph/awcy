@@ -190,7 +190,7 @@ function load_aws() {
   });
 }
 function refresh_login_required() {
-  if (document.cookie == 'key=' ) {
+  if ((document.cookie == 'key=') || (document.cookie == '')) {
     $('.loginrequired').addClass('hidden');
   } else {
     $('.loginrequired').removeClass('hidden');
