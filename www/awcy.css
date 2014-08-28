@@ -22,7 +22,7 @@ label {
   padding-right: 1em;
 }
 #runbox {
-  width: 200px;
+  width: 250px;
   flex-shrink: 0;
 }
 #runs {
@@ -42,6 +42,9 @@ label {
 }
 .run:hover {
   box-shadow: 0px 0px 0.2em rgba(0,0,0,0.5);
+}
+.run_meta {
+  font-size: 9px;
 }
 #rd_graph {
   height: 500px;
