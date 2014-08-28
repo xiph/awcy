@@ -12,6 +12,9 @@ article {
 label {
   display: block;
 }
+.hidden {
+  display: none;
+}
 .controlarea {
   display: flex;
   flex-wrap: wrap;

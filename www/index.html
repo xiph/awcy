@@ -174,11 +174,24 @@ function load_aws() {
     });
   });
 }
+function refresh_login_required() {
+  if (document.cookie == 'key=' ) {
+    $('.loginrequired').addClass('hidden');
+  } else {
+    $('.loginrequired').removeClass('hidden');
+  }
+}
 function set_key_cookie() {
   var key = $('#key').val();
   document.cookie = 'key='+key;
+  refresh_login_required();
+}
+function clear_key_cookie() {
+  document.cookie = 'key=';
+  refresh_login_required();
 }
 $(function() {
+  refresh_login_required();
   load_runs();
   var date = new Date();
   $('#run_id').val(date.toISOString().replace(/:/g,'-'));
@@ -250,8 +263,7 @@ $(function() {
       <div class="controlbox">
         <h2>Current job</h2>
         <div id="current_job">No jobs running</div>
-        <form action="submit/kill" method="post">
-          <label>Key<input name="key"></input></label>
+        <form action="submit/kill" method="post" class="loginrequired">
           <input type="submit" value="Kill"></input>
         </form>
       </div>
@@ -259,7 +271,7 @@ $(function() {
         <h2>Job queue</h2>
         <div id="job_queue"></div>
       </div>
-      <div class="controlbox">
+      <div class="controlbox loginrequired" >
         <h2>Submit job</h2>
         <form action="submit/job" method="post">
           <label>Run ID<input name="run_id" id="run_id"></input></label>
@@ -274,7 +286,6 @@ $(function() {
             </select>
           </label>
           <label>IRC nick<input name="nick" value="AWCY"></input></label>
-          <label>Key<input name="key"></input></label>
           <input type="submit"></input>
         </form>
       </div>
@@ -286,7 +297,8 @@ $(function() {
       <div class="controlbox">
         <h2>Login</h2>
         <label>Key<input name="key" id="key"></input></label>
-        <input type="button" value="Login"></input>
+        <input type="button" value="Login" onClick="set_key_cookie()"></input>
+        <input type="button" value="Logout" onClick="clear_key_cookie()"></input>
       </div>
       </div>
     </div>
