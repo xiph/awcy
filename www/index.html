@@ -173,6 +173,17 @@ function load_aws() {
       table.append(instance_row);
     });
   });
+  $.getJSON('/describeAutoScalingGroups',function(data) {
+    console.log(data);
+    var group = data.AutoScalingGroups[0];
+    var desired = group.DesiredCapacity;
+    var actual = group.Instances.length;
+    if (desired > 0) {
+      $('#machine_status_text').html(desired+'/'+actual+' machines have started.');
+    } else {
+      $('#machine_status_text').html('All machines are currently offline.');
+    }
+  });
 }
 function refresh_login_required() {
   if (document.cookie == 'key=' ) {
@@ -291,6 +302,7 @@ $(function() {
       </div>
       <div class="controlbox">
         <h2>Machine info</h2>
+        <div id="machine_status_text"></div>
         <table id="machineinfo">
         </table>
       </div>

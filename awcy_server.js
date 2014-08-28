@@ -82,17 +82,24 @@ app.get('/run_list.json',function(req,res) {
 });
 
 app.get('/job_queue.json',function(req,res) {
-  res.send(JSON.stringify(job_queue));
+  res.json(job_queue);
 });
 
 app.get('/job',function(req,res) {
-  res.send(JSON.stringify(job));
+  res.json(job);
+});
+
+app.get('/describeAutoScalingGroups',function(req,res) {
+  var autoscaling = new AWS.AutoScaling();
+  autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: ['Daala']}, function(err,data) {
+    res.send(data);
+  });
 });
 
 app.get('/describeAutoScalingInstances',function(req,res) {
   var autoscaling = new AWS.AutoScaling();
   autoscaling.describeAutoScalingInstances({},function(err,data) {
-    res.send(JSON.stringify(data));
+    res.send(data);
   });
 });
 
