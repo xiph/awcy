@@ -139,7 +139,6 @@ function load_sets() {
 }
 function load_runs() {
   var filter_task = $('#run_filter_task').val();
-  load_sets();
   $.getJSON('/list.json', function(data) {
     data.sort(function(a,b) {
       return new Date(b.date) - new Date(a.date);
@@ -174,6 +173,10 @@ function load_aws() {
       table.append(instance_row);
     });
   });
+}
+function set_key_cookie() {
+  var key = $('#key').val();
+  document.cookie = 'key='+key;
 }
 $(function() {
   load_runs();

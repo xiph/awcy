@@ -136,6 +136,9 @@ app.post('/submit/job',function(req,res) {
     job.master = req.body.master;
   }
   job.task_type = 'video';
+  if (job.run_id.length > 256) {
+    res.status(400).send('Choose a shorter run id, silly.\n');
+  }
   if (fs.existsSync('runs/'+job.run_id)) {
     res.status(400).send('ID is not unique! Choose another.\n');
     return;
