@@ -166,6 +166,7 @@ function load_runs() {
 function load_aws() {
   $.getJSON('/describeAutoScalingInstances',function(data) {
     var table = $('#machineinfo');
+    table.html('');
     data.AutoScalingInstances.forEach(function(instance) {
       var instance_row = $('<tr>');
       var instance_id = $('<td>');
