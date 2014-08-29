@@ -169,7 +169,7 @@ app.post('/submit/kill',function(req,res) {
   job_child_process.kill();
 });
 
-app.post('/setDesiredCapacity',function(req,res) {
+app.post('/submit/setDesiredCapacity',function(req,res) {
   var autoscaling = new AWS.AutoScaling();
   autoscaling.setDesiredCapacity({
     AutoScalingGroupName: 'Daala',

@@ -182,7 +182,7 @@ function load_aws() {
     var desired = group.DesiredCapacity;
     var actual = group.Instances.length;
     if (desired > 0) {
-      $('#machine_status_text').html(desired+'/'+actual+' machines have started.');
+      $('#machine_status_text').html(actual+'/'+desired+' machines have started.');
     } else {
       $('#machine_status_text').html('All machines are currently offline.');
     }
@@ -312,6 +312,13 @@ $(function() {
         <div id="machine_status_text"></div>
         <table id="machineinfo">
         </table>
+        <form action="submit/setDesiredCapacity" method="post">
+          <select name="DesiredCapacity">
+            <option value="0">0</option>
+            <option value="2">2</option>
+          </select>
+          <input type="submit" value="Request Machines"></input>
+        </form>
       </div>
       <div class="controlbox">
         <h2>Login</h2>
