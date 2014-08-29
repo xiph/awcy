@@ -17,10 +17,6 @@ function regenerate_graph() {
       selected_graphs.push($(this).find('.run_id').html());
     }
   });
-  if (selected_graphs.length < 2) {
-    $("#rd_graph").html('Please select 2 or more runs.');
-    return;
-  }
   $("#rd_graph").html('');
   var graph_requests = [];
   var outfile = $("#video_name").val();
@@ -33,9 +29,15 @@ function regenerate_graph() {
   $.when.apply($,graph_requests).done(function() {
     // draw chart
     var curves = [];
-    for (var j in arguments) {
+    if (selected_graphs.length == 1) {
+      var argument_list = [ arguments ];
+    } else {
+      var argument_list = arguments;
+    }
+    for (var j in argument_list) {
       var curve = [];
-      var data = arguments[j][0];
+      console.log(argument_list[j]);
+      var data = argument_list[j][0];
       var lines = data.split('\n');
       for (var i in lines) {
         var line = lines[i].split(' ');
