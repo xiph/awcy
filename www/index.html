@@ -167,7 +167,6 @@ function load_aws() {
   $.getJSON('/describeAutoScalingInstances',function(data) {
     var table = $('#machineinfo');
     data.AutoScalingInstances.forEach(function(instance) {
-      console.log(instance);
       var instance_row = $('<tr>');
       var instance_id = $('<td>');
       instance_id.html(instance.InstanceId);
@@ -178,7 +177,6 @@ function load_aws() {
     });
   });
   $.getJSON('/describeAutoScalingGroups',function(data) {
-    console.log(data);
     var group = data.AutoScalingGroups[0];
     var desired = group.DesiredCapacity;
     var actual = group.Instances.length;
@@ -205,6 +203,10 @@ function clear_key_cookie() {
   document.cookie = 'key=';
   refresh_login_required();
 }
+function auto_refresh() {
+  load_aws();
+  window.setTimeout(auto_refresh,5000);
+}
 $(function() {
   refresh_login_required();
   load_runs();
@@ -212,7 +214,7 @@ $(function() {
   $('#run_id').val(date.toISOString().replace(/:/g,'-'));
   load_job_queue();
   load_sets();
-  load_aws();
+  auto_refresh();
 });
 </script>
 <!-- <link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print"> -->
