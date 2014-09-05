@@ -48,20 +48,28 @@ function process_queue() {
     job = job_queue.pop();
     console.log('Starting job '+job.run_id);
     ircclient.say('#daala',job.nick+': Starting '+job.run_id);
-    job_child_process = cp.execFile('./run_video_test.sh',
+    job_child_process = cp.spawn('./run_video_test.sh',
       [job.commit,job.run_id,job.task],
-      { env: { 'PYTHONIOENCODING': 'utf-8' } },
-      function(error,stdout,stderr) {
-      if (error == null) {
+      { env: { 'PYTHONIOENCODING': 'utf-8' } });
+    var job_log = ''
+    job_child_process.stdout.on('data', function(data) {
+      console.log(data);
+      job_log += data;
+    });
+    job_child_process.stderr.on('data', function(data) {
+      console.log(data);
+      job_log += data;
+    });
+    job_child_process.on('close', function(error) {
+      if (error == 0) {
         console.log('video test succeeded');
         ircclient.say('#daala',job.nick+': Finished '+job.run_id);
       } else {
-        console.log(stdout);
-        console.log(stderr);
         ircclient.say('#daala',job.nick+': Exploded '+job.run_id+
           ' see https://arewecompressedyet.com/error.txt');
-        fs.writeFile('error.txt',stdout+stderr);
       }
+      fs.writeFile('runs/'+job.run_id+'/output.txt');
+      fs.writeFile('error.txt',job_log);
       job_in_progress = false;
       job = null;
       process_queue();
