@@ -13,8 +13,10 @@ AWS.config.loadFromPath('./aws.json');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
 
+var channel = '#daala';
+
 var ircclient = new irc.Client('irc.freenode.net', 'XiphAWCY', {
-    channels: ['#daala'],
+    channels: [channel],
 });
 ircclient.addListener('error', function(message) {
     console.log('error: ', message);
@@ -47,7 +49,7 @@ function process_queue() {
     job_in_progress = true;
     job = job_queue.pop();
     console.log('Starting job '+job.run_id);
-    ircclient.say('#daala',job.nick+': Starting '+job.run_id);
+    ircclient.say(channel,job.nick+': Starting '+job.run_id);
     job_child_process = cp.spawn('./run_video_test.sh',
       [job.commit,job.run_id,job.task],
       { env: { 'PYTHONIOENCODING': 'utf-8' } });
@@ -63,9 +65,9 @@ function process_queue() {
     job_child_process.on('close', function(error) {
       if (error == 0) {
         console.log('video test succeeded');
-        ircclient.say('#daala',job.nick+': Finished '+job.run_id);
+        ircclient.say(channel,job.nick+': Finished '+job.run_id);
       } else {
-        ircclient.say('#daala',job.nick+': Exploded '+job.run_id+
+        ircclient.say(channel,job.nick+': Exploded '+job.run_id+
           ' see https://arewecompressedyet.com/error.txt');
       }
       fs.writeFile('runs/'+job.run_id+'/output.txt');
