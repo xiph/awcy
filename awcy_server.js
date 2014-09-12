@@ -13,7 +13,9 @@ AWS.config.loadFromPath('./aws.json');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
 
-var channel = '#daala';
+var config = require('./config.json');
+
+var channel = config.channel;
 
 var ircclient = new irc.Client('irc.freenode.net', 'XiphAWCY', {
     channels: [channel],
