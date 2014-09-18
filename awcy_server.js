@@ -28,6 +28,7 @@ var job;
 var job_queue = [];
 var job_in_progress = false;
 var job_child_process = null;
+var job_log = ''
 
 var key = fs.readFileSync('secret_key', {encoding: 'utf8'}).trim();
 
@@ -55,13 +56,13 @@ function process_queue() {
     job_child_process = cp.spawn('./run_video_test.sh',
       [job.commit,job.run_id,job.task],
       { env: { 'PYTHONIOENCODING': 'utf-8' } });
-    var job_log = ''
+    job_log = ''
     job_child_process.stdout.on('data', function(data) {
-      console.log(data);
+      console.log(data.toString());
       job_log += data;
     });
     job_child_process.stderr.on('data', function(data) {
-      console.log(data);
+      console.log(data.toString());
       job_log += data;
     });
     job_child_process.on('close', function(error) {
@@ -72,7 +73,7 @@ function process_queue() {
         ircclient.say(channel,job.nick+': Exploded '+job.run_id+
           ' see https://arewecompressedyet.com/error.txt');
       }
-      fs.writeFile('runs/'+job.run_id+'/output.txt');
+      fs.writeFile('runs/'+job.run_id+'/output.txt',job_log);
       fs.writeFile('error.txt',job_log);
       job_in_progress = false;
       job = null;
@@ -99,6 +100,10 @@ app.get('/job_queue.json',function(req,res) {
 
 app.get('/job',function(req,res) {
   res.json(job);
+});
+
+app.get('/job_log',function(req,res) {
+  res.send(job_log);
 });
 
 app.get('/describeAutoScalingGroups',function(req,res) {
