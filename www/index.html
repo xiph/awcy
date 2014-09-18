@@ -7,6 +7,7 @@
 <script src="jquery.flot.js"></script>
 <script src="jquery.flot.axislabels.js"></script>
 <script src="jquery.flot.navigate.js"></script>
+<script src="bootstrap.js"></script>
 <script>
 
 function regenerate_graph() {
@@ -206,8 +207,14 @@ function clear_key_cookie() {
   document.cookie = 'key=';
   refresh_login_required();
 }
+function load_job_log() {
+  $.get('job_log',function(data) {
+    $('#job_log').html(data);
+  });
+}
 function auto_refresh() {
   load_aws();
+  load_job_log();
   window.setTimeout(auto_refresh,5000);
 }
 $(function() {
@@ -223,6 +230,8 @@ $(function() {
 <!-- <link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print"> -->
 <link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
 <link type="text/css" rel="stylesheet" href="awcy.css"></link>
+<link type="text/css" rel="stylesheet" href="bootstrap.css"></link>
+<link rel="shortcut icon" href="favicon.png" />
 </head>
 <body>
 <div id="xiphbar">
@@ -242,97 +251,115 @@ $(function() {
 </div>
 <header>
 <h1>Are We Compressed Yet?</h1>
+<ul class="nav nav-tabs" role="tablist">
+  <li class="active"><a href="#home" role="tab" data-toggle="tab">Home</a></li>
+  <li><a href="#submit" role="tab" data-toggle="tab">Submit</a></li>
+</ul>
 </header>
 <noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
-<article>
-  <div id="runbox">
-    <h2>Runs</h2>
-    <select id="run_filter_task" onChange="load_runs();load_sets()">
-      <option value="video-1-short">video-1-short</option>
-      <option value="video-hd-1">video-hd-1</option>
-      <option value="subset1">subset1</option>
-      <option value="subset2">subset2</option>
-      <option value="subset3">subset3</option>
-      <option value="subset4">subset4</option>
-    </select>
-    <div id="runs">
+
+<div class="tab-content">
+
+<article id="home" class="container-fluid tab-pane active">
+  <div class="row">
+    <div id="runbox" class="col-md-3">
+      <h2>Runs</h2>
+      <select id="run_filter_task" onChange="load_runs();load_sets()">
+        <option value="video-1-short">video-1-short</option>
+        <option value="video-hd-1">video-hd-1</option>
+        <option value="subset1">subset1</option>
+        <option value="subset2">subset2</option>
+        <option value="subset3">subset3</option>
+        <option value="subset4">subset4</option>
+      </select>
+      <div id="runs">
+      </div>
+    </div>
+    <div id="graphbox" class="col-md-9">
+      <h2>Graph</h2>
+      <select id="metric" onChange="regenerate_graph()">
+        <option value="0">PSNR</option>
+        <option value="1">PSNR-HVS</option>
+        <option value="2">SSIM</option>
+        <option value="3" selected>FASTSSIM</option>
+      </select>
+      <select id="video_name" onChange="regenerate_graph()" style="width: 300px">
+        <option value="total.out">Total</option>
+      </select>
+      <div class="graph_box">
+        <div id="rd_graph">
+          ⟵Click runs on the left to select.
+        </div>
+        <label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input>Logarithmic</label>
+      </div>
     </div>
   </div>
-  <div id="graphbox">
-    <h2>Graph</h2>
-    <select id="metric" onChange="regenerate_graph()">
-      <option value="0">PSNR</option>
-      <option value="1">PSNR-HVS</option>
-      <option value="2">SSIM</option>
-      <option value="3" selected>FASTSSIM</option>
-    </select>
-    <select id="video_name" onChange="regenerate_graph()" style="width: 300px">
-      <option value="total.out">Total</option>
-    </select>
-    <div class="graph_box">
-      <div id="rd_graph">
-        ⟵Click runs on the left to select.
-      </div>
-      <label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input>Logarithmic</label>
-    </div>
-    <div class="controlarea">
-      <div class="controlbox">
-        <h2>BD rate</h2>
-        <p id="bd_rate_title"></p>
-        <pre id="bd_rate"></pre>
-      </div>
-      <div class="controlbox">
-        <h2>Current job</h2>
-        <div id="current_job">No jobs running</div>
-        <form action="submit/kill" method="post" class="loginrequired">
-          <input type="submit" value="Kill"></input>
-        </form>
-      </div>
-      <div class="controlbox">
-        <h2>Job queue</h2>
-        <div id="job_queue"></div>
-      </div>
-      <div class="controlbox loginrequired" >
-        <h2>Submit job</h2>
-        <form action="submit/job" method="post">
-          <label>Run ID<input name="run_id" id="run_id"></input></label>
-          <label>Commit Hash<input name="commit"></input></label>
-          <label>Subset
-            <select name="task">
-              <option value="video-1-short">video-1-short</option>
-              <option value="video-hd-1">video-hd-1</option>
-              <option value="subset1">subset1</option>
-              <option value="subset2">subset2</option>
-              <option value="subset3">subset3</option>
-              <option value="subset4">subset4</option>
-            </select>
-          </label>
-          <label>IRC nick<input name="nick" value="AWCY"></input></label>
-          <input type="submit"></input>
-        </form>
-      </div>
-      <div class="controlbox">
-        <h2>Machine info</h2>
-        <div id="machine_status_text"></div>
-        <table id="machineinfo">
-        </table>
-        <form action="submit/setDesiredCapacity" method="post">
-          <select name="DesiredCapacity">
-            <option value="0">0</option>
-            <option value="2">2</option>
-          </select>
-          <input type="submit" value="Request Machines"></input>
-        </form>
-      </div>
-      <div class="controlbox">
-        <h2>Login</h2>
-        <label>Key<input name="key" id="key"></input></label>
-        <input type="button" value="Login" onClick="set_key_cookie()"></input>
-        <input type="button" value="Logout" onClick="clear_key_cookie()"></input>
-      </div>
-      </div>
+  <div class="row">
+    <div class="controlbox">
+      <h2>BD rate</h2>
+      <p id="bd_rate_title"></p>
+      <pre id="bd_rate"></pre>
     </div>
   </div>
 </article>
+
+<article id="submit" class="container tab-pane">  
+  <div class="row controlarea">
+    <div class="controlbox col-md-4 loginrequired" >
+      <h2>Submit job</h2>
+      <form action="submit/job" method="post">
+        <label>Run ID<input name="run_id" id="run_id"></input></label>
+        <label>Commit Hash<input name="commit"></input></label>
+        <label>Subset
+          <select name="task">
+            <option value="video-1-short">video-1-short</option>
+            <option value="video-hd-1">video-hd-1</option>
+            <option value="subset1">subset1</option>
+            <option value="subset2">subset2</option>
+            <option value="subset3">subset3</option>
+            <option value="subset4">subset4</option>
+          </select>
+        </label>
+        <label>IRC nick<input name="nick" value="AWCY"></input></label>
+        <input type="submit"></input>
+      </form>
+    </div>
+    <div class="controlbox col-md-8">
+      <h2>Current job</h2>
+      <div id="current_job">No jobs running</div>
+      <form action="submit/kill" method="post" class="loginrequired">
+        <input type="submit" value="Kill"></input>
+      </form>
+      <pre id="job_log"></pre>
+    </div>
+    <div class="controlbox col-md-4">
+      <h2>Job queue</h2>
+      <div id="job_queue"></div>
+    </div>
+    <div class="controlbox col-md-4">
+      <h2>Machine info</h2>
+      <div id="machine_status_text"></div>
+      <table id="machineinfo" class="table">
+      </table>
+      <form action="submit/setDesiredCapacity" method="post">
+        <select name="DesiredCapacity">
+          <option value="0">0</option>
+          <option value="2">2</option>
+        </select>
+        <input type="submit" value="Request Machines"></input>
+      </form>
+    </div>
+    <div class="controlbox col-md-4">
+      <h2>Login</h2>
+      <label>Key<input name="key" id="key"></input></label>
+      <input type="button" value="Login" onClick="set_key_cookie()"></input>
+      <input type="button" value="Logout" onClick="clear_key_cookie()"></input>
+    </div>
+    </div>
+  </div>
+</article>
+
+</div>
+
 </body>
 </html>
