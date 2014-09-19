@@ -6,8 +6,11 @@ header h1 {
   margin: 0px;
   padding: 0.5em;
 }
-label {
-  display: block;
+.nav-tabs > li > a {
+  color: white;
+}
+.nav-tabs > li > a:hover{
+  color: black;
 }
 .hidden {
   display: none;
