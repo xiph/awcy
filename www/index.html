@@ -308,10 +308,17 @@ $(function() {
     <div class="controlbox col-md-4 loginrequired" >
       <h2>Submit job</h2>
       <form action="submit/job" method="post">
-        <label>Run ID<input name="run_id" id="run_id"></input></label>
-        <label>Commit Hash<input name="commit"></input></label>
-        <label>Subset
-          <select name="task">
+        <div class="form-group">
+          <label>Run ID</label>
+          <input name="run_id" id="run_id" class="form-control"></input>
+        </div>
+        <div class="form-group">
+          <label>Commit Hash</label>
+          <input name="commit" class="form-control"></input>
+        </div>
+        <div class="form-group">
+          <label>Subset</label>
+          <select name="task" class="form-control">
             <option value="video-1-short">video-1-short</option>
             <option value="video-hd-1">video-hd-1</option>
             <option value="subset1">subset1</option>
@@ -319,9 +326,14 @@ $(function() {
             <option value="subset3">subset3</option>
             <option value="subset4">subset4</option>
           </select>
-        </label>
-        <label>IRC nick<input name="nick" value="AWCY"></input></label>
-        <input type="submit"></input>
+        </div>
+        <div class="form-group">
+          <label>IRC nick</label>
+          <input name="nick" value="AWCY" class="form-control"></input>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn">Start Job</button>
+        </div>
       </form>
     </div>
     <div class="controlbox col-md-8">
