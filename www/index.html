@@ -264,6 +264,7 @@ $(function() {
   <div class="row">
     <div id="runbox" class="col-md-3">
       <h2>Runs</h2>
+      Filter by: 
       <select id="run_filter_task" onChange="load_runs();load_sets()">
         <option value="video-1-short">video-1-short</option>
         <option value="video-hd-1">video-hd-1</option>
@@ -332,7 +333,7 @@ $(function() {
           <input name="nick" value="AWCY" class="form-control"></input>
         </div>
         <div class="form-group">
-          <button type="submit" class="btn">Start Job</button>
+          <button type="submit" class="btn btn-primary">Start Job</button>
         </div>
       </form>
     </div>
@@ -340,7 +341,7 @@ $(function() {
       <h2>Current job</h2>
       <div id="current_job">No jobs running</div>
       <form action="submit/kill" method="post" class="loginrequired">
-        <input type="submit" value="Kill"></input>
+        <button type="submit" class="btn btn-danger">Kill</button>
       </form>
       <pre id="job_log"></pre>
     </div>
