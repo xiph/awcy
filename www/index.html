@@ -160,7 +160,6 @@ function load_runs() {
         run.append($('<div class="run_id">').html(job.run_id));
         run.append($('<div class="run_meta">').html(job.info.nick));
         run.append($('<div class="run_meta">').html(job.date));
-        run.append($('<div class="run_meta">').html(job.info.commit));
         $('#runs').append(run);
       }
     }
@@ -213,7 +212,7 @@ function load_job_log() {
   });
 }
 function auto_refresh() {
-  load_aws();
+  // load_aws();
   load_job_log();
   window.setTimeout(auto_refresh,5000);
 }
@@ -296,10 +295,14 @@ $(function() {
     </div>
   </div>
   <div class="row">
-    <div class="controlbox">
+    <div class="controlbox col-md-6">
       <h2>BD rate</h2>
       <p id="bd_rate_title"></p>
       <pre id="bd_rate"></pre>
+    </div>
+    <div class="controlbox col-md-6">
+      <h2>Selection</h2>
+      <div id="selection_info"></div>
     </div>
   </div>
 </article>
