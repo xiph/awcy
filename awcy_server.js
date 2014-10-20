@@ -125,10 +125,7 @@ app.get('/describeAutoScalingGroups',function(req,res) {
 });
 
 app.get('/describeAutoScalingInstances',function(req,res) {
-  var autoscaling = new AWS.AutoScaling();
-  autoscaling.describeAutoScalingInstances({},function(err,data) {
-    res.send(data);
-  });
+  res.send(autoScalingInstances);
 });
 
 app.get('/bd_rate',function(req,res) {
