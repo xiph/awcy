@@ -191,7 +191,7 @@ app.post('/submit/delete',function(req,res) {
 });
 
 app.post('/submit/kill',function(req,res) {
-  job_child_process.kill();
+  job_child_process.kill('SIGKILL');
 });
 
 app.post('/submit/setDesiredCapacity',function(req,res) {
