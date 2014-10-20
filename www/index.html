@@ -159,6 +159,7 @@ function load_runs() {
         });
         run.append($('<div class="run_id">').html(job.run_id));
         run.append($('<div class="run_meta">').html(job.info.nick));
+        run.append($('<div class="run_meta">').html(job.info.commit));
         run.append($('<div class="run_meta">').html(job.date));
         $('#runs').append(run);
       }
