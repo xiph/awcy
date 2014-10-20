@@ -106,6 +106,17 @@ app.get('/job_log',function(req,res) {
   res.send(job_log);
 });
 
+autoScalingInstances = null;
+
+function pollAmazon() {
+  var autoscaling = new AWS.AutoScaling();
+  autoscaling.describeAutoScalingInstances({},function(err,data) {
+    autoScalingInstances = data;
+  });
+}
+
+setTimeout(pollAmazon, 60*1);
+
 app.get('/describeAutoScalingGroups',function(req,res) {
   var autoscaling = new AWS.AutoScaling();
   autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: ['Daala']}, function(err,data) {
