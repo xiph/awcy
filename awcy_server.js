@@ -50,7 +50,7 @@ function process_queue() {
   if (job_in_progress) { return; };
   if (job_queue.length > 0) {
     job_in_progress = true;
-    job = job_queue.pop();
+    job = job_queue.shift();
     console.log('Starting job '+job.run_id);
     ircclient.say(channel,job.nick+': Starting '+job.run_id);
     job_child_process = cp.spawn('./run_video_test.sh',
