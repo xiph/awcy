@@ -180,7 +180,6 @@ function load_aws() {
       table.append(instance_row);
     });
   });
-/*
   $.getJSON('/describeAutoScalingGroups',function(data) {
     var group = data.AutoScalingGroups[0];
     var desired = group.DesiredCapacity;
@@ -191,7 +190,6 @@ function load_aws() {
       $('#machine_status_text').html('All machines are currently offline.');
     }
   });
-*/
 }
 function refresh_login_required() {
   if ((document.cookie == 'key=') || (document.cookie == '')) {
