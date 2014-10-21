@@ -107,21 +107,22 @@ app.get('/job_log',function(req,res) {
 });
 
 autoScalingInstances = null;
+autoScalingGroups = null;
 
 function pollAmazon() {
   var autoscaling = new AWS.AutoScaling();
   autoscaling.describeAutoScalingInstances({},function(err,data) {
     autoScalingInstances = data;
   });
+  autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: ['Daala']}, function(err,data) {
+    autoScalingGroups = data;
+  });
 }
 
 setTimeout(pollAmazon, 60*1);
 
 app.get('/describeAutoScalingGroups',function(req,res) {
-  var autoscaling = new AWS.AutoScaling();
-  autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: ['Daala']}, function(err,data) {
-    res.send(data);
-  });
+  res.send(autoScalingGroups);
 });
 
 app.get('/describeAutoScalingInstances',function(req,res) {
