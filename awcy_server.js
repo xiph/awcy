@@ -29,6 +29,7 @@ var job_queue = [];
 var job_in_progress = false;
 var job_child_process = null;
 var job_log = ''
+var last_job_completed_time = Date.now();
 
 var key = fs.readFileSync('secret_key', {encoding: 'utf8'}).trim();
 
@@ -77,6 +78,7 @@ function process_queue() {
       fs.writeFile('error.txt',job_log);
       job_in_progress = false;
       job = null;
+      last_job_completed_time = Date.now();
       process_queue();
     });
   }
@@ -193,6 +195,11 @@ app.post('/submit/delete',function(req,res) {
 
 app.post('/submit/kill',function(req,res) {
   job_child_process.kill('SIGKILL');
+  res.send('ok');
+});
+
+app.post('/submit/restart', function(req,res) {
+  process.exit();
   res.send('ok');
 });
 

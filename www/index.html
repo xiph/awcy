@@ -358,6 +358,9 @@ $(function() {
       <form action="submit/kill" method="post" class="loginrequired">
         <button type="submit" class="btn btn-danger">Kill</button>
       </form>
+      <form action="submit/restart" method="post" class="loginrequired">
+        <button type="submit" class="btn btn-danger">Restart Server</button>
+      </form>
       <pre id="job_log"></pre>
     </div>
     <div class="controlbox col-md-4">
@@ -369,7 +372,7 @@ $(function() {
       <div id="machine_status_text"></div>
       <table id="machineinfo" class="table">
       </table>
-      <form action="submit/setDesiredCapacity" method="post">
+      <form action="submit/setDesiredCapacity" method="post" class="loginrequired">
         <select name="DesiredCapacity">
           <option value="0">0</option>
           <option value="2">2</option>
