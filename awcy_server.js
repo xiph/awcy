@@ -192,6 +192,7 @@ app.post('/submit/delete',function(req,res) {
 
 app.post('/submit/kill',function(req,res) {
   job_child_process.kill('SIGKILL');
+  res.send('ok');
 });
 
 app.post('/submit/setDesiredCapacity',function(req,res) {
