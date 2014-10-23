@@ -119,6 +119,12 @@ function pollAmazon() {
   autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: ['Daala']}, function(err,data) {
     autoScalingGroups = data;
   });
+  if ((!job_in_progress) && (job_queue.length == 0)) {
+    var shutdown_threshold = 1000*60*60*2;
+    if ((Date.now() - last_job_completed_time) > shutdown_threshold) {
+      console.log("Shutting down all Amazon instances because idle.");
+    }
+  }
 }
 
 setTimeout(pollAmazon, 60*1);
