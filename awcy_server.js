@@ -123,6 +123,8 @@ function pollAmazon() {
     var shutdown_threshold = 1000*60*60*2;
     if ((Date.now() - last_job_completed_time) > shutdown_threshold) {
       console.log("Shutting down all Amazon instances because idle.");
+    } else {
+      console.log("Keeping alive.");
     }
   }
 }
