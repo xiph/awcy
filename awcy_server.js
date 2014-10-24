@@ -111,6 +111,17 @@ app.get('/job_log',function(req,res) {
 autoScalingInstances = null;
 autoScalingGroups = null;
 
+function shutdownAmazon() {
+  var autoscaling = new AWS.AutoScaling();
+  autoscaling.setDesiredCapacity({
+    AutoScalingGroupName: 'Daala',
+    DesiredCapacity: 0,
+    HonorCooldown: true
+  }, function (err, data) {
+    res.send(data);
+  });
+}
+
 function pollAmazon() {
   var autoscaling = new AWS.AutoScaling();
   autoscaling.describeAutoScalingInstances({},function(err,data) {
@@ -123,13 +134,12 @@ function pollAmazon() {
     var shutdown_threshold = 1000*60*60*2;
     if ((Date.now() - last_job_completed_time) > shutdown_threshold) {
       console.log("Shutting down all Amazon instances because idle.");
-    } else {
-      console.log("Keeping alive.");
+      shutdownAmazon();
     }
   }
 }
 
-setTimeout(pollAmazon, 60*1);
+setInterval(pollAmazon, 60*1);
 
 app.get('/describeAutoScalingGroups',function(req,res) {
   res.send(autoScalingGroups);
