@@ -118,7 +118,6 @@ function shutdownAmazon() {
     DesiredCapacity: 0,
     HonorCooldown: true
   }, function (err, data) {
-    res.send(data);
   });
 }
 
