@@ -139,7 +139,7 @@ function pollAmazon() {
   }
 }
 
-setInterval(pollAmazon, 60*1);
+setInterval(pollAmazon, 60*1*1000);
 
 app.get('/describeAutoScalingGroups',function(req,res) {
   res.send(autoScalingGroups);
