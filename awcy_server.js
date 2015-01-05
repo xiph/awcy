@@ -168,7 +168,7 @@ app.post('/submit/job',function(req,res) {
   var job = {};
   job.codec = 'daala';
   job.commit = req.body.commit;
-  job.run_id = req.body.run_id;
+  job.run_id = req.body.run_id.replace(' ','_');
   if (req.body.task) {
     job.task = req.body.task;
   } else {
