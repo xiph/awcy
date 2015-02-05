@@ -110,8 +110,7 @@ function bd_rate(selected_graphs,outfile) {
   req['b'] = selected_graphs[0];
   switch( $('#bd_rate_range').val() ) {
     case 'whole':
-      req['min_bpp'] = 0;
-      req['max_bpp'] = 1000;
+      break;
     case 'str':
       req['min_bpp'] = 0.1;
       req['max_bpp'] = 0.12;
