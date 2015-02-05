@@ -151,12 +151,14 @@ app.get('/describeAutoScalingInstances',function(req,res) {
 app.get('/bd_rate',function(req,res) {
   var a = path.basename(req.query['a']);
   var b = path.basename(req.query['b']);
+  var min_bpp = req.query['min_bpp'];
+  var max_bpp = req.query['max_bpp'];
   var file = path.basename(req.query['file']);
   var set = path.basename(req.query['set']);
   var a_file = __dirname+'/runs/'+a+'/'+set+'/'+file;
   var b_file = __dirname+'/runs/'+b+'/'+set+'/'+file;
   cp.execFile('./bd_rate.m',[a_file,b_file],
-              {env: {'BUILD_ROOT': 'daalatool/'}, cwd: __dirname+'/daalatool/tools/matlab/'},
+              {env: {'BUILD_ROOT': 'daalatool/', 'MIN_BPP': min_bpp, 'MAX_BPP': max_bpp}, cwd: __dirname+'/daalatool/tools/matlab/'},
               function(error,stdout,stderr) {
     res.send(stdout);
   });
