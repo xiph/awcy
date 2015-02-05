@@ -109,6 +109,9 @@ function bd_rate(selected_graphs,outfile) {
   req['a'] = selected_graphs[1];
   req['b'] = selected_graphs[0];
   switch( $('#bd_rate_range').val() ) {
+    case 'whole':
+      req['min_bpp'] = 0;
+      req['max_bpp'] = 1000;
     case 'str':
       req['min_bpp'] = 0.1;
       req['max_bpp'] = 0.12;
@@ -310,6 +313,7 @@ $(function() {
     <div class="controlbox col-md-6">
       <h2>BD rate</h2>
       <select id="bd_rate_range" onChange="regenerate_graph()">
+        <option value="whole">Entire curve</option>
         <option value="str">Streaming video (0.1 - 0.12 bpp)</option>
         <option value="conf">Video conferencing (0.04 - 0.05 bpp)</option>
       </select>
