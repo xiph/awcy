@@ -3,6 +3,8 @@
 <head>
 <title>Are We Compressed Yet?</title>
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
 <script src="jquery-2.1.1.js"></script>
 <script src="jquery.flot.js"></script>
 <script src="jquery.flot.axislabels.js"></script>
@@ -288,6 +290,7 @@ $(function() {
         <option value="subset3">subset3</option>
         <option value="subset4">subset4</option>
       </select>
+      <input type="button" value="Deselect All Runs" onClick="clear_runs()"></input>
       <div id="runs">
       </div>
     </div>
@@ -304,7 +307,7 @@ $(function() {
       </select>
       <div class="graph_box">
         <div id="rd_graph">
-          ⟵Click runs on the left to select.
+          ⟵Select runs on the left to compare.
         </div>
         <label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input>Logarithmic</label>
       </div>
@@ -344,9 +347,9 @@ $(function() {
         <div class="form-group">
           <label>Subset</label>
           <select name="task" class="form-control">
-            <option value="video-1-short">video-1-short, 7 videos, 1-sec durations, 207 MB</option>
-            <option value="video-hd-1">video-hd-1, ? videos, ? durations, ? MB</option>
-            <option value="ntt-short-1">ntt-short-1, ? videos, ? durations, ? MB</option>
+            <option value="video-1-short">video-1-short - 7 videos, 1-sec durations, 207 MB</option>
+            <option value="video-hd-1">video-hd-1 - ? videos, ? durations, ? MB</option>
+            <option value="ntt-short-1">ntt-short-1 - ? videos, ? durations, ? MB</option>
             <option value="subset1">subset1 - 51 images, 77.5 MB</option>
             <option value="subset2">subset2 - 51 images, 79.6 MB</option>
             <option value="subset3">subset3 - 1000 images, 1.58 GB</option>
