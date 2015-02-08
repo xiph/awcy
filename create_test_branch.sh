@@ -9,8 +9,8 @@ TESTNAME="$2"
 cd daala
 git fetch --all
 git checkout "$COMMIT"
-git checkout -b t-"$TESTNAME"
+git checkout -b "t-$TESTNAME"
 git clean -d -x -f
 
 cd ..
-mkdir -p runs/"$TESTNAME"
+mkdir -p "runs/$TESTNAME"
