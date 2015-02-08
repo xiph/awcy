@@ -7,9 +7,15 @@ import argparse
 import os
 import subprocess
 import sys
+from datetime import datetime
+
+#our timestamping function, accurate to milliseconds
+#(remove [:-3] to display microseconds)
+def GetTime():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
 if 'DAALA_ROOT' not in os.environ:
-    print("Please specify the DAALA_ROOT environment variable to use this tool.")
+    print(GetTime(), "Please specify the DAALA_ROOT environment variable to use this tool.")
     sys.exit(1)
 
 key = None
@@ -17,7 +23,7 @@ with open('secret_key','r') as keyfile:
     key = keyfile.read().strip()
 
 if key is None:
-    print("Could not open secret_key")
+    print(GetTime(), "Could not open your secret_key file!")
     sys.exit(1)
 
 daala_root = os.environ['DAALA_ROOT']
@@ -37,6 +43,6 @@ user = args.prefix
 
 run_id = user+'-'+date_short+'-'+short
 
-print('Creating run '+run_id)
+print(GetTime(), 'Creating run '+run_id)
 r = requests.post("https://arewecompressedyet.com/submit/job", {'run_id': run_id, 'commit': commit, 'key': key})
-print(r)
+print(GetTime(), r)
