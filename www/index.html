@@ -279,7 +279,7 @@ $(function() {
 <article id="home" class="container-fluid tab-pane active">
   <div class="row">
     <div id="runbox" class="col-md-3">
-      <h2>Runs</h2>
+      <h3>Runs</h3>
       Filter by: 
       <select id="run_filter_task" onChange="load_runs();load_sets()">
         <option value="video-1-short">video-1-short</option>
@@ -295,7 +295,7 @@ $(function() {
       </div>
     </div>
     <div id="graphbox" class="col-md-9">
-      <h2>Graph</h2>
+      <h3>Graph</h3>
       <select id="metric" onChange="regenerate_graph()">
         <option value="0">PSNR</option>
         <option value="1">PSNR-HVS</option>
@@ -315,7 +315,7 @@ $(function() {
   </div>
   <div class="row">
     <div class="controlbox col-md-6">
-      <h2>BD rate</h2>
+      <h3>BD rate</h3>
       <select id="bd_rate_range" onChange="regenerate_graph()">
         <option value="whole">Entire curve</option>
         <option value="str">Streaming video (0.1 - 0.12 bpp)</option>
@@ -325,7 +325,7 @@ $(function() {
       <pre id="bd_rate"></pre>
     </div>
     <div class="controlbox col-md-6">
-      <h2>Selection</h2>
+      <h3>Selection</h3>
       <div id="selection_info"></div>
     </div>
   </div>
@@ -334,15 +334,26 @@ $(function() {
 <article id="submit" class="container tab-pane">  
   <div class="row controlarea">
     <div class="controlbox col-md-4 loginrequired" >
-      <h2>Submit job</h2>
+      <h3>Submit Job</h3>
       <form action="submit/job" method="post">
         <div class="form-group">
           <label>Run ID</label>
           <input name="run_id" id="run_id" class="form-control"></input>
         </div>
         <div class="form-group">
-          <label>Commit Hash</label>
+          <label>Git Commit Hash</label>
           <input name="commit" class="form-control"></input>
+        </div>
+        <div class="form-group">
+          <label>Codec</label>
+          <select name="codec" class="form-control">
+            <option value="daala">Daala</option>
+            <option value="x264">x264</option>
+            <option value="x265">x265</option>
+            <option value="x265-rt">x265 realtime</option>
+            <option value="vp8">VP8</option>
+            <option value="vp9">VP9</option>
+          </select>
         </div>
         <div class="form-group">
           <label>Subset</label>
@@ -357,42 +368,37 @@ $(function() {
           </select>
         </div>
         <div class="form-group">
-          <label>IRC nick</label>
+          <label>Your IRC nick (for auto-notifications on #daala)</label>
           <input name="nick" value="AWCY" class="form-control"></input>
         </div>
         <div class="form-group">
-          <button type="submit" class="btn btn-primary">Start Job</button>
+          <button type="submit" class="btn btn-primary" style="float:left">Start Job</button>
         </div>
         <div class="form-group">
-          <label>Codec</label>
-          <select name="codec" class="form-control">
-            <option value="daala">Daala</option>
-            <option value="x264">x264</option>
-            <option value="x265">x265</option>
-            <option value="x265-rt">x265 realtime</option>
-            <option value="vp8">VP8</option>
-            <option value="vp9">VP9</option>
-          </select>
+          <button type="reset" class="btn btn-primary" style="float:right">Reset Form</button>
         </div>
       </form>
     </div>
     <div class="controlbox col-md-8">
-      <h2>Current job</h2>
+      <h3>Current Job</h3>
       <div id="current_job">No jobs running</div>
-      <form action="submit/kill" method="post" class="loginrequired">
+	  <br />
+      <form action="submit/kill" method="post" class="loginrequired" style="float:left">
         <button type="submit" class="btn btn-danger">Kill</button>
       </form>
-      <form action="submit/restart" method="post" class="loginrequired">
+      <form action="submit/restart" method="post" class="loginrequired" style="float:left">
         <button type="submit" class="btn btn-danger">Restart Server</button>
       </form>
+	  <br />
+	  <br />
       <pre id="job_log"></pre>
     </div>
     <div class="controlbox col-md-4">
-      <h2>Job queue</h2>
+      <h3>Job Queue</h3>
       <div id="job_queue"></div>
     </div>
     <div class="controlbox col-md-4">
-      <h2>Machine info</h2>
+      <h3>AWS Machine Info</h3>
       <div id="machine_status_text"></div>
       <table id="machineinfo" class="table">
       </table>
@@ -405,7 +411,7 @@ $(function() {
       </form>
     </div>
     <div class="controlbox col-md-4">
-      <h2>Login</h2>
+      <h3>Login</h3>
       <label>Key<input name="key" id="key"></input></label>
       <input type="button" value="Login" onClick="set_key_cookie()"></input>
       <input type="button" value="Logout" onClick="clear_key_cookie()"></input>
