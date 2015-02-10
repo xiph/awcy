@@ -338,11 +338,11 @@ $(function() {
       <form action="submit/job" method="post">
         <div class="form-group">
           <label>Run ID</label>
-          <input name="run_id" id="run_id" class="form-control"></input>
+          <input name="run_id" id="run_id" class="form-control" placeholder="Please enter a unique name without spaces"></input>
         </div>
         <div class="form-group">
           <label>Git Commit Hash</label>
-          <input name="commit" class="form-control"></input>
+          <input name="commit" class="form-control" placeholder="e.g. 96146eac8438d1d5412d8fd678cad2ba9ce1b6e8"></input>
         </div>
         <div class="form-group">
           <label>Codec</label>
@@ -369,7 +369,7 @@ $(function() {
         </div>
         <div class="form-group">
           <label>Your IRC nick (for auto-notifications on #daala)</label>
-          <input name="nick" value="AWCY" class="form-control"></input>
+          <input name="nick" placeholder="e.g. AWCY" class="form-control"></input>
         </div>
         <div class="form-group">
           <button type="submit" class="btn btn-primary" style="float:left">Start Job</button>
