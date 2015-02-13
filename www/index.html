@@ -9,6 +9,7 @@
 <script src="jquery.flot.js"></script>
 <script src="jquery.flot.axislabels.js"></script>
 <script src="jquery.flot.navigate.js"></script>
+<script src="jquery.flot.time.js"></script>
 <script src="bootstrap.js"></script>
 <script>
 
@@ -238,6 +239,24 @@ function auto_refresh() {
   load_job_log();
   window.setTimeout(auto_refresh,5000);
 }
+function load_timelines() {
+  $.getJSON('/time_series.json',function(data) {
+    var options = {
+      xaxis: {
+        mode: "time"
+      },
+      series: {
+        points: {
+          show: "true"
+        },
+        lines: {
+          show: "true"
+        }
+      }
+    };
+    $.plot('#fastssim_graph',data,options);
+  });
+}
 $(function() {
   refresh_login_required();
   load_runs();
@@ -245,6 +264,7 @@ $(function() {
   $('#run_id').val(date.toISOString().replace(/:/g,'-'));
   load_job_queue();
   load_sets();
+  load_timelines();
   auto_refresh();
 });
 </script>
@@ -275,6 +295,7 @@ $(function() {
 <ul class="nav nav-tabs" role="tablist">
   <li class="active"><a href="#home" role="tab" data-toggle="tab">Home</a></li>
   <li><a href="#submit" role="tab" data-toggle="tab">Submit</a></li>
+  <li><a href="#timeline" role="tab" data-toggle="tab">Timeline</a></li>
 </ul>
 </header>
 <noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
@@ -421,7 +442,12 @@ $(function() {
       <input type="button" value="Login" onClick="set_key_cookie()"></input>
       <input type="button" value="Logout" onClick="clear_key_cookie()"></input>
     </div>
-    </div>
+  </div>
+</article>
+
+<article id="timeline" class="container tab-pane">
+  <div class="row">
+    <div id="fastssim_graph" style="height: 200px; width: 800px;"></div>
   </div>
 </article>
 

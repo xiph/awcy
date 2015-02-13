@@ -89,6 +89,7 @@ app.use('/runs',express.static(__dirname + '/runs'));
 app.use('/sets.json',express.static(__dirname + '/rd_tool/sets.json'));
 app.use('/error.txt',express.static(__dirname + '/error.txt'));
 app.use('/list.json',express.static(__dirname + '/list.json'));
+app.use('/time_series.json',express.static(__dirname + '/time_series.json'));
 
 app.get('/run_list.json',function(req,res) {
   fs.readdir('runs',function(err,files) {
