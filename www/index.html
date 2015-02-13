@@ -254,10 +254,10 @@ function load_timelines() {
         }
       }
     };
-    $.plot('#psnr_graph',[data[0]],options);
-    $.plot('#psnrhvs_graph',[data[1]],options);
-    $.plot('#ssim_graph',[data[2]],options);
-    $.plot('#fastssim_graph',[data[3]],options);
+    $.plot('#psnr_graph',[data[0].sort()],options);
+    $.plot('#psnrhvs_graph',[data[1].sort()],options);
+    $.plot('#ssim_graph',[data[2].sort()],options);
+    $.plot('#fastssim_graph',[data[3].sort()],options);
   });
 }
 $(function() {
