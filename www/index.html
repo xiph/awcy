@@ -254,7 +254,10 @@ function load_timelines() {
         }
       }
     };
-    $.plot('#fastssim_graph',data,options);
+    $.plot('#psnr_graph',[data[0]],options);
+    $.plot('#psnrhvs_graph',[data[1]],options);
+    $.plot('#ssim_graph',[data[2]],options);
+    $.plot('#fastssim_graph',[data[3]],options);
   });
 }
 $(function() {
@@ -447,6 +450,13 @@ $(function() {
 
 <article id="timeline" class="container tab-pane">
   <div class="row">
+    <h2>PSNR</h2>
+    <div id="psnr_graph" style="height: 200px; width: 800px;"></div>
+    <h2>PSNR-HVS</h2>
+    <div id="psnrhvs_graph" style="height: 200px; width: 800px;"></div>
+    <h2>SSIM</h2>
+    <div id="ssim_graph" style="height: 200px; width: 800px;"></div>
+    <h2>FASTSSIM</h2>
     <div id="fastssim_graph" style="height: 200px; width: 800px;"></div>
   </div>
 </article>
