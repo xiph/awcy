@@ -27,7 +27,8 @@ for run in runs:
     filename = 'runs/'+run['run_id']+'/'+run['info']['task']+'/total.out'
     try:
       distortion = subprocess.check_output(['/home/thomas/daala/tools/matlab/distortion.m',filename,'0.1'])
-      date_obj = dateutil.parser.parse(run['date']).replace(tzinfo=None)
+      date_str = subprocess.check_output(['git','--git-dir=daala/.git','--work-tree=daala/','show','-s','--format=%ci',run['info']['commit']])
+      date_obj = dateutil.parser.parse(date_str).replace(tzinfo=None)
       date_js = unix_time(date_obj) * 1000
       psnr.append([date_js,distortion.split('\n')[0]])
       psnrhvs.append([date_js,distortion.split('\n')[1]])

@@ -183,6 +183,9 @@ function load_runs() {
     }
   });
 }
+function clear_runs() {
+  $('#runs > div').removeClass('selected');
+}
 function load_aws() {
   $.getJSON('/describeAutoScalingInstances',function(data) {
     var table = $('#machineinfo');
