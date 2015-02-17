@@ -85,6 +85,9 @@ function regenerate_graph() {
     if (x_max != 0) {
       options.xaxis.max = x_max * bpp_scaler;
     }
+    if (bpp_scaler != 1) {
+      options.xaxis.axisLabel = 'Mbps';
+    }
     if (logarithmic) {
       options.xaxis.transform = function (v) { return Math.log(v); };
       options.xaxis.inverseTransform = function (v) { return Math.exp(v); };
