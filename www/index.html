@@ -40,11 +40,11 @@ function regenerate_graph() {
     } else {
       var argument_list = arguments;
     }
+    var bpp_scaler = parseFloat($("#graph_x_scaler").val());
     for (var j in argument_list) {
       var curve = [];
       console.log(argument_list[j]);
       var data = argument_list[j][0];
-      var bpp_scaler = parseFloat($("#graph_x_scaler").val());
       var lines = data.split('\n');
       for (var i in lines) {
         var line = lines[i].split(' ');
@@ -57,9 +57,10 @@ function regenerate_graph() {
       };
       curves.push(series);
     }
+    var x_max = parseFloat($("#graph_x_range").val());
     var options = {
       xaxis: {
-        axisLabel: 'Bits per Pixel'
+        axisLabel: 'Bits per Pixel',
       },
       yaxis: {
         axisLabel: 'Picture quality (dB)'
@@ -81,6 +82,9 @@ function regenerate_graph() {
         interactive: true
       }
     };
+    if (x_max != 0) {
+      options.xaxis.max = x_max * bpp_scaler;
+    }
     if (logarithmic) {
       options.xaxis.transform = function (v) { return Math.log(v); };
       options.xaxis.inverseTransform = function (v) { return Math.exp(v); };
@@ -303,6 +307,10 @@ $(function() {
           <option value="1">Bits per pixel</option>
           <option value="49.7664">Mbps @ 1080p24 (Streaming)</option>
           <option value="55.296">Mbps @ 720p60 (Video conferencing)</option>
+        </select>
+        <select id="graph_x_range" onChange="regenerate_graph()">
+          <option value="0">Full range</option>
+          <option value="0.5">Sensible</option>
         </select>
       </div>
     </div>
