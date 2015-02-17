@@ -44,10 +44,11 @@ function regenerate_graph() {
       var curve = [];
       console.log(argument_list[j]);
       var data = argument_list[j][0];
+      var bpp_scaler = parseFloat($("#graph_x_scaler").val());
       var lines = data.split('\n');
       for (var i in lines) {
         var line = lines[i].split(' ');
-        var point = [line[2]*8/line[1],line[3+metric_index]];
+        var point = [line[2]*8/line[1]*bpp_scaler,line[3+metric_index]];
         curve.push(point);
       }
       var series = {
@@ -298,6 +299,11 @@ $(function() {
           ⟵Select runs on the left to compare.
         </div>
         <label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input>Logarithmic</label>
+        <select id="graph_x_scaler" onChange="regenerate_graph()">
+          <option value="1">Bits per pixel</option>
+          <option value="49.7664">Mbps @ 1080p24 (Streaming)</option>
+          <option value="55.296">Mbps @ 720p60 (Video conferencing)</option>
+        </select>
       </div>
     </div>
   </div>
