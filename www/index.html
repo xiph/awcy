@@ -277,6 +277,7 @@ $(function() {
   <li class="active"><a href="#home" role="tab" data-toggle="tab">Home</a></li>
   <li><a href="#submit" role="tab" data-toggle="tab">Submit</a></li>
   <li><a href="#timeline" role="tab" data-toggle="tab">Timeline</a></li>
+  <li><a href="#about" role="tab" data-toggle="tab">About</a></li>
 </ul>
 </header>
 <noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
@@ -449,6 +450,20 @@ $(function() {
     <h2>FASTSSIM</h2>
     <div id="fastssim_graph" style="height: 200px; width: 800px;"></div>
   </div>
+</article>
+
+<article id="about" class="container tab-pane">
+<h1>What is this?</h1>
+AreWeCompressedYet is a continuous-integration system used to test the Daala video codec's compression abilities. It also supports running other video codecs, for comparison purposes.
+<h1>How do I use it?</h1>
+<h2>Home</h2>
+This tool lets you plot rate-distortion curves from different runs of the tool. Runs can be selected on the left. When selected, they will turn green and appear on the graph. Only curves from the same set of videos can be compared. The combobox on top of the list of runs lets you choose which set of videos to use.
+<h2>Submission</h2>
+Contact TD-Linux on #daala on irc.freenode.net if you would like to submit jobs to AreWeCompressedYet. You can also run the tools locally, by using the rd_collect.sh script in the Daala repository.
+<h2>Timeline</h2>
+The timeline shows Daala's performance over time at one specific bitrate. It is automatically updated every time new code is pushed to master.
+<h1>How to Contribute or Report Bugs</h1>
+IRC: #daala @ irc.freenode.net
 </article>
 
 </div>
