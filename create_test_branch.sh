@@ -2,15 +2,15 @@
 
 set -e
 
-COMMIT=$1
+COMMIT="$1"
 
-TESTNAME=$2
+TESTNAME="$2"
 
 cd daala
 git fetch --all
-git checkout $COMMIT
-git checkout -b t-$TESTNAME
+git checkout "$COMMIT"
+git checkout -b "t-$TESTNAME"
 git clean -d -x -f
 
 cd ..
-mkdir -p runs/$TESTNAME
+mkdir -p "runs/$TESTNAME"
