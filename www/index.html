@@ -231,6 +231,9 @@ function clear_key_cookie() {
 function load_job_log() {
   $.get('job_log',function(data) {
     $('#job_log').html(data);
+    last_line = data.match(/([0-9]+) out of ([0-9]+)/g).slice(-1)[0].split(' ');
+    percentage = (last_line[0] / last_line[3]) * 100 + '%';
+    $('#job_progress').width(percentage);
   });
 }
 function auto_refresh() {
@@ -399,6 +402,10 @@ $(function() {
     <div class="controlbox col-md-8">
       <h3>Current Job</h3>
       <div id="current_job">No jobs running</div>
+      <div class="progress">
+        <div id="job_progress" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+        </div>
+      </div>
 	  <br />
       <form action="submit/kill" method="post" class="loginrequired" style="float:left">
         <button type="submit" class="btn btn-danger">Kill</button>
