@@ -164,7 +164,6 @@
         <div id="job_progress" class="progress-bar" role="progressbar" style="width: 0%;">
         </div>
       </div>
-	  <br />
       <form action="submit/kill" method="post" class="loginrequired" style="float:left">
         <button type="submit" class="btn btn-danger">Kill</button>
       </form>
@@ -203,16 +202,17 @@
 
 <article id="timeline" class="container tab-pane">
   <div class="row">
-    <p>video-1-short @ 0.1 bpp</p>
-    <p>Red = x265 performance point</p>
-    <p>Blue = vp8 performance point</p>
+    <br />
+	<p>The graphs below show the qualities obtained over time for the <b>video-1-short</b> test file collection, at a compression rate of <b>0.1 bits per pixel</b>.</p>
+    <p><font color="#ff0000">Red</font> = x265 performance point</p>
+    <p><font color="#0000ff">Blue</font> = vp8 performance point</p>
     <h3>PSNR</h3>
     <div id="psnr_graph" style="height: 200px; width: 800px;"></div>
     <h3>PSNR-HVS</h3>
     <div id="psnrhvs_graph" style="height: 200px; width: 800px;"></div>
-    <h3>SSIM</h3>
+    <h3>SSim</h3>
     <div id="ssim_graph" style="height: 200px; width: 800px;"></div>
-    <h3>FASTSSIM</h3>
+    <h3>FastSSim</h3>
     <div id="fastssim_graph" style="height: 200px; width: 800px;"></div>
   </div>
 </article>
