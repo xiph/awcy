@@ -5,9 +5,235 @@
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 <meta content="utf-8" http-equiv="encoding">
-<link rel="icon" 
-      type="image/png" 
-      href="favicon.png">
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="favicon.png">
+<!-- <link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print"> -->
+<link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
+<link type="text/css" rel="stylesheet" href="awcy.css"></link>
+<link type="text/css" rel="stylesheet" href="bootstrap.css"></link>
+<link rel="shortcut icon" href="favicon.png" />
+</head>
+<body>
+<div id="xiphbar">
+      <div>
+        <a href="http://www.xiph.org/"><img src="xiph-community.svg" alt="the xiph open source community"></a>
+        <ul>
+            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+            <li><a href="http://www.opus-codec.org/">Opus</a></li>
+            <li><a href="http://xiph.org/flac/">FLAC</a></li>
+            <li><a href="http://www.icecast.org/">Icecast</a></li>
+            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+            <li><a href="http://www.theora.org/">Theora</a></li>
+            <li><a href="http://www.speex.org/">Speex</a></li>
+            <li><a href="http://www.xspf.org/">XSPF</a></li>
+        </ul>
+      </div>
+</div>
+<header>
+<h1>Are We Compressed Yet?</h1>
+<ul class="nav nav-tabs" role="tablist">
+  <li class="active"><a href="#home" role="tab" data-toggle="tab">Home</a></li>
+  <li><a href="#submit" role="tab" data-toggle="tab">Submit</a></li>
+  <li><a href="#timeline" role="tab" data-toggle="tab">Timeline</a></li>
+  <li><a href="#about" role="tab" data-toggle="tab">About</a></li>
+</ul>
+</header>
+<noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
+
+<div class="tab-content">
+
+<article id="home" class="container-fluid tab-pane active">
+  <div class="row">
+    <div id="runbox" class="col-md-3">
+      <h3>Runs</h3>
+      Filter by: 
+      <select id="run_filter_task" onChange="load_runs();load_sets()">
+        <option value="video-1-short">video-1-short</option>
+        <option value="video-hd-1">video-hd-1</option>
+        <option value="ntt-short-1">ntt-short-1</option>
+        <option value="subset1">subset1</option>
+        <option value="subset2">subset2</option>
+        <option value="subset3">subset3</option>
+        <option value="subset4">subset4</option>
+      </select>
+      <input type="button" value="Deselect All Runs" onClick="clear_runs()"></input>
+      <div id="runs">
+      </div>
+    </div>
+    <div id="graphbox" class="col-md-9">
+      <h3>Graph</h3>
+	  Data:
+      <select id="metric" onChange="regenerate_graph()">
+        <option value="0">PSNR</option>
+        <option value="1">PSNR-HVS</option>
+        <option value="2">SSim</option>
+        <option value="3" selected>FastSSim</option>
+      </select>
+      <select id="video_name" onChange="regenerate_graph()" style="width: 300px">
+        <option value="total.out">All files</option>
+      </select>
+	  <br />
+	  Axes:
+      <select id="graph_x_scaler" onChange="regenerate_graph()">
+        <option value="1">Bits per pixel</option>
+        <option value="49.7664">Mbps @ 1080p24 (Streaming)</option>
+        <option value="55.296">Mbps @ 720p60 (Video conferencing)</option>
+      </select>
+      <select id="graph_x_range" onChange="regenerate_graph()">
+        <option value="0">Full range</option>
+        <option value="0.5">Sensible</option>
+      </select>
+      <label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input> Logarithmic</label>
+      <div class="graph_box">
+        <div id="rd_graph">
+          ⟵Select runs on the left to compare.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="controlbox col-md-6">
+      <h3>BD rate</h3>
+      <select id="bd_rate_range" onChange="regenerate_graph()">
+        <option value="whole">Entire curve</option>
+        <option value="str">Streaming video (0.1 - 0.12 bpp)</option>
+        <option value="conf">Video conferencing (0.04 - 0.05 bpp)</option>
+      </select>
+      <p id="bd_rate_title"></p>
+      <pre id="bd_rate"></pre>
+    </div>
+    <div class="controlbox col-md-6">
+      <h3>Raw Data</h3>
+      <div id="raw_data"></div>
+    </div>
+  </div>
+</article>
+
+<article id="submit" class="container tab-pane">  
+  <div class="row controlarea">
+    <div class="controlbox col-md-4 loginrequired" >
+      <h3>Submit Job</h3>
+      <form action="submit/job" method="post">
+        <div class="form-group">
+          <label>Run ID</label>
+          <input name="run_id" id="run_id" class="form-control" placeholder="Please enter a unique name without spaces"></input>
+        </div>
+        <div class="form-group">
+          <label>Git Commit Hash</label>
+          <input name="commit" class="form-control" placeholder="e.g. 96146eac8438d1d5412d8fd678cad2ba9ce1b6e8"></input>
+        </div>
+        <div class="form-group">
+          <label>Codec</label>
+          <select name="codec" class="form-control">
+            <option value="daala">Daala</option>
+            <option value="x264">x264</option>
+            <option value="x265">x265</option>
+            <option value="x265-rt">x265 realtime</option>
+            <option value="vp8">VP8</option>
+            <option value="vp9">VP9</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Subset</label>
+          <select name="task" class="form-control">
+            <option value="video-1-short">video-1-short - 7 videos, 1-sec durations, 207 MB</option>
+            <option value="video-hd-1">video-hd-1 - ? videos, ? durations, ? MB</option>
+            <option value="ntt-short-1">ntt-short-1 - ? videos, ? durations, ? MB</option>
+            <option value="subset1">subset1 - 51 images, 77.5 MB</option>
+            <option value="subset2">subset2 - 51 images, 79.6 MB</option>
+            <option value="subset3">subset3 - 1000 images, 1.58 GB</option>
+            <option value="subset4">subset4 - 1000 images, 1.58 GB</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Your IRC nick (for auto-notifications on #daala)</label>
+          <input name="nick" placeholder="e.g. AWCY" class="form-control"></input>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary" style="float:left">Start Job</button>
+        </div>
+        <div class="form-group">
+          <button type="reset" class="btn btn-primary" style="float:right">Reset Form</button>
+        </div>
+      </form>
+    </div>
+    <div class="controlbox col-md-8">
+      <h3>Current Job</h3>
+      <div id="current_job">No jobs running</div>
+      <div class="progress">
+        <div id="job_progress" class="progress-bar" role="progressbar" style="width: 0%;">
+        </div>
+      </div>
+	  <br />
+      <form action="submit/kill" method="post" class="loginrequired" style="float:left">
+        <button type="submit" class="btn btn-danger">Kill</button>
+      </form>
+      <form action="submit/restart" method="post" class="loginrequired" style="float:left">
+        <button type="submit" class="btn btn-danger">Restart Server</button>
+      </form>
+	  <br />
+	  <br />
+      <pre id="job_log"></pre>
+    </div>
+    <div class="controlbox col-md-4">
+      <h3>Job Queue</h3>
+      <div id="job_queue"></div>
+    </div>
+    <div class="controlbox col-md-4">
+      <h3>AWS Machine Info</h3>
+      <div id="machine_status_text"></div>
+      <table id="machineinfo" class="table">
+      </table>
+      <form action="submit/setDesiredCapacity" method="post" class="loginrequired">
+        <select name="DesiredCapacity">
+          <option value="0">0</option>
+          <option value="2">2</option>
+        </select>
+        <input type="submit" value="Request Machines"></input>
+      </form>
+    </div>
+    <div class="controlbox col-md-4">
+      <h3>Login</h3>
+      <label>Key<input name="key" id="key"></input></label>
+      <input type="button" value="Login" onClick="set_key_cookie()"></input>
+      <input type="button" value="Logout" onClick="clear_key_cookie()"></input>
+    </div>
+  </div>
+</article>
+
+<article id="timeline" class="container tab-pane">
+  <div class="row">
+    <p>video-1-short @ 0.1 bpp</p>
+    <p>Red = x265 performance point</p>
+    <p>Blue = vp8 performance point</p>
+    <h3>PSNR</h3>
+    <div id="psnr_graph" style="height: 200px; width: 800px;"></div>
+    <h3>PSNR-HVS</h3>
+    <div id="psnrhvs_graph" style="height: 200px; width: 800px;"></div>
+    <h3>SSIM</h3>
+    <div id="ssim_graph" style="height: 200px; width: 800px;"></div>
+    <h3>FASTSSIM</h3>
+    <div id="fastssim_graph" style="height: 200px; width: 800px;"></div>
+  </div>
+</article>
+
+<article id="about" class="container tab-pane">
+<h2>What is this?</h2>
+AreWeCompressedYet is a continuous-integration system used to test the Daala video codec's compression abilities. It also supports running other video codecs, for comparison purposes.
+<h2>How do I use it?</h2>
+<h3>Home</h3>
+This tool lets you plot rate-distortion curves from different runs of the tool. Runs can be selected on the left. When selected, they will turn green and appear on the graph. Only curves from the same set of videos can be compared. The combobox on top of the list of runs lets you choose which set of videos to use.
+<h3>Submission</h3>
+Contact TD-Linux on #daala on irc.freenode.net if you would like to submit jobs to AreWeCompressedYet. You can also run the tools locally, by using the rd_collect.sh script in the Daala repository.
+<h3>Timeline</h3>
+The timeline shows Daala's performance over time at one specific bitrate. It is automatically updated every time new code is pushed to master.
+<h2>How to Contribute or Report Bugs</h2>
+IRC: #daala @ irc.freenode.net
+</article>
+
+</div>
+
+</body>
 <script src="jquery-2.1.1.js"></script>
 <script src="jquery.flot.js"></script>
 <script src="jquery.flot.axislabels.js"></script>
@@ -252,231 +478,4 @@ $(function() {
   auto_refresh();
 });
 </script>
-<!-- <link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print"> -->
-<link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
-<link type="text/css" rel="stylesheet" href="awcy.css"></link>
-<link type="text/css" rel="stylesheet" href="bootstrap.css"></link>
-<link rel="shortcut icon" href="favicon.png" />
-</head>
-<body>
-<div id="xiphbar">
-      <div>
-        <a href="http://www.xiph.org/"><img src="xiph-community.svg" alt="the xiph open source community"></a>
-        <ul>
-            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
-            <li><a href="http://www.opus-codec.org/">Opus</a></li>
-            <li><a href="http://xiph.org/flac/">FLAC</a></li>
-            <li><a href="http://www.icecast.org/">Icecast</a></li>
-            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
-            <li><a href="http://www.theora.org/">Theora</a></li>
-            <li><a href="http://www.speex.org/">Speex</a></li>
-            <li><a href="http://www.xspf.org/">XSPF</a></li>
-        </ul>
-      </div>
-</div>
-<header>
-<h1>Are We Compressed Yet?</h1>
-<ul class="nav nav-tabs" role="tablist">
-  <li class="active"><a href="#home" role="tab" data-toggle="tab">Home</a></li>
-  <li><a href="#submit" role="tab" data-toggle="tab">Submit</a></li>
-  <li><a href="#timeline" role="tab" data-toggle="tab">Timeline</a></li>
-  <li><a href="#about" role="tab" data-toggle="tab">About</a></li>
-</ul>
-</header>
-<noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
-
-<div class="tab-content">
-
-<article id="home" class="container-fluid tab-pane active">
-  <div class="row">
-    <div id="runbox" class="col-md-3">
-      <h3>Runs</h3>
-      Filter by: 
-      <select id="run_filter_task" onChange="load_runs();load_sets()">
-        <option value="video-1-short">video-1-short</option>
-        <option value="video-hd-1">video-hd-1</option>
-        <option value="ntt-short-1">ntt-short-1</option>
-        <option value="subset1">subset1</option>
-        <option value="subset2">subset2</option>
-        <option value="subset3">subset3</option>
-        <option value="subset4">subset4</option>
-      </select>
-      <input type="button" value="Deselect All Runs" onClick="clear_runs()"></input>
-      <div id="runs">
-      </div>
-    </div>
-    <div id="graphbox" class="col-md-9">
-      <h3>Graph</h3>
-	  Data:
-      <select id="metric" onChange="regenerate_graph()">
-        <option value="0">PSNR</option>
-        <option value="1">PSNR-HVS</option>
-        <option value="2">SSim</option>
-        <option value="3" selected>FastSSim</option>
-      </select>
-      <select id="video_name" onChange="regenerate_graph()" style="width: 300px">
-        <option value="total.out">All files</option>
-      </select>
-	  <br />
-	  Axes:
-      <select id="graph_x_scaler" onChange="regenerate_graph()">
-        <option value="1">Bits per pixel</option>
-        <option value="49.7664">Mbps @ 1080p24 (Streaming)</option>
-        <option value="55.296">Mbps @ 720p60 (Video conferencing)</option>
-      </select>
-      <select id="graph_x_range" onChange="regenerate_graph()">
-        <option value="0">Full range</option>
-        <option value="0.5">Sensible</option>
-      </select>
-      <label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input> Logarithmic</label>
-      <div class="graph_box">
-        <div id="rd_graph">
-          ⟵Select runs on the left to compare.
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="controlbox col-md-6">
-      <h3>BD rate</h3>
-      <select id="bd_rate_range" onChange="regenerate_graph()">
-        <option value="whole">Entire curve</option>
-        <option value="str">Streaming video (0.1 - 0.12 bpp)</option>
-        <option value="conf">Video conferencing (0.04 - 0.05 bpp)</option>
-      </select>
-      <p id="bd_rate_title"></p>
-      <pre id="bd_rate"></pre>
-    </div>
-    <div class="controlbox col-md-6">
-      <h3>Raw Data</h3>
-      <div id="raw_data"></div>
-    </div>
-  </div>
-</article>
-
-<article id="submit" class="container tab-pane">  
-  <div class="row controlarea">
-    <div class="controlbox col-md-4 loginrequired" >
-      <h3>Submit Job</h3>
-      <form action="submit/job" method="post">
-        <div class="form-group">
-          <label>Run ID</label>
-          <input name="run_id" id="run_id" class="form-control" placeholder="Please enter a unique name without spaces"></input>
-        </div>
-        <div class="form-group">
-          <label>Git Commit Hash</label>
-          <input name="commit" class="form-control" placeholder="e.g. 96146eac8438d1d5412d8fd678cad2ba9ce1b6e8"></input>
-        </div>
-        <div class="form-group">
-          <label>Codec</label>
-          <select name="codec" class="form-control">
-            <option value="daala">Daala</option>
-            <option value="x264">x264</option>
-            <option value="x265">x265</option>
-            <option value="x265-rt">x265 realtime</option>
-            <option value="vp8">VP8</option>
-            <option value="vp9">VP9</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Subset</label>
-          <select name="task" class="form-control">
-            <option value="video-1-short">video-1-short - 7 videos, 1-sec durations, 207 MB</option>
-            <option value="video-hd-1">video-hd-1 - ? videos, ? durations, ? MB</option>
-            <option value="ntt-short-1">ntt-short-1 - ? videos, ? durations, ? MB</option>
-            <option value="subset1">subset1 - 51 images, 77.5 MB</option>
-            <option value="subset2">subset2 - 51 images, 79.6 MB</option>
-            <option value="subset3">subset3 - 1000 images, 1.58 GB</option>
-            <option value="subset4">subset4 - 1000 images, 1.58 GB</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Your IRC nick (for auto-notifications on #daala)</label>
-          <input name="nick" placeholder="e.g. AWCY" class="form-control"></input>
-        </div>
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary" style="float:left">Start Job</button>
-        </div>
-        <div class="form-group">
-          <button type="reset" class="btn btn-primary" style="float:right">Reset Form</button>
-        </div>
-      </form>
-    </div>
-    <div class="controlbox col-md-8">
-      <h3>Current Job</h3>
-      <div id="current_job">No jobs running</div>
-      <div class="progress">
-        <div id="job_progress" class="progress-bar" role="progressbar" style="width: 0%;">
-        </div>
-      </div>
-	  <br />
-      <form action="submit/kill" method="post" class="loginrequired" style="float:left">
-        <button type="submit" class="btn btn-danger">Kill</button>
-      </form>
-      <form action="submit/restart" method="post" class="loginrequired" style="float:left">
-        <button type="submit" class="btn btn-danger">Restart Server</button>
-      </form>
-	  <br />
-	  <br />
-      <pre id="job_log"></pre>
-    </div>
-    <div class="controlbox col-md-4">
-      <h3>Job Queue</h3>
-      <div id="job_queue"></div>
-    </div>
-    <div class="controlbox col-md-4">
-      <h3>AWS Machine Info</h3>
-      <div id="machine_status_text"></div>
-      <table id="machineinfo" class="table">
-      </table>
-      <form action="submit/setDesiredCapacity" method="post" class="loginrequired">
-        <select name="DesiredCapacity">
-          <option value="0">0</option>
-          <option value="2">2</option>
-        </select>
-        <input type="submit" value="Request Machines"></input>
-      </form>
-    </div>
-    <div class="controlbox col-md-4">
-      <h3>Login</h3>
-      <label>Key<input name="key" id="key"></input></label>
-      <input type="button" value="Login" onClick="set_key_cookie()"></input>
-      <input type="button" value="Logout" onClick="clear_key_cookie()"></input>
-    </div>
-  </div>
-</article>
-
-<article id="timeline" class="container tab-pane">
-  <div class="row">
-    <p>video-1-short @ 0.1 bpp</p>
-    <p>Red = x265 performance point</p>
-    <p>Blue = vp8 performance point</p>
-    <h2>PSNR</h2>
-    <div id="psnr_graph" style="height: 200px; width: 800px;"></div>
-    <h2>PSNR-HVS</h2>
-    <div id="psnrhvs_graph" style="height: 200px; width: 800px;"></div>
-    <h2>SSIM</h2>
-    <div id="ssim_graph" style="height: 200px; width: 800px;"></div>
-    <h2>FASTSSIM</h2>
-    <div id="fastssim_graph" style="height: 200px; width: 800px;"></div>
-  </div>
-</article>
-
-<article id="about" class="container tab-pane">
-<h1>What is this?</h1>
-AreWeCompressedYet is a continuous-integration system used to test the Daala video codec's compression abilities. It also supports running other video codecs, for comparison purposes.
-<h1>How do I use it?</h1>
-<h2>Home</h2>
-This tool lets you plot rate-distortion curves from different runs of the tool. Runs can be selected on the left. When selected, they will turn green and appear on the graph. Only curves from the same set of videos can be compared. The combobox on top of the list of runs lets you choose which set of videos to use.
-<h2>Submission</h2>
-Contact TD-Linux on #daala on irc.freenode.net if you would like to submit jobs to AreWeCompressedYet. You can also run the tools locally, by using the rd_collect.sh script in the Daala repository.
-<h2>Timeline</h2>
-The timeline shows Daala's performance over time at one specific bitrate. It is automatically updated every time new code is pushed to master.
-<h1>How to Contribute or Report Bugs</h1>
-IRC: #daala @ irc.freenode.net
-</article>
-
-</div>
-
-</body>
 </html>
