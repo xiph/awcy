@@ -458,8 +458,9 @@ function load_job_log() {
   $.get('job_log',function(data) {
     $('#job_log').html(data);
     last_line = data.match(/([0-9]+) out of ([0-9]+)/g).slice(-1)[0].split(' ');
-    percentage = (last_line[0] / last_line[3]) * 100 + '%';
+    percentage = 100 * last_line[0] / last_line[3] + '%';
     $('#job_progress').width(percentage);
+	$('#job_progress').innerHTML = last_line[0] + '/' + last_line[3];
   });
 }
 function auto_refresh() {
