@@ -460,7 +460,7 @@ function load_job_log() {
     last_line = data.match(/([0-9]+) out of ([0-9]+)/g).slice(-1)[0].split(' ');
     percentage = 100 * last_line[0] / last_line[3] + '%';
     $('#job_progress').width(percentage);
-	$('#job_progress').innerHTML = last_line[0] + '/' + last_line[3];
+    $('#job_progress').html(last_line[0] + '/' + last_line[3]);
   });
 }
 function auto_refresh() {
