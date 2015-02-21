@@ -46,7 +46,7 @@
   <div class="row">
     <div id="runbox" class="col-md-3">
       <h3>Runs</h3>
-      Filter by: 
+      Filter by:
       <select id="run_filter_task" onChange="load_runs();load_sets()">
         <option value="video-1-short">video-1-short</option>
         <option value="video-hd-1">video-hd-1</option>
@@ -76,8 +76,15 @@
 	  Axes:
       <select id="graph_x_scaler" onChange="regenerate_graph()">
         <option value="1">Bits per pixel</option>
-        <option value="49.7664">Mbps @ 1080p24 (Streaming)</option>
-        <option value="55.296">Mbps @ 720p60 (Video conferencing)</option>
+		<optgroup label="Streaming (16:9)">
+        <option value="5.5296">Mbps @ 360p, 24fps</option>
+        <option value="9.8304">Mbps @ 480p, 24fps</option>
+        <option value="22.118">Mbps @ 720p, 24fps</option>
+        <option value="49.7664">Mbps @1080p, 24fps</option>
+		</optgroup>
+		<optgroup label="Video Conferencing (16:9)">
+        <option value="55.296">Mbps @ 720p, 60fps</option>
+		</optgroup>
       </select>
       <select id="graph_x_range" onChange="regenerate_graph()">
         <option value="0">Full range</option>
@@ -109,7 +116,7 @@
   </div>
 </article>
 
-<article id="submit" class="container tab-pane">  
+<article id="submit" class="container tab-pane">
   <div class="row controlarea">
     <div class="controlbox col-md-4 loginrequired" >
       <h3>Submit Job</h3>
@@ -383,11 +390,11 @@ function bd_rate(selected_graphs,outfile) {
     $('#bd_rate').html(data);
   });
 }
-  
+
 function baseName(str)
 {
-   var base = new String(str).substring(str.lastIndexOf('/') + 1); 
-    if(base.lastIndexOf(".") != -1)       
+   var base = new String(str).substring(str.lastIndexOf('/') + 1);
+    if(base.lastIndexOf(".") != -1)
         base = base.substring(0, base.lastIndexOf("."));
    return base;
 }
@@ -446,12 +453,12 @@ function refresh_login_required() {
 }
 function set_key_cookie() {
   var key = $('#key').val();
-  
+
   if (key.length == 22){
     document.cookie = 'key='+key;
 	} else {
 	alert('Invalid key!');
-	}  
+	}
   refresh_login_required();
 }
 function clear_key_cookie() {
