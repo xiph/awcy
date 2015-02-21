@@ -159,9 +159,10 @@
     </div>
     <div class="controlbox col-md-8">
       <h3>Current Job</h3>
-      <div id="current_job">No jobs running</div>
+      <div id="current_job">No jobs running currently.</div>
       <div class="progress">
         <div id="job_progress" class="progress-bar" role="progressbar" style="min-width: 5em; width: 0%;">
+		0 / 0
         </div>
       </div>
       <form action="submit/kill" method="post" class="loginrequired" style="float:left">
@@ -185,15 +186,17 @@
       </table>
       <form action="submit/setDesiredCapacity" method="post" class="loginrequired">
         <select name="DesiredCapacity">
-          <option value="0">0</option>
+          <option value="1">1</option>
           <option value="2">2</option>
+          <option value="4">4</option>
+          <option value="8">8</option>
         </select>
         <input type="submit" value="Request Machines"></input>
       </form>
     </div>
     <div class="controlbox col-md-4">
       <h3>Login</h3>
-      <label>Key<input name="key" id="key"></input></label>
+      <label>Key: <input name="key" id="key"></input></label>
       <input type="button" value="Login" onClick="set_key_cookie()"></input>
       <input type="button" value="Logout" onClick="clear_key_cookie()"></input>
     </div>
@@ -230,6 +233,7 @@ The timeline shows Daala's performance over time at one specific bitrate. It is 
 <h2>How to Contribute or Report Bugs</h2>
 IRC: #daala @ irc.freenode.net
 </article>
+<br />
 
 </div>
 
@@ -460,7 +464,7 @@ function load_job_log() {
     last_line = data.match(/([0-9]+) out of ([0-9]+)/g).slice(-1)[0].split(' ');
     percentage = 100 * last_line[0] / last_line[3] + '%';
     $('#job_progress').width(percentage);
-    $('#job_progress').html(last_line[0] + '/' + last_line[3]);
+    $('#job_progress').html(last_line[0] + ' / ' + last_line[3]);
   });
 }
 function auto_refresh() {
