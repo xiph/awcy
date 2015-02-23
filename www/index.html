@@ -62,7 +62,7 @@
     </div>
     <div id="graphbox" class="col-md-9">
       <h3>Graph</h3>
-	  Data:
+      Data:
       <select id="metric" onChange="regenerate_graph()">
         <option value="0">PSNR</option>
         <option value="1">PSNR-HVS</option>
@@ -72,19 +72,19 @@
       <select id="video_name" onChange="regenerate_graph()" style="max-width: 300px">
         <option value="total.out">All files</option>
       </select>
-	  <br />
-	  Axes:
+      <br />
+      Axes:
       <select id="graph_x_scaler" onChange="regenerate_graph()">
         <option value="1">Bits per pixel</option>
-		<optgroup label="Streaming (16:9)">
+        <optgroup label="Streaming (16:9)">
         <option value="5.5296">Mbps @ 360p, 24fps</option>
         <option value="9.8304">Mbps @ 480p, 24fps</option>
         <option value="22.118">Mbps @ 720p, 24fps</option>
         <option value="49.7664">Mbps @1080p, 24fps</option>
-		</optgroup>
-		<optgroup label="Video Conferencing (16:9)">
+        </optgroup>
+        <optgroup label="Video Conferencing (16:9)">
         <option value="55.296">Mbps @ 720p, 60fps</option>
-		</optgroup>
+        </optgroup>
       </select>
       <select id="graph_x_range" onChange="regenerate_graph()">
         <option value="0">Full range</option>
@@ -169,7 +169,7 @@
       <div id="current_job">No jobs running currently.</div>
       <div class="progress">
         <div id="job_progress" class="progress-bar" role="progressbar" style="min-width: 5em; width: 0%;">
-		0 / 0
+        0 / 0
         </div>
       </div>
       <form action="submit/kill" method="post" class="loginrequired" style="float:left">
@@ -178,8 +178,8 @@
       <form action="submit/restart" method="post" class="loginrequired" style="float:left">
         <button type="submit" class="btn btn-danger">Restart Server</button>
       </form>
-	  <br />
-	  <br />
+      <br />
+      <br />
       <pre id="job_log"></pre>
     </div>
     <div class="controlbox col-md-4">
@@ -213,7 +213,7 @@
 <article id="timeline" class="container tab-pane">
   <div class="row">
     <br />
-	<p>The graphs below show the qualities obtained over time for the <b>video-1-short</b> test file collection, at a compression rate of <b>0.1 bits per pixel</b>.</p>
+    <p>The graphs below show the qualities obtained over time for the <b>video-1-short</b> test file collection, at a compression rate of <b>0.1 bits per pixel</b>.</p>
     <p><font color="#ff0000">Red</font> = x265 performance point</p>
     <p><font color="#0000ff">Blue</font> = vp8 performance point</p>
     <h3><abbr title="Peak Signal-to-Noise Ratio">PSNR</abbr></h3>
@@ -456,9 +456,9 @@ function set_key_cookie() {
 
   if (key.length == 22){
     document.cookie = 'key='+key;
-	} else {
-	alert('Invalid key!');
-	}
+    } else {
+    alert('Invalid key!');
+    }
   refresh_login_required();
 }
 function clear_key_cookie() {
