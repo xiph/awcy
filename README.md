@@ -1,14 +1,30 @@
 Are We Compressed Yet?
 ====
-This repository contains the arewecompressedyet.com website source code. To run a local copy, you will need a configuration file called config.json in the current directory. This configuration file contains only one setting right now, which is the IRC channel that the AWCY bot will join:
+This repository contains the arewecompressedyet.com website source code.
+
+Running your own local copy of the website
+===
+To run a local copy, you will need to install node.js on your computer and create a configuration file called config.json in your awcy Git directory.
+This configuration file contains only one setting right now, which is the IRC channel that the AWCY bot will join:
 
   { "channel": "#daalatest" }
 
-To run the server, run with your local node binary:
-
+You also need to install some node.js modules that get used by awcy.
+Open a node command line and run the following:
+```
+  npm install aws-sdk
+  npm install body-parser
+  npm install cookie-parser
+  npm install express
+  npm install irc
+```
+To run the server, execute the run_awcy.bat file
+or run the following in your command line:
+```
   node awcy_server.js
-  
-  
+```
+Now you can open localhost:3000 with your browser to see your local version of the website.
+
 Run database format
 ===
 The runs/ directory will contain all of the output files generated from a job. There is a info.json file that specifies what options were used by that particular run. Here is an example of an info.json file:

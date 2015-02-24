@@ -9,13 +9,10 @@ import datetime
 
 runs = json.load(open("list.json","r"))
 
-num_master = 0
-
 psnr = []
 psnrhvs = []
 ssim = []
 fastssim = []
-
 
 def unix_time(dt):
     epoch = datetime.datetime.utcfromtimestamp(0)
@@ -37,5 +34,5 @@ for run in runs:
     except subprocess.CalledProcessError:
       continue
 
-output = [psnr, psnrhvs, ssim, fastssim]      
+output = [psnr, psnrhvs, ssim, fastssim]
 json.dump(output,open('time_series.json','w'))

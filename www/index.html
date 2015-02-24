@@ -6,12 +6,12 @@
 <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 <meta content="utf-8" http-equiv="encoding">
 <meta name=viewport content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="shortcut icon" href="favicon.ico" />
 <!-- <link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print"> -->
 <link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
 <link type="text/css" rel="stylesheet" href="awcy.css"></link>
 <link type="text/css" rel="stylesheet" href="bootstrap.css"></link>
-<link rel="shortcut icon" href="favicon.png" />
 </head>
 <body>
 <div id="xiphbar">
@@ -46,7 +46,7 @@
   <div class="row">
     <div id="runbox" class="col-md-3">
       <h3>Runs</h3>
-      Filter by: 
+      Filter by:
       <select id="run_filter_task" onChange="load_runs();load_sets()">
         <option value="video-1-short">video-1-short</option>
         <option value="video-hd-1">video-hd-1</option>
@@ -62,7 +62,7 @@
     </div>
     <div id="graphbox" class="col-md-9">
       <h3>Graph</h3>
-	  Data:
+      Data:
       <select id="metric" onChange="regenerate_graph()">
         <option value="0">PSNR</option>
         <option value="1">PSNR-HVS</option>
@@ -72,16 +72,23 @@
       <select id="video_name" onChange="regenerate_graph()" style="max-width: 300px">
         <option value="total.out">All files</option>
       </select>
-	  <br />
-	  Axes:
+      <br />
+      Axes:
       <select id="graph_x_scaler" onChange="regenerate_graph()">
         <option value="1">Bits per pixel</option>
-        <option value="49.7664">Mbps @ 1080p24 (Streaming)</option>
-        <option value="55.296">Mbps @ 720p60 (Video conferencing)</option>
+        <optgroup label="Streaming (16:9)">
+        <option value="5.5296">Mbps @ 360p, 24fps</option>
+        <option value="9.8304">Mbps @ 480p, 24fps</option>
+        <option value="22.118">Mbps @ 720p, 24fps</option>
+        <option value="49.7664">Mbps @1080p, 24fps</option>
+        </optgroup>
+        <optgroup label="Video Conferencing (16:9)">
+        <option value="55.296">Mbps @ 720p, 60fps</option>
+        </optgroup>
       </select>
       <select id="graph_x_range" onChange="regenerate_graph()">
-        <option value="0">Full range</option>
-        <option value="0.5">Sensible</option>
+        <option value="1.0">Full Range</option>
+        <option value="0.5">Sensible Rates</option>
       </select>
       <label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input> Logarithmic</label>
       <div class="graph_box">
@@ -109,7 +116,7 @@
   </div>
 </article>
 
-<article id="submit" class="container tab-pane">  
+<article id="submit" class="container tab-pane">
   <div class="row controlarea">
     <div class="controlbox col-md-4 loginrequired" >
       <h3>Submit Job</h3>
@@ -159,9 +166,10 @@
     </div>
     <div class="controlbox col-md-8">
       <h3>Current Job</h3>
-      <div id="current_job">No jobs running</div>
+      <div id="current_job">No jobs running currently.</div>
       <div class="progress">
         <div id="job_progress" class="progress-bar" role="progressbar" style="min-width: 5em; width: 0%;">
+        0 / 0
         </div>
       </div>
       <form action="submit/kill" method="post" class="loginrequired" style="float:left">
@@ -170,8 +178,8 @@
       <form action="submit/restart" method="post" class="loginrequired" style="float:left">
         <button type="submit" class="btn btn-danger">Restart Server</button>
       </form>
-	  <br />
-	  <br />
+      <br />
+      <br />
       <pre id="job_log"></pre>
     </div>
     <div class="controlbox col-md-4">
@@ -185,15 +193,17 @@
       </table>
       <form action="submit/setDesiredCapacity" method="post" class="loginrequired">
         <select name="DesiredCapacity">
-          <option value="0">0</option>
+          <option value="1">1</option>
           <option value="2">2</option>
+          <option value="4">4</option>
+          <option value="8">8</option>
         </select>
         <input type="submit" value="Request Machines"></input>
       </form>
     </div>
     <div class="controlbox col-md-4">
       <h3>Login</h3>
-      <label>Key<input name="key" id="key"></input></label>
+      <label>Key: <input name="key" id="key"></input></label>
       <input type="button" value="Login" onClick="set_key_cookie()"></input>
       <input type="button" value="Logout" onClick="clear_key_cookie()"></input>
     </div>
@@ -203,16 +213,16 @@
 <article id="timeline" class="container tab-pane">
   <div class="row">
     <br />
-	<p>The graphs below show the qualities obtained over time for the <b>video-1-short</b> test file collection, at a compression rate of <b>0.1 bits per pixel</b>.</p>
+    <p>The graphs below show the qualities obtained over time for the <b>video-1-short</b> test file collection, at a compression rate of <b>0.1 bits per pixel</b>.</p>
     <p><font color="#ff0000">Red</font> = x265 performance point</p>
     <p><font color="#0000ff">Blue</font> = vp8 performance point</p>
-    <h3>PSNR</h3>
+    <h3><abbr title="Peak Signal-to-Noise Ratio">PSNR</abbr></h3>
     <div id="psnr_graph" style="height: 200px; width: 800px;"></div>
-    <h3>PSNR-HVS</h3>
+    <h3><abbr title="Peak Signal-to-Noise Ratio - Human Visual System">PSNR-HVS</abbr></h3>
     <div id="psnrhvs_graph" style="height: 200px; width: 800px;"></div>
-    <h3>SSim</h3>
+    <h3><abbr title="Structural Similarity">SSim</abbr></h3>
     <div id="ssim_graph" style="height: 200px; width: 800px;"></div>
-    <h3>FastSSim</h3>
+    <h3><abbr title="Fast Structural Similarity">FastSSim</abbr></h3>
     <div id="fastssim_graph" style="height: 200px; width: 800px;"></div>
   </div>
 </article>
@@ -230,6 +240,7 @@ The timeline shows Daala's performance over time at one specific bitrate. It is 
 <h2>How to Contribute or Report Bugs</h2>
 IRC: #daala @ irc.freenode.net
 </article>
+<br />
 
 </div>
 
@@ -294,7 +305,6 @@ function regenerate_graph() {
       };
       curves.push(series);
     }
-    var x_max = parseFloat($("#graph_x_range").val());
     var options = {
       xaxis: {
         axisLabel: 'Bits per Pixel',
@@ -319,9 +329,8 @@ function regenerate_graph() {
         interactive: true
       }
     };
-    if (x_max != 0) {
-      options.xaxis.max = x_max * bpp_scaler;
-    }
+    var x_max = parseFloat($("#graph_x_range").val());
+    options.xaxis.max = x_max * bpp_scaler;
     if (bpp_scaler != 1) {
       options.xaxis.axisLabel = 'Mbps';
     }
@@ -379,11 +388,11 @@ function bd_rate(selected_graphs,outfile) {
     $('#bd_rate').html(data);
   });
 }
-  
+
 function baseName(str)
 {
-   var base = new String(str).substring(str.lastIndexOf('/') + 1); 
-    if(base.lastIndexOf(".") != -1)       
+   var base = new String(str).substring(str.lastIndexOf('/') + 1);
+    if(base.lastIndexOf(".") != -1)
         base = base.substring(0, base.lastIndexOf("."));
    return base;
 }
@@ -442,12 +451,12 @@ function refresh_login_required() {
 }
 function set_key_cookie() {
   var key = $('#key').val();
-  
+
   if (key.length == 22){
     document.cookie = 'key='+key;
-	} else {
-	alert('Invalid key!');
-	}  
+    } else {
+    alert('Invalid key!');
+    }
   refresh_login_required();
 }
 function clear_key_cookie() {
@@ -460,7 +469,7 @@ function load_job_log() {
     last_line = data.match(/([0-9]+) out of ([0-9]+)/g).slice(-1)[0].split(' ');
     percentage = 100 * last_line[0] / last_line[3] + '%';
     $('#job_progress').width(percentage);
-    $('#job_progress').html(last_line[0] + '/' + last_line[3]);
+    $('#job_progress').html(last_line[0] + ' / ' + last_line[3]);
   });
 }
 function auto_refresh() {
