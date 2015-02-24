@@ -11,18 +11,18 @@ This configuration file contains only one setting right now, which is the IRC ch
 
 You also need to install some node.js modules that get used by awcy.
 Open a node command line and run the following:
-
+```
   npm install aws-sdk
   npm install body-parser
   npm install cookie-parser
   npm install express
   npm install irc
-
+```
 To run the server, execute the run_awcy.bat file
 or run the following in your command line:
-
+```
   node awcy_server.js
-
+```
 Now you can open localhost:3000 with your browser to see your local version of the website.
 
 Run database format
