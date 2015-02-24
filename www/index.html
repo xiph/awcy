@@ -87,8 +87,8 @@
         </optgroup>
       </select>
       <select id="graph_x_range" onChange="regenerate_graph()">
-        <option value="0">Full range</option>
-        <option value="0.5">Sensible</option>
+        <option value="1.0">Full Range</option>
+        <option value="0.5">Sensible Rates</option>
       </select>
       <label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input> Logarithmic</label>
       <div class="graph_box">
@@ -305,7 +305,6 @@ function regenerate_graph() {
       };
       curves.push(series);
     }
-    var x_max = parseFloat($("#graph_x_range").val());
     var options = {
       xaxis: {
         axisLabel: 'Bits per Pixel',
@@ -330,9 +329,8 @@ function regenerate_graph() {
         interactive: true
       }
     };
-    if (x_max != 0) {
-      options.xaxis.max = x_max * bpp_scaler;
-    }
+    var x_max = parseFloat($("#graph_x_range").val());
+    options.xaxis.max = x_max * bpp_scaler;
     if (bpp_scaler != 1) {
       options.xaxis.axisLabel = 'Mbps';
     }
