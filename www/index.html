@@ -103,6 +103,7 @@
       <h3>BD rate</h3>
       <select id="bd_rate_range" onChange="regenerate_graph()">
         <option value="whole">Entire curve</option>
+        <option value="sensible">Sensible rates (0 - 0.5 bpp)</option>
         <option value="str">Streaming video (0.1 - 0.12 bpp)</option>
         <option value="conf">Video conferencing (0.04 - 0.05 bpp)</option>
       </select>
@@ -379,6 +380,10 @@ function bd_rate(selected_graphs,outfile) {
     case 'conf':
       req['min_bpp'] = 0.04;
       req['max_bpp'] = 0.05;
+      break;
+    case 'sensible':
+      req['min_bpp'] = 0.0;
+      req['max_bpp'] = 0.5;
       break;
   }
   req['set'] = filter_task;
