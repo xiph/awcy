@@ -23,7 +23,7 @@ for run in runs:
   if u'master' in run['info']:
     filename = 'runs/'+run['run_id']+'/'+run['info']['task']+'/total.out'
     try:
-      distortion = subprocess.check_output(['distortion.m',filename,'0.1'])
+      distortion = subprocess.check_output(['./distortion.m',filename,'0.1'])
       date_str = subprocess.check_output(['git','--git-dir=daala/.git','--work-tree=daala/','show','-s','--format=%ci',run['info']['commit']])
       date_obj = dateutil.parser.parse(date_str).replace(tzinfo=None)
       date_js = unix_time(date_obj) * 1000
