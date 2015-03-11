@@ -107,6 +107,7 @@
         <option value="str">Streaming video (0.1 - 0.12 bpp)</option>
         <option value="conf">Video conferencing (0.04 - 0.05 bpp)</option>
       </select>
+      <label><input id="reverse_bd" type="checkbox" onChange="regenerate_graph()"></input> Reverse</label>
       <p id="bd_rate_title"></p>
       <pre id="bd_rate"></pre>
     </div>
@@ -363,11 +364,21 @@ function load_job_queue() {
   });
 }
 function bd_rate(selected_graphs,outfile) {
-  var filter_task = $('#run_filter_task').val();
+  //we need to select at least 2 graphs
   if (selected_graphs.length < 2) return;
+
+  var filter_task = $('#run_filter_task').val();
   var req = {};
-  req['a'] = selected_graphs[1];
-  req['b'] = selected_graphs[0];
+  if ($('#reverse_bd').is(':checked')) {
+    req['a'] = selected_graphs[0];
+    req['b'] = selected_graphs[1];
+    } else {
+    req['a'] = selected_graphs[1];
+    req['b'] = selected_graphs[0];
+  }
+
+  $('#bd_rate_title').html(req['a']+' → '+req['b']);
+
   switch( $('#bd_rate_range').val() ) {
     case 'whole':
       req['min_bpp'] = '';
@@ -386,8 +397,8 @@ function bd_rate(selected_graphs,outfile) {
       req['max_bpp'] = 0.5;
       break;
   }
+
   req['set'] = filter_task;
-  $('#bd_rate_title').html(req['a']+' → '+req['b']);
   req['file'] = outfile;
   $.get('/bd_rate',req,function(data) {
     $('#bd_rate').html(data);
