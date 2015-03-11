@@ -364,10 +364,10 @@ function load_job_queue() {
   });
 }
 function bd_rate(selected_graphs,outfile) {
-  //we need to select at least 2 graphs
+  //we need to select at least 2 runs
   if (selected_graphs.length < 2) return;
 
-  var filter_task = $('#run_filter_task').val();
+  //only pick the 2 most recent runs
   var req = {};
   if ($('#reverse_bd').is(':checked')) {
     req['a'] = selected_graphs[0];
@@ -377,8 +377,10 @@ function bd_rate(selected_graphs,outfile) {
     req['b'] = selected_graphs[0];
   }
 
+  //update BD rate title
   $('#bd_rate_title').html(req['a']+' → '+req['b']);
 
+  //clip range if needed
   switch( $('#bd_rate_range').val() ) {
     case 'whole':
       req['min_bpp'] = '';
@@ -398,8 +400,12 @@ function bd_rate(selected_graphs,outfile) {
       break;
   }
 
+  var filter_task = $('#run_filter_task').val();
   req['set'] = filter_task;
   req['file'] = outfile;
+  
+  /* call bd_rate.m with our settings
+     and shove results in bd_rate <pre> box */
   $.get('/bd_rate',req,function(data) {
     $('#bd_rate').html(data);
   });
