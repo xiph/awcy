@@ -2,9 +2,9 @@
 
 set -e
 
-COMMIT=$1
+COMMIT="$1"
 
-TESTNAME=$2
+TESTNAME="$2"
 
 cd daala
 git fetch --all
