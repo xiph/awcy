@@ -256,49 +256,78 @@ IRC: #daala @ irc.freenode.net
 <script src="aws-control.js"></script>
 <script src="timelines.js"></script>
 <script>
+function updateParam(url, param, value) {
+  var re = new RegExp(param+"(.+?)(&|$)","g");
+  return url.replace(re, param+'='+value)
+}
 
 function regenerate_graph() {
+  //clear graph
+  $("#rd_graph").html('');
+
+  //make list of selected graphs
   var selected_graphs = [];
-  var metric_index = parseInt($('#metric').val());
   $('.run').each(function() {
     if ($(this).hasClass('selected')) {
       selected_graphs.push($(this).find('.run_id').html());
     }
   });
-  $("#rd_graph").html('');
-  var graph_requests = [];
+
+  //figure out BD rates
   var outfile = $("#video_name").val();
   bd_rate(selected_graphs,outfile);
+
+  //build URLs to runs' output data
+  var pageUrl = ''
   var filter_task = $('#run_filter_task').val();
-  var logarithmic = $('#logarithmic').prop('checked');
   raw_data = $('#raw_data');
   raw_data.html('');
+  
   for (var i in selected_graphs) {
+    if (pageUrl == '') {
+      pageUrl = '?' + selected_graphs[i];
+    } else {
+      pageUrl = pageUrl + '&' + selected_graphs[i];
+    }
+    
     var link = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/'+filter_task+'/total.out');
     link.html(selected_graphs[i]);
     var item = $('<p>').append(link);
     raw_data.append(item);
   }
+  
+  history.pushState('', 'Are We Compressed Yet?', pageUrl);
+
+  //get output data
+  var graph_requests = [];
   for (var i in selected_graphs) {
     graph_requests.push($.get('/runs/'+selected_graphs[i]+'/'+filter_task+'/'+outfile));
   }
+
+  var bpp_scaler = parseFloat($("#graph_x_scaler").val());
+  var metric_index = parseInt($('#metric').val());
+  var logarithmic = $('#logarithmic').prop('checked');
+
+  // draw chart
   $.when.apply($,graph_requests).done(function() {
-    // draw chart
-    var curves = [];
     if (selected_graphs.length == 1) {
       var argument_list = [ arguments ];
     } else {
       var argument_list = arguments;
     }
-    var bpp_scaler = parseFloat($("#graph_x_scaler").val());
+
+    var curves = [];
+
     for (var j in argument_list) {
+      //console.log(argument_list[j]);
+
       var curve = [];
-      console.log(argument_list[j]);
       var data = argument_list[j][0];
       var lines = data.split('\n');
       for (var i in lines) {
         var line = lines[i].split(' ');
-        var point = [line[2]*8/line[1]*bpp_scaler,line[3+metric_index]];
+        //line[0-6] --> quantizer, pixels, bytes, PSNR, PSNR-HVS, SSim, FastSSim
+        var point = [bpp_scaler * line[2]*8 / line[1], line[3+metric_index]];
         curve.push(point);
       }
       var series = {
@@ -307,6 +336,7 @@ function regenerate_graph() {
       };
       curves.push(series);
     }
+
     var options = {
       xaxis: {
         axisLabel: 'Bits per Pixel',
@@ -331,18 +361,23 @@ function regenerate_graph() {
         interactive: true
       }
     };
+
     var x_max = parseFloat($("#graph_x_range").val());
     options.xaxis.max = x_max * bpp_scaler;
+
     if (bpp_scaler != 1) {
       options.xaxis.axisLabel = 'Mbps';
     }
+
     if (logarithmic) {
       options.xaxis.transform = function (v) { return Math.log(v); };
       options.xaxis.inverseTransform = function (v) { return Math.exp(v); };
     }
+
     $.plot('#rd_graph',curves,options);
   });
 };
+
 function load_job_queue() {
   $.getJSON('/job_queue.json', function(data) {
     for (var i in data) {
@@ -403,7 +438,7 @@ function bd_rate(selected_graphs,outfile) {
   var filter_task = $('#run_filter_task').val();
   req['set'] = filter_task;
   req['file'] = outfile;
-  
+
   /* call bd_rate.m with our settings
      and shove results in bd_rate <pre> box */
   $.get('/bd_rate',req,function(data) {
@@ -435,6 +470,7 @@ function load_sets() {
     }
   });
 }
+
 function load_runs() {
   var filter_task = $('#run_filter_task').val();
   $.getJSON('/list.json', function(data) {
@@ -461,9 +497,11 @@ function load_runs() {
     }
   });
 }
+
 function clear_runs() {
   $('#runs > div').removeClass('selected');
 }
+
 function refresh_login_required() {
   if ((document.cookie == 'key=') || (document.cookie == '')) {
     $('.loginrequired').addClass('hidden');
@@ -471,6 +509,7 @@ function refresh_login_required() {
     $('.loginrequired').removeClass('hidden');
   }
 }
+
 function set_key_cookie() {
   var key = $('#key').val();
 
@@ -481,10 +520,12 @@ function set_key_cookie() {
     }
   refresh_login_required();
 }
+
 function clear_key_cookie() {
   document.cookie = 'key=';
   refresh_login_required();
 }
+
 function load_job_log() {
   $.get('job_log',function(data) {
     $('#job_log').html(data);
@@ -494,11 +535,13 @@ function load_job_log() {
     $('#job_progress').html(last_line[0] + ' / ' + last_line[3]);
   });
 }
+
 function auto_refresh() {
   load_aws();
   load_job_log();
   window.setTimeout(auto_refresh,5000);
 }
+
 $(function() {
   refresh_login_required();
   load_runs();
