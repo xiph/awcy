@@ -25,3 +25,4 @@ build/Release
 node_modules
 *.json
 secret_key
+runs
