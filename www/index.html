@@ -381,6 +381,7 @@ function regenerate_graph() {
 
 function load_job_queue() {
   $.getJSON('/job_queue.json', function(data) {
+    $('#job_queue').html('');
     for (var i in data) {
       var job = data[i];
       var job_div = $('<div>');
