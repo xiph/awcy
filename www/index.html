@@ -549,6 +549,7 @@ function load_job_log() {
 
 function auto_refresh() {
   load_aws();
+  load_job_queue();
   load_job_log();
   window.setTimeout(auto_refresh,5000);
 }
