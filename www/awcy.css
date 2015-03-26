@@ -43,6 +43,9 @@ header h1 {
 .run_meta {
   font-size: 9px;
 }
+.run_flag {
+  float: right;
+}
 #rd_graph {
   height: 500px;
   background-color: white;

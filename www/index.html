@@ -56,7 +56,7 @@
         <option value="subset3">subset3</option>
         <option value="subset4">subset4</option>
       </select>
-      <input type="button" value="Deselect All Runs" onClick="clear_runs()"></input>
+      <input type="button" class="btn" value="Reset" onClick="clear_runs()"></input>
       <div id="runs">
       </div>
     </div>
@@ -489,11 +489,21 @@ function load_runs() {
           regenerate_graph();
           return false;
         });
-        run.append($('<div class="run_id">').html(job.run_id));
-        run.append($('<div class="run_meta">').html(job.info.nick));
-        run.append($('<div class="run_meta">').html(job.info.commit));
+        run.append($('<span class="run_id">').html(job.run_id));
+        if (job.info.special) {
+          run.append($('<span class="run_flag">★</span>'));
+        } else {
+          run.append($('<div class="run_meta">').html(job.info.nick));
+        }
+        if (job.info.codec == 'daala') {
+          run.append($('<div class="run_meta">').html(job.info.commit));
+        }
         run.append($('<div class="run_meta">').html(job.date));
-        $('#runs').append(run);
+        if (job.info.special) {
+          $('#runs').prepend(run);
+        } else {
+          $('#runs').append(run);
+        }
       }
     }
   });
