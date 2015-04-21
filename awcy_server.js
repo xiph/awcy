@@ -54,9 +54,15 @@ function process_queue() {
     job = job_queue.shift();
     console.log('Starting job '+job.run_id);
     ircclient.say(channel,job.nick+': Starting '+job.run_id);
-    job_child_process = cp.spawn('./run_video_test.sh',
-      [job.commit,job.run_id,job.task],
-      { env: { 'PYTHONIOENCODING': 'utf-8', 'CODEC': job.codec } });
+    if (job.videos) {
+      job_child_process = cp.spawn('./run_video_test2.sh',
+        [job.commit,job.run_id].concat(job.videos),
+        { env: { 'PYTHONIOENCODING': 'utf-8', 'CODEC': job.codec } });
+    } else {
+      job_child_process = cp.spawn('./run_video_test.sh',
+        [job.commit,job.run_id,job.task],
+        { env: { 'PYTHONIOENCODING': 'utf-8', 'CODEC': job.codec } });
+    } 
     job_log = ''
     job_child_process.stdout.on('data', function(data) {
       console.log(data.toString());
@@ -173,7 +179,11 @@ app.post('/submit/job',function(req,res) {
   job.commit = req.body.commit;
   job.run_id = req.body.run_id.replace(' ','_');
   if (req.body.task) {
-    job.task = req.body.task;
+    if (req.body.task == 'custom') {
+      job.videos = req.body.custom_videos;
+    } else {
+      job.task = req.body.task;
+    }
   } else {
     job.task = 'video-1-short';
   }
