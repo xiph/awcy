@@ -115,7 +115,7 @@ autoScalingGroups = null;
 function shutdownAmazon() {
   var autoscaling = new AWS.AutoScaling();
   autoscaling.setDesiredCapacity({
-    AutoScalingGroupName: 'Daala',
+    AutoScalingGroupName: config.scaling_group,
     DesiredCapacity: 0,
     HonorCooldown: true
   }, function (err, data) {
@@ -127,7 +127,7 @@ function pollAmazon() {
   autoscaling.describeAutoScalingInstances({},function(err,data) {
     autoScalingInstances = data;
   });
-  autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: ['Daala']}, function(err,data) {
+  autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: [config.scaling_group]}, function(err,data) {
     autoScalingGroups = data;
   });
   if ((!job_in_progress) && (job_queue.length == 0)) {
@@ -226,7 +226,7 @@ app.post('/submit/restart', function(req,res) {
 app.post('/submit/setDesiredCapacity',function(req,res) {
   var autoscaling = new AWS.AutoScaling();
   autoscaling.setDesiredCapacity({
-    AutoScalingGroupName: 'Daala',
+    AutoScalingGroupName: config.scaling_group,
     DesiredCapacity: req.body.DesiredCapacity,
     HonorCooldown: false
   }, function (err, data) {
