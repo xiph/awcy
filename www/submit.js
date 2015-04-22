@@ -5,3 +5,5 @@ $('#task').on('change', function() {
     $('#custom_videos').addClass('hidden');
   }
 });
+
+$('#task').trigger('change');
