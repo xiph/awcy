@@ -56,7 +56,7 @@
         <option value="subset3">subset3</option>
         <option value="subset4">subset4</option>
       </select>
-      <input type="button" value="Deselect All Runs" onClick="clear_runs()"></input>
+      <input type="button" class="btn" value="Reset" onClick="clear_runs()"></input>
       <div id="runs">
       </div>
     </div>
@@ -144,7 +144,7 @@
         </div>
         <div class="form-group">
           <label>Subset</label>
-          <select name="task" class="form-control">
+          <select id="task" name="task" class="form-control">
             <option value="video-1-short">video-1-short - 7 videos, 1-sec durations, 207 MB</option>
             <option value="video-hd-1">video-hd-1 - ? videos, ? durations, ? MB</option>
             <option value="ntt-short-1">ntt-short-1 - ? videos, ? durations, ? MB</option>
@@ -152,6 +152,9 @@
             <option value="subset2">subset2 - 51 images, 79.6 MB</option>
             <option value="subset3">subset3 - 1000 images, 1.58 GB</option>
             <option value="subset4">subset4 - 1000 images, 1.58 GB</option>
+            <option value="custom">Custom</option>
+          </select>
+          <select name="custom_videos" id="custom_videos" class="form-control hidden" multiple>
           </select>
         </div>
         <div class="form-group">
@@ -218,6 +221,7 @@
     <p>The graphs below show the qualities obtained over time for the <b>video-1-short</b> test file collection, at a compression rate of <b>0.1 bits per pixel</b>.</p>
     <p><font color="#ff0000">Red</font> = x265 performance point</p>
     <p><font color="#0000ff">Blue</font> = vp8 performance point</p>
+    <p><font color="#00ff00">Green</font> = x264 performance point</p>
     <h3><abbr title="Peak Signal-to-Noise Ratio">PSNR</abbr></h3>
     <div id="psnr_graph" style="height: 200px; width: 800px;"></div>
     <h3><abbr title="Peak Signal-to-Noise Ratio - Human Visual System">PSNR-HVS</abbr></h3>
@@ -255,6 +259,7 @@ IRC: #daala @ irc.freenode.net
 <script src="bootstrap.js"></script>
 <script src="aws-control.js"></script>
 <script src="timelines.js"></script>
+<script src="submit.js"></script>
 <script>
 function updateParam(url, param, value) {
   var re = new RegExp(param+"(.+?)(&|$)","g");
@@ -380,6 +385,7 @@ function regenerate_graph() {
 
 function load_job_queue() {
   $.getJSON('/job_queue.json', function(data) {
+    $('#job_queue').html('');
     for (var i in data) {
       var job = data[i];
       var job_div = $('<div>');
@@ -468,6 +474,13 @@ function load_sets() {
       file_option.attr('value',file_in_set+'.y4m-daala.out');
       $('#video_name').append(file_option);
     }
+    for (var set in data) {
+      for (var filenum in data[set]) {
+        var file_option = $('<option>');
+        file_option.html(set+'/'+data[set][filenum]);
+        $('#custom_videos').append(file_option);
+      }
+    }
   });
 }
 
@@ -488,11 +501,21 @@ function load_runs() {
           regenerate_graph();
           return false;
         });
-        run.append($('<div class="run_id">').html(job.run_id));
-        run.append($('<div class="run_meta">').html(job.info.nick));
-        run.append($('<div class="run_meta">').html(job.info.commit));
+        run.append($('<span class="run_id">').html(job.run_id));
+        if (job.info.special) {
+          run.append($('<span class="run_flag">★</span>'));
+        } else {
+          run.append($('<div class="run_meta">').html(job.info.nick));
+        }
+        if (job.info.codec == 'daala') {
+          run.append($('<div class="run_meta">').html(job.info.commit));
+        }
         run.append($('<div class="run_meta">').html(job.date));
-        $('#runs').append(run);
+        if (job.info.special) {
+          $('#runs').prepend(run);
+        } else {
+          $('#runs').append(run);
+        }
       }
     }
   });
@@ -538,6 +561,7 @@ function load_job_log() {
 
 function auto_refresh() {
   load_aws();
+  load_job_queue();
   load_job_log();
   window.setTimeout(auto_refresh,5000);
 }
