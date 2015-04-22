@@ -478,6 +478,7 @@ function load_sets() {
       for (var filenum in data[set]) {
         var file_option = $('<option>');
         file_option.html(set+'/'+data[set][filenum]);
+        file_option.attr('value',set+'/'+data[set][filenum]);
         $('#custom_videos').append(file_option);
       }
     }
