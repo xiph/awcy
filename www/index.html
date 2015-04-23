@@ -55,6 +55,7 @@
         <option value="subset2">subset2</option>
         <option value="subset3">subset3</option>
         <option value="subset4">subset4</option>
+        <option value="all">All</option>
       </select>
       <input type="button" class="btn" value="Reset" onClick="clear_runs()"></input>
       <div id="runs">
@@ -494,7 +495,7 @@ function load_runs() {
     $('#runs').html('');
     for (var i in data) {
       var job = data[i];
-      if (job.tasks.indexOf(filter_task) != -1) {
+      if ((job.tasks.indexOf(filter_task) != -1) || (filter_task == 'all')) {
         var run = $('<div>')
         run.attr('class','run');
         run.on('click',function() {
