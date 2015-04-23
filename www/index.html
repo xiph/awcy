@@ -505,23 +505,30 @@ function load_runs() {
       var job = data[i];
       run_list_by_name[job.run_id] = job;
       if ((job.tasks.indexOf(filter_task) != -1) || (filter_task == 'all')) {
-        var run = $('<div>')
+        var run = $(document.createElement('div'));
         run.attr('class','run');
         run.on('click',function() {
           $(this).toggleClass('selected');
           regenerate_graph();
           return false;
         });
-        run.append($('<span class="run_id">').html(job.run_id));
+        var run_id_tag = $(document.createElement('span'));
+        run_id_tag.addClass('run_id');
+        run_id_tag.html(job.run_id);
+        run.append(run_id_tag);
         if (job.info.special) {
-          run.append($('<span class="run_flag">★</span>'));
+          var run_flag_tag = $('<span class="run_flag">★</span>')
+          run.append(run_flag_tag);
         } else {
-          run.append($('<div class="run_meta">').html(job.info.nick));
+          var run_meta_tag = $('<div class="run_meta">').html(job.info.nick);
+          run.append(run_meta_tag);
         }
         if (job.info.codec == 'daala') {
-          run.append($('<div class="run_meta">').html(job.info.commit));
+          var run_meta_tag = $('<div class="run_meta">').html(job.info.commit);
+          run.append(run_meta_tag);
         }
-        run.append($('<div class="run_meta">').html(job.date));
+        var run_meta_tag = $('<div class="run_meta">').html(job.date);
+        run.append(run_meta_tag);
         if (job.info.special) {
           $('#runs').prepend(run);
         } else {
