@@ -253,9 +253,30 @@ IRC: #daala @ irc.freenode.net
 <script src="timelines.js"></script>
 <script src="submit.js"></script>
 <script>
+var run_list_by_name = {};
+
 function updateParam(url, param, value) {
   var re = new RegExp(param+"(.+?)(&|$)","g");
   return url.replace(re, param+'='+value)
+}
+
+function get_selected_graphs() {
+  var selected_graphs = [];
+  $('.run').each(function() {
+    if ($(this).hasClass('selected')) {
+      selected_graphs.push($(this).find('.run_id').html());
+    }
+  });
+  return selected_graphs;
+}
+
+function get_selected_run_data() {
+  var datas = [];
+  var runs = get_selected_graphs();
+  for (var index in runs) {
+    datas.push(run_list_by_name[runs[index]]);
+  }
+  return datas;
 }
 
 function regenerate_graph() {
@@ -263,12 +284,7 @@ function regenerate_graph() {
   $("#rd_graph").html('');
 
   //make list of selected graphs
-  var selected_graphs = [];
-  $('.run').each(function() {
-    if ($(this).hasClass('selected')) {
-      selected_graphs.push($(this).find('.run_id').html());
-    }
-  });
+  var selected_graphs = get_selected_graphs();
 
   //figure out BD rates
   var outfile = $("#video_name").val();
@@ -484,8 +500,10 @@ function load_runs() {
       return new Date(b.date) - new Date(a.date);
     });
     $('#runs').html('');
+    run_list_by_name = {};
     for (var i in data) {
       var job = data[i];
+      run_list_by_name[job.run_id] = job;
       if ((job.tasks.indexOf(filter_task) != -1) || (filter_task == 'all')) {
         var run = $('<div>')
         run.attr('class','run');
