@@ -14,9 +14,7 @@ fs.readdirSync('runs').forEach(function(run_id) {
   } catch (e) {};
   job.date = stat.mtime;
   job.info = info;
-  if (fs.existsSync('runs/'+run_id+'/'+info.task+'/total.out')) {
-    jobs.push(job);
-  }
+  jobs.push(job);
 });
 
 fs.writeFile('list.json',JSON.stringify(jobs));

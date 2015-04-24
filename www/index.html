@@ -514,20 +514,28 @@ function load_runs() {
         });
         var run_id_tag = $(document.createElement('span'));
         run_id_tag.addClass('run_id');
-        run_id_tag.html(job.run_id);
+        run_id_tag.text(job.run_id);
         run.append(run_id_tag);
         if (job.info.special) {
-          var run_flag_tag = $('<span class="run_flag">★</span>')
+          var run_flag_tag = $(document.createElement('span'));
+          run_flag_tag.addClass('run_flag');
+          run_flag_tag.text('★');
           run.append(run_flag_tag);
         } else {
-          var run_meta_tag = $('<div class="run_meta">').html(job.info.nick);
+          var run_meta_tag = $(document.createElement('div'));
+          run_meta_tag.addClass('run_meta');
+          run_meta_tag.text(job.info.nick);
           run.append(run_meta_tag);
         }
         if (job.info.codec == 'daala') {
-          var run_meta_tag = $('<div class="run_meta">').html(job.info.commit);
+          var run_meta_tag = $(document.createElement('div'));
+          run_meta_tag.addClass('run_meta');
+          run_meta_tag.text(job.info.commit);
           run.append(run_meta_tag);
         }
-        var run_meta_tag = $('<div class="run_meta">').html(job.date);
+        var run_meta_tag = $(document.createElement('div'));
+        run_meta_tag.addClass('run_meta');
+        run_meta_tag.text(job.date);
         run.append(run_meta_tag);
         if (job.info.special) {
           $('#runs').prepend(run);
