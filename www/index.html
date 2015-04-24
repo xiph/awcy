@@ -303,7 +303,7 @@ function regenerate_graph() {
       pageUrl = pageUrl + '&' + selected_graphs[i];
     }
     
-    var link = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/'+filter_task+'/total.out');
+    var link = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/'+outfile);
     link.html(selected_graphs[i]);
     var item = $('<p>').append(link);
     raw_data.append(item);
