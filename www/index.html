@@ -464,7 +464,24 @@ function baseName(str)
         base = base.substring(0, base.lastIndexOf("."));
    return base;
 }
+
 function load_sets() {
+  var run = get_selected_run_data()[0];
+  if (run.info.videos) {
+    for (var index in run.info.videos) {
+      var video_path = run.info.videos[index];
+      var video_basename = baseName(video_path);
+      var file_option = $('<option>');
+      file_option.text(video_basename);
+      file_option.attr('value',video_basename);
+      $('#custom_videos').append(file_option);
+    }
+  } else {
+    load_sets_for_filter();
+  }
+}
+
+function load_sets_for_filter() {
   var filter_task = $('#run_filter_task').val();
   $.getJSON('/sets.json', function(data) {
     $('#video_name').html('');
