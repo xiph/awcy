@@ -332,8 +332,6 @@ function regenerate_graph() {
     var curves = [];
 
     for (var j in argument_list) {
-      //console.log(argument_list[j]);
-
       var curve = [];
       var data = argument_list[j][0];
       var lines = data.split('\n');
@@ -403,7 +401,6 @@ function load_job_queue() {
   });
   $.getJSON('/job', function(data) {
     var job = data;
-    console.log(job);
     var job_div = $('#current_job');
     if (job) {
       job_div.html(job.run_id);
