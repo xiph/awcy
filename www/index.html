@@ -466,6 +466,7 @@ function baseName(str)
 }
 
 function load_sets() {
+  var saved_val = $('#video_name').val();
   var run = get_selected_run_data()[0];
   if (!run) {
     load_sets_for_filter();
@@ -489,6 +490,7 @@ function load_sets() {
   } else {
     load_sets_for_filter();
   }
+  $('#video_name').val(saved_val);
 }
 
 function load_sets_for_filter() {
@@ -533,6 +535,7 @@ function load_runs() {
         run.attr('class','run');
         run.on('click',function() {
           $(this).toggleClass('selected');
+          load_sets();
           regenerate_graph();
           return false;
         });
@@ -603,9 +606,11 @@ function load_job_log() {
   $.get('job_log',function(data) {
     $('#job_log').html(data);
     last_line = data.match(/([0-9]+) out of ([0-9]+)/g).slice(-1)[0].split(' ');
-    percentage = 100 * last_line[0] / last_line[3] + '%';
-    $('#job_progress').width(percentage);
-    $('#job_progress').html(last_line[0] + ' / ' + last_line[3]);
+    if (last_line) {
+      percentage = 100 * last_line[0] / last_line[3] + '%';
+      $('#job_progress').width(percentage);
+      $('#job_progress').html(last_line[0] + ' / ' + last_line[3]);
+    }
   });
 }
 
