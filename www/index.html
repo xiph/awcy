@@ -466,7 +466,10 @@ function baseName(str)
 }
 
 function load_sets() {
-  var run = get_selected_run_data()[0];
+  var run = get_selected_run_data();
+  if (Array.isArray(run)) {
+    run = run[0];
+  }
   if (run.info.videos) {
     for (var index in run.info.videos) {
       var video_path = run.info.videos[index];
