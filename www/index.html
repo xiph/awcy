@@ -466,7 +466,6 @@ function baseName(str)
 }
 
 function load_sets() {
-  var saved_val = $('#video_name').val();
   var run = get_selected_run_data()[0];
   if (!run) {
     load_sets_for_filter();
@@ -490,7 +489,6 @@ function load_sets() {
   } else {
     load_sets_for_filter();
   }
-  $('#video_name').val(saved_val);
 }
 
 function load_sets_for_filter() {
@@ -535,7 +533,9 @@ function load_runs() {
         run.attr('class','run');
         run.on('click',function() {
           $(this).toggleClass('selected');
-          load_sets();
+          if (filter_task == 'all') {
+            load_sets();
+          }
           regenerate_graph();
           return false;
         });
