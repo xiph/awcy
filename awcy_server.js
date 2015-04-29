@@ -57,11 +57,11 @@ function process_queue() {
     if (job.videos) {
       job_child_process = cp.spawn('./run_video_test2.sh',
         [job.commit,job.run_id].concat(job.videos),
-        { env: { 'PYTHONIOENCODING': 'utf-8', 'CODEC': job.codec } });
+        { env: { 'PYTHONIOENCODING': 'utf-8', 'CODEC': job.codec, 'EXTRA_OPTIONS': job.extra_options } });
     } else {
       job_child_process = cp.spawn('./run_video_test.sh',
         [job.commit,job.run_id,job.task],
-        { env: { 'PYTHONIOENCODING': 'utf-8', 'CODEC': job.codec } });
+        { env: { 'PYTHONIOENCODING': 'utf-8', 'CODEC': job.codec, 'EXTRA_OPTIONS': job.extra_options } });
     } 
     job_log = ''
     job_child_process.stdout.on('data', function(data) {
@@ -186,6 +186,11 @@ app.post('/submit/job',function(req,res) {
     }
   } else {
     job.task = 'video-1-short';
+  }
+  if (req.body.extra_options) {
+    job.extra_options = req.body.extra_options;
+  } else {
+    job.extra_options = '';
   }
   if (req.body.codec) {
     job.codec = req.body.codec;
