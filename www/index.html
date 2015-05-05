@@ -51,6 +51,7 @@
         <option value="video-1-short">video-1-short</option>
         <option value="video-hd-1">video-hd-1</option>
         <option value="ntt-short-1">ntt-short-1</option>
+        <option value="screenshots">screenshots</option>
         <option value="subset1">subset1</option>
         <option value="subset2">subset2</option>
         <option value="subset3">subset3</option>
@@ -153,6 +154,7 @@
             <option value="video-1-short">video-1-short - 7 videos, 1-sec durations, 207 MB</option>
             <option value="video-hd-1">video-hd-1 - ? videos, ? durations, ? MB</option>
             <option value="ntt-short-1">ntt-short-1 - ? videos, ? durations, ? MB</option>
+            <option value="screenshots">jmspeex's screenshots</option>
             <option value="subset1">subset1 - 51 images, 77.5 MB</option>
             <option value="subset2">subset2 - 51 images, 79.6 MB</option>
             <option value="subset3">subset3 - 1000 images, 1.58 GB</option>
@@ -628,6 +630,7 @@ function auto_refresh() {
 $(function() {
   refresh_login_required();
   load_runs();
+  var currentState = history.state;
   var date = new Date();
   $('#run_id').val(date.toISOString().replace(/:/g,'-'));
   load_job_queue();
