@@ -16,21 +16,21 @@ function load_timelines() {
       },
       yaxis: {
         min: 29.5,
-        max: 33
+        max: 40
       }
     };
     $.plot('#psnr_graph',[data[0].sort()],options);
     
     options.yaxis.min = 29;
-    options.yaxis.max = 34;
+    options.yaxis.max = 40;
     $.plot('#psnrhvs_graph',[data[1].sort()],options);
     
     options.yaxis.min = 9;
-    options.yaxis.max = 13;
+    options.yaxis.max = 20;
     $.plot('#ssim_graph',[data[2].sort()],options);
     
     options.yaxis.min = 11;
-    options.yaxis.max = 15;
+    options.yaxis.max = 30;
     $.plot('#fastssim_graph',[data[3].sort()],options);
   });
 }
