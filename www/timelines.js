@@ -1,4 +1,17 @@
+var wd;
+
 function load_timelines() {
+  load_timelines_watermark();
+}
+
+function load_timelines_watermark() {
+  $.getJSON('/watermark.json', function(data) {
+    wd = data;
+    load_time_series();
+  }
+}
+
+function load_time_series() {
   $.getJSON('/time_series.json',function(data) {
     var options = {
       xaxis: {
@@ -13,6 +26,8 @@ function load_timelines() {
         }
       },
       grid: {
+        markings: [ { yaxis: { from: wd.x265.psnr, to: wd.x265.psnr}, color: "#ff0000"},
+                    { yaxis: { from: wd.x264.psnr, to: wd.x264.psnr}, color: "#00ff00"} ]
       },
       yaxis: {
         min: 29.5,
