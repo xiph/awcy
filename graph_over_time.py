@@ -38,7 +38,7 @@ for run in runs:
         ssim.append([date_js,distortion.split('\n')[2]])
         fastssim.append([date_js,distortion.split('\n')[3]])
       if is_watermark_run:
-        watermark_run = run['info']['task']
+        watermark_run = run['info']['codec']
         watermark_data[watermark_run] = {}
         watermark_data[watermark_run]['psnr'] = distortion.split('\n')[0]
         watermark_data[watermark_run]['psnrhvs'] = distortion.split('\n')[1]
