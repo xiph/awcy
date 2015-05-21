@@ -185,7 +185,7 @@ app.post('/submit/job',function(req,res) {
       job.task = req.body.task;
     }
   } else {
-    job.task = 'video-1-short';
+    job.task = 'ntt-short-1';
   }
   if (req.body.extra_options) {
     job.extra_options = req.body.extra_options;
