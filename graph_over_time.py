@@ -20,7 +20,7 @@ def unix_time(dt):
     return delta.total_seconds()
 
 for run in runs:
-  if u'master' in run['info']:
+  if (u'master' in run['info']) and (u'ntt-short-1' in run['info']['task']):
     filename = 'runs/'+run['run_id']+'/'+run['info']['task']+'/total.out'
     try:
       distortion = subprocess.check_output(['./distortion.m',filename,'0.1'])
