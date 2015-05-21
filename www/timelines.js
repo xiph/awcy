@@ -8,7 +8,7 @@ function load_timelines_watermark() {
   $.getJSON('/watermark.json', function(data) {
     wd = data;
     load_time_series();
-  }
+  });
 }
 
 function load_time_series() {
