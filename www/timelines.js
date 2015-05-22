@@ -39,7 +39,7 @@ function load_time_series() {
     options.grid.markings = [ { yaxis: { from: wd.x265.psnrhvs, to: wd.x265.psnrhvs}, color: "#ff0000"},
                               { yaxis: { from: wd.x264.psnrhvs, to: wd.x264.psnrhvs}, color: "#00ff00"} ];
     options.yaxis.min = 29;
-    options.yaxis.max = 40;
+    options.yaxis.max = 45;
     $.plot('#psnrhvs_graph',[data[1].sort()],options);
     
     options.grid.markings = [ { yaxis: { from: wd.x265.ssim, to: wd.x265.ssim}, color: "#ff0000"},
@@ -50,7 +50,7 @@ function load_time_series() {
     
     options.grid.markings = [ { yaxis: { from: wd.x265.fastssim, to: wd.x265.fastssim}, color: "#ff0000"},
                               { yaxis: { from: wd.x264.fastssim, to: wd.x264.fastssim}, color: "#00ff00"} ];
-    options.yaxis.min = 11;
+    options.yaxis.min = 8;
     options.yaxis.max = 30;
     $.plot('#fastssim_graph',[data[3].sort()],options);
   });
