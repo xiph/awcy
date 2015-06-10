@@ -46,7 +46,7 @@
   <div class="row">
     <div id="runbox" class="col-md-3">
       <h3>Runs</h3>
-      Filter by:
+      Video set:
       <select id="run_filter_task" onChange="load_runs();load_sets()">
         <option value="video-1-short">video-1-short</option>
         <option value="video-hd-1">video-hd-1</option>
@@ -61,6 +61,12 @@
       </select>
       <input type="button" class="btn" value="Reset" onClick="clear_runs()"></input>
       <div id="runs">
+        <h4>Reference codecs:</h4>
+        <div id="runs_latest">
+        </div>
+        <h4>Experimental runs:</h4>
+        <div id="runs_experimental">
+        </div>
       </div>
     </div>
     <div id="graphbox" class="col-md-9">
@@ -533,7 +539,8 @@ function load_runs() {
     data.sort(function(a,b) {
       return new Date(b.date) - new Date(a.date);
     });
-    $('#runs').html('');
+    $('#runs_latest').html('');
+    $('#runs_experimental').html('');
     run_list_by_name = {};
     for (var i in data) {
       var job = data[i];
@@ -553,17 +560,10 @@ function load_runs() {
         run_id_tag.addClass('run_id');
         run_id_tag.text(job.run_id);
         run.append(run_id_tag);
-        if (job.info.special) {
-          var run_flag_tag = $(document.createElement('span'));
-          run_flag_tag.addClass('run_flag');
-          run_flag_tag.text('★');
-          run.append(run_flag_tag);
-        } else {
-          var run_meta_tag = $(document.createElement('div'));
-          run_meta_tag.addClass('run_meta');
-          run_meta_tag.text(job.info.nick);
-          run.append(run_meta_tag);
-        }
+        var run_meta_tag = $(document.createElement('div'));
+        run_meta_tag.addClass('run_meta');
+        run_meta_tag.text(job.info.nick);
+        run.append(run_meta_tag);
         if (job.info.codec == 'daala') {
           var run_meta_tag = $(document.createElement('div'));
           run_meta_tag.addClass('run_meta');
@@ -575,9 +575,9 @@ function load_runs() {
         run_meta_tag.text(job.date);
         run.append(run_meta_tag);
         if (job.info.special) {
-          $('#runs').prepend(run);
+          $('#runs_latest').prepend(run);
         } else {
-          $('#runs').append(run);
+          $('#runs_experimental').append(run);
         }
       }
     }
