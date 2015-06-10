@@ -50,7 +50,7 @@
       <select id="run_filter_task" onChange="load_runs();load_sets()">
         <option value="video-1-short">video-1-short</option>
         <option value="video-hd-1">video-hd-1</option>
-        <option value="ntt-short-1">ntt-short-1</option>
+        <option value="ntt-short-1" selected>ntt-short-1</option>
         <option value="ntt-short-1-vc-720p30">ntt-short-1-vc-720p30</option>
         <option value="screenshots">screenshots</option>
         <option value="subset1">subset1</option>
@@ -65,18 +65,19 @@
     </div>
     <div id="graphbox" class="col-md-9">
       <h3>Graph</h3>
-      Data:
+      Metric:
       <select id="metric" onChange="regenerate_graph()">
         <option value="0">PSNR</option>
         <option value="1">PSNR-HVS</option>
         <option value="2">SSim</option>
         <option value="3" selected>FastSSim</option>
       </select>
+      Video:
       <select id="video_name" onChange="regenerate_graph()" style="max-width: 300px">
         <option value="total.out">All files</option>
       </select>
       <br />
-      Axes:
+      X-Axis:
       <select id="graph_x_scaler" onChange="regenerate_graph()">
         <option value="1">Bits per pixel</option>
         <optgroup label="Streaming (16:9)">
@@ -89,6 +90,7 @@
         <option value="55.296">Mbps @ 720p, 60fps</option>
         </optgroup>
       </select>
+      X-Axis Range:
       <select id="graph_x_range" onChange="regenerate_graph()">
         <option value="1.0">Full Range</option>
         <option value="0.5">Sensible Rates</option>
