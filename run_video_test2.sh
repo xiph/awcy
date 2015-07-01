@@ -8,10 +8,7 @@ mkdir -p "runs/$2/data"
 
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
-if [ -z $DAALA_ROOT ]; then
-  echo "Please set DAALA_ROOT to the location of your libvpx git clone"
-  exit 1
-fi
+export DAALA_ROOT=daala/
 
 echo Building...
 pushd $DAALA_ROOT
