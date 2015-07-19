@@ -548,6 +548,7 @@ function load_runs() {
       run_list_by_name[job.run_id] = job;
       if ((job.tasks.indexOf(filter_task) != -1) || (filter_task == 'all')) {
         var run = $(document.createElement('div'));
+        run.attr('id',job.run_id);
         run.attr('class','run');
         run.on('click',function() {
           $(this).toggleClass('selected');
@@ -582,6 +583,10 @@ function load_runs() {
         }
       }
     }
+    url_graphs = window.location.search.substr(1).split('&');
+    url_graphs.forEach(function(run_id) {
+      $('#'+run_id).toggleClass('selected');
+    });
   });
 }
 
