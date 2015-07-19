@@ -586,6 +586,7 @@ function load_runs() {
     url_graphs = window.location.search.substr(1).split('&');
     url_graphs.forEach(function(run_id) {
       $('#'+run_id).toggleClass('selected');
+      regenerate_graph();
     });
   });
 }
