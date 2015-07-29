@@ -8,7 +8,12 @@ var irc = require('irc');
 var AWS = require('aws-sdk');
 var app = express();
 
-AWS.config.loadFromPath('./aws.json');
+var have_aws = true;
+try {
+  AWS.config.loadFromPath('./aws.json');
+} catch(err) {
+  console.log('Starting without AWS support.');
+}
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
@@ -146,7 +151,9 @@ function pollAmazon() {
   }
 }
 
-setInterval(pollAmazon, 60*1*1000);
+if (have_aws) {
+  setInterval(pollAmazon, 60*1*1000);
+}
 
 app.get('/describeAutoScalingGroups',function(req,res) {
   res.send(autoScalingGroups);
