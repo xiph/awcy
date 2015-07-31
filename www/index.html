@@ -607,12 +607,7 @@ function refresh_login_required() {
 
 function set_key_cookie() {
   var key = $('#key').val();
-
-  if (key.length == 22){
-    document.cookie = 'key='+key;
-    } else {
-    alert('Invalid key!');
-    }
+  document.cookie = 'key='+key;
   refresh_login_required();
 }
 
