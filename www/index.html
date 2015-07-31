@@ -566,7 +566,7 @@ function load_runs() {
         run.append(run_id_tag);
         var run_meta_tag = $(document.createElement('div'));
         run_meta_tag.addClass('run_meta');
-        run_meta_tag.text(job.info.nick);
+        run_meta_tag.text(job.info.nick + ' ' + job.date);
         run.append(run_meta_tag);
         if (job.info.codec == 'daala') {
           var run_meta_tag = $(document.createElement('div'));
@@ -574,10 +574,6 @@ function load_runs() {
           run_meta_tag.text(job.info.commit);
           run.append(run_meta_tag);
         }
-        var run_meta_tag = $(document.createElement('div'));
-        run_meta_tag.addClass('run_meta');
-        run_meta_tag.text(job.date);
-        run.append(run_meta_tag);
         if (job.info.special) {
           $('#runs_latest').prepend(run);
         } else {
