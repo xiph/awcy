@@ -73,19 +73,19 @@
     <div id="graphbox" class="col-md-9">
       <h3>Graph</h3>
       Metric:
-      <select id="metric" onChange="regenerate_graph()">
+      <select id="metric" onChange="run_selection_changed()">
         <option value="0">PSNR</option>
         <option value="1">PSNR-HVS</option>
         <option value="2">SSim</option>
         <option value="3" selected>FastSSim</option>
       </select>
       Video:
-      <select id="video_name" onChange="regenerate_graph()" style="max-width: 300px">
+      <select id="video_name" onChange="run_selection_changed()" style="max-width: 300px">
         <option value="ntt-short-1/total.out">Total</option>
       </select>
       <br />
       X-Axis:
-      <select id="graph_x_scaler" onChange="regenerate_graph()">
+      <select id="graph_x_scaler" onChange="run_selection_changed()">
         <option value="1">Bits per pixel</option>
         <optgroup label="Streaming (16:9)">
         <option value="5.5296">Mbps @ 360p, 24fps</option>
@@ -98,11 +98,11 @@
         </optgroup>
       </select>
       X-Axis Range:
-      <select id="graph_x_range" onChange="regenerate_graph()">
+      <select id="graph_x_range" onChange="run_selection_changed()">
         <option value="1.0">Full Range</option>
         <option value="0.5">Sensible Rates</option>
       </select>
-      <label><input id="logarithmic" type="checkbox" checked onChange="regenerate_graph()"></input> Logarithmic</label>
+      <label><input id="logarithmic" type="checkbox" checked onChange="run_selection_changed()"></input> Logarithmic</label>
       <div class="graph_box">
         <div id="rd_graph">
           ⟵Select runs on the left to compare.
@@ -113,13 +113,13 @@
   <div class="row">
     <div class="controlbox col-md-6">
       <h3>BD rate</h3>
-      <select id="bd_rate_range" onChange="regenerate_graph()">
+      <select id="bd_rate_range" onChange="run_selection_changed()">
         <option value="whole">Entire curve</option>
         <option value="sensible">Sensible rates (0 - 0.5 bpp)</option>
         <option value="str">Streaming video (0.1 - 0.12 bpp)</option>
         <option value="conf">Video conferencing (0.04 - 0.05 bpp)</option>
       </select>
-      <label><input id="reverse_bd" type="checkbox" onChange="regenerate_graph()"></input> Reverse</label>
+      <label><input id="reverse_bd" type="checkbox" onChange="run_selection_changed()"></input> Reverse</label>
       <p id="bd_rate_title"></p>
       <pre id="bd_rate"></pre>
     </div>
@@ -269,6 +269,7 @@ IRC: #daala @ irc.freenode.net
 <script src="jquery.flot.time.js"></script>
 <script src="bootstrap.js"></script>
 <script src="aws-control.js"></script>
+<script src="rdgraph.js"></script>
 <script src="timelines.js"></script>
 <script src="submit.js"></script>
 <script>
@@ -298,7 +299,7 @@ function get_selected_run_data() {
   return datas;
 }
 
-function regenerate_graph() {
+function run_selection_changed() {
   //clear graph
   $("#rd_graph").html('');
 
@@ -330,82 +331,7 @@ function regenerate_graph() {
   
   history.pushState('', 'Are We Compressed Yet?', pageUrl);
 
-  //get output data
-  var graph_requests = [];
-  for (var i in selected_graphs) {
-    graph_requests.push($.get('/runs/'+selected_graphs[i]+'/'+outfile));
-  }
-
-  var bpp_scaler = parseFloat($("#graph_x_scaler").val());
-  var metric_index = parseInt($('#metric').val());
-  var logarithmic = $('#logarithmic').prop('checked');
-
-  // draw chart
-  $.when.apply($,graph_requests).done(function() {
-    if (selected_graphs.length == 1) {
-      var argument_list = [ arguments ];
-    } else {
-      var argument_list = arguments;
-    }
-
-    var curves = [];
-
-    for (var j in argument_list) {
-      var curve = [];
-      var data = argument_list[j][0];
-      var lines = data.split('\n');
-      for (var i in lines) {
-        var line = lines[i].split(' ');
-        //line[0-6] --> quantizer, pixels, bytes, PSNR, PSNR-HVS, SSim, FastSSim
-        var point = [bpp_scaler * line[2]*8 / line[1], line[3+metric_index]];
-        curve.push(point);
-      }
-      var series = {
-        data: curve,
-        label: selected_graphs[j]
-      };
-      curves.push(series);
-    }
-
-    var options = {
-      xaxis: {
-        axisLabel: 'Bits per Pixel',
-      },
-      yaxis: {
-        axisLabel: 'Picture quality (dB)'
-      },
-      legend: {
-        show: true,
-        position: 'se'
-      },
-      series: {
-        lines: {
-          lineWidth: 1
-        },
-        shadowSize: 0
-      },
-      zoom: {
-        interactive: true
-      },
-      pan: {
-        interactive: true
-      }
-    };
-
-    var x_max = parseFloat($("#graph_x_range").val());
-    options.xaxis.max = x_max * bpp_scaler;
-
-    if (bpp_scaler != 1) {
-      options.xaxis.axisLabel = 'Mbps';
-    }
-
-    if (logarithmic) {
-      options.xaxis.transform = function (v) { return Math.log(v); };
-      options.xaxis.inverseTransform = function (v) { return Math.exp(v); };
-    }
-
-    $.plot('#rd_graph',curves,options);
-  });
+  rdgraph_draw(selected_graphs, outfile);
 };
 
 function load_job_queue() {
@@ -557,7 +483,7 @@ function load_runs() {
           if (filter_task == 'all') {
             load_sets();
           }
-          regenerate_graph();
+          run_selection_changed();
           return false;
         });
         var run_id_tag = $(document.createElement('span'));
@@ -584,7 +510,7 @@ function load_runs() {
     url_graphs = window.location.search.substr(1).split('&');
     url_graphs.forEach(function(run_id) {
       $('#'+run_id).toggleClass('selected');
-      regenerate_graph();
+      run_selection_changed();
     });
   });
 }
