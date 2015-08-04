@@ -322,10 +322,15 @@ function run_selection_changed() {
     } else {
       pageUrl = pageUrl + '&' + selected_graphs[i];
     }
-    
+    var header = $('<h4>').html(selected_graphs[i]);
     var link = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/'+outfile);
-    link.html(selected_graphs[i]);
-    var item = $('<p>').append(link);
+    link.html('Metric data ');
+    var output_log = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/output.txt');
+    output_log.html('Job log');
+    var item = $('<p>');
+    item.append(header);
+    item.append(link);
+    item.append(output_log);
     raw_data.append(item);
   }
   
