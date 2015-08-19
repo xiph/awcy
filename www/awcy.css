@@ -5,6 +5,11 @@ header h1 {
   color: white;
   margin: 0px;
   padding: 0.5em;
+  display: inline-block;
+}
+ul.nav-tabs {
+  vertical-align: bottom;
+  display: inline-block;
 }
 .nav-tabs > li > a {
   color: white;
