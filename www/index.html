@@ -269,6 +269,7 @@ IRC: #daala @ irc.freenode.net
 <script src="jquery.flot.axislabels.js"></script>
 <script src="jquery.flot.navigate.js"></script>
 <script src="jquery.flot.time.js"></script>
+<script src="URI.js"></script>
 <script src="bootstrap.js"></script>
 <script src="aws-control.js"></script>
 <script src="rdgraph.js"></script>
@@ -312,18 +313,11 @@ function run_selection_changed() {
   var outfile = $("#video_name").val();
   bd_rate(selected_graphs,outfile);
 
-  //build URLs to runs' output data
-  var pageUrl = ''
   var filter_task = $('#run_filter_task').val();
   raw_data = $('#raw_data');
   raw_data.html('');
   
   for (var i in selected_graphs) {
-    if (pageUrl == '') {
-      pageUrl = '?' + selected_graphs[i];
-    } else {
-      pageUrl = pageUrl + '&' + selected_graphs[i];
-    }
     var header = $('<h4>').html(selected_graphs[i]);
     var link = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/'+outfile);
     link.html('Metric data ');
@@ -335,7 +329,8 @@ function run_selection_changed() {
     item.append(output_log);
     raw_data.append(item);
   }
-  
+  urldata = { r: selected_graphs };
+  pageUrl = '?' + $.param(urldata);
   history.pushState('', 'Are We Compressed Yet?', pageUrl);
 
   rdgraph_draw(selected_graphs, outfile);
@@ -514,9 +509,16 @@ function load_runs() {
         }
       }
     }
-    url_graphs = window.location.search.substr(1).split('&');
-    url_graphs.forEach(function(run_id) {
-      $('#'+run_id).toggleClass('selected');
+    var uri = new URI();
+    urldata = URI.parseQuery(uri.query());
+    if (Array.isArray(urldata['r[]'])) {
+      var urlruns = urldata['r[]'];
+    } else {
+      var urlruns = [urldata['r[]']];
+    }
+    urlruns.forEach(function(run_id) {
+      console.log(run_id);
+      $(document.getElementById(run_id)).toggleClass('selected');
       run_selection_changed();
     });
   });
