@@ -18,4 +18,4 @@ gcc -print-search-dirs
 popd
 
 cd rd_tool
-DAALA_ROOT=../daala python -u rd_tool.py -individual -codec $CODEC -prefix "../runs/$2/data" "${@:3}"
+DAALA_ROOT=../daala python3 -u rd_tool.py -individual -codec $CODEC -prefix "../runs/$2/data" "${@:3}"
