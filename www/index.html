@@ -329,11 +329,16 @@ function run_selection_changed() {
     item.append(output_log);
     raw_data.append(item);
   }
-  urldata = { r: selected_graphs };
+  rdgraph_draw(selected_graphs, outfile);
+  update_url();
+};
+
+function update_url() {
+  var selected_graphs = get_selected_graphs();
+  var filter_task = $('#run_filter_task').val();
+  urldata = { r: selected_graphs, s: filter_task };
   pageUrl = '?' + $.param(urldata);
   history.pushState('', 'Are We Compressed Yet?', pageUrl);
-
-  rdgraph_draw(selected_graphs, outfile);
 };
 
 function load_job_queue() {
@@ -465,6 +470,8 @@ function load_sets_for_filter() {
 }
 
 function load_runs() {
+  var uri = new URI();
+  urldata = URI.parseQuery(uri.query());
   var filter_task = $('#run_filter_task').val();
   $.getJSON('/list.json', function(data) {
     data.sort(function(a,b) {
@@ -509,8 +516,6 @@ function load_runs() {
         }
       }
     }
-    var uri = new URI();
-    urldata = URI.parseQuery(uri.query());
     if (Array.isArray(urldata['r[]'])) {
       var urlruns = urldata['r[]'];
     } else {
@@ -568,6 +573,11 @@ function auto_refresh() {
 
 $(function() {
   refresh_login_required();
+  var uri = new URI();
+  urldata = URI.parseQuery(uri.query());
+  if ('s' in urldata) {
+    $('#run_filter_task').val(urldata['s']);
+  }
   load_runs();
   var currentState = history.state;
   var date = new Date();
