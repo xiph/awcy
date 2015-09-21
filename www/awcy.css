@@ -30,7 +30,29 @@ ul.nav-tabs {
   height: 500px;
   overflow-y: scroll;
 }
-.run {
+.ab_runs {
+  height: 300px;
+  overflow-y: scroll;
+}
+#ab_image_switcher {
+  display: block;
+  text-align: center;
+}
+div.row {
+  margin-left: 0px;
+}
+#ab_image_id_a,
+#ab_image_id_b {
+  display: inline-block;
+  float: none;
+}
+#ab_run_images {
+  height: 200px;
+  overflow-y: scroll;
+  margin-bottom: 10px;
+}
+.run,
+.ab_run {
   display: block;
   background-color: white;
   color: black;
@@ -40,7 +62,8 @@ ul.nav-tabs {
   word-wrap: break-word;
   white-space: pre-wrap;
 }
-.run:hover {
+.run:hover,
+.ab_run:hover {
   box-shadow: 0px 0px 0.2em rgba(0,0,0,0.5);
 }
 .run_id {
@@ -50,6 +73,9 @@ ul.nav-tabs {
 }
 .run_flag {
   float: right;
+}
+#ab_runs {
+    height 500px;
 }
 #rd_graph {
   height: 500px;
@@ -63,9 +89,9 @@ header {
   box-shadow: 0px 0px 5em #2A0038 inset;
 }
 .controlbox {
-    padding: 10px;
-    border-radius: 3px;
-    word-wrap: break-word;
+  padding: 10px;
+  border-radius: 3px;
+  word-wrap: break-word;
 }
 #job_log {
   height: 300px;

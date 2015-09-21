@@ -63,6 +63,7 @@ function process_queue() {
     env['LANG'] = 'en_US.UTF-8';
     env['CODEC'] = job.codec;
     env['EXTRA_OPTIONS'] = job.extra_options;
+    env['RUN_ID'] = job.run_id;
     if (job.videos) {
       job_child_process = cp.spawn('./run_video_test2.sh',
         [job.commit,job.run_id].concat(job.videos),
@@ -104,6 +105,7 @@ app.use('/runs',express.static(__dirname + '/runs'));
 app.use('/sets.json',express.static(__dirname + '/rd_tool/sets.json'));
 app.use('/error.txt',express.static(__dirname + '/error.txt'));
 app.use('/list.json',express.static(__dirname + '/list.json'));
+app.use('/ab_paths.json',express.static(__dirname + '/ab_paths.json'));
 app.use('/time_series.json',express.static(__dirname + '/time_series.json'));
 app.use('/watermark.json',express.static(__dirname + '/watermark.json'));
 
