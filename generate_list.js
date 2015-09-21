@@ -37,7 +37,11 @@ function read_ab_image_paths(outer_path) {
       var inner_path = outer_path + '/' + inner;
 
       if (fs.statSync(inner_path).isDirectory()) {
-          folders[inner] = read_ab_image_paths(inner_path);
+          // A folder is an array of files and objects (folders).
+          var folder = read_ab_image_paths(inner_path);
+
+          // Don't add an empty folder.
+          if (folder.length != 0) { folders[inner] = folder; }
       } else if (path.extname(inner) == '.png') { entries.push(inner); }
   });
 
