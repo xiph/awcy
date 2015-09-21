@@ -6,8 +6,9 @@ set -e
 
 mkdir -p "runs/$2/$3"
 
-export PATH=/sbin:/bin:/usr/sbin:/usr/bin
-
+#export PATH=/sbin:/bin:/usr/sbin:/usr/bin
+echo $PATH
+echo $HOME
 export DAALA_ROOT=daala/
 
 echo Building...
@@ -18,4 +19,4 @@ gcc -print-search-dirs
 popd
 
 cd rd_tool
-DAALA_ROOT=../daala python -u rd_tool.py -codec $CODEC -prefix "../runs/$2/$3" "$3"
+DAALA_ROOT=../daala python3 -u rd_tool.py -codec $CODEC -prefix "../runs/$2/$3" "$3"

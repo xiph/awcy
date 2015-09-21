@@ -59,14 +59,18 @@ function process_queue() {
     job = job_queue.shift();
     console.log('Starting job '+job.run_id);
     ircclient.say(channel,job.nick+': Starting '+job.run_id);
+    var env = process.env;
+    env['PYTHONIOENCODING'] = 'utf-8';
+    env['CODEC'] = job.codec;
+    env['EXTRA_OPTIONS'] = job.extra_options;
     if (job.videos) {
       job_child_process = cp.spawn('./run_video_test2.sh',
         [job.commit,job.run_id].concat(job.videos),
-        { env: { 'PYTHONIOENCODING': 'utf-8', 'CODEC': job.codec, 'EXTRA_OPTIONS': job.extra_options } });
+        { env: env });
     } else {
       job_child_process = cp.spawn('./run_video_test.sh',
         [job.commit,job.run_id,job.task],
-        { env: { 'PYTHONIOENCODING': 'utf-8', 'CODEC': job.codec, 'EXTRA_OPTIONS': job.extra_options } });
+        { env: env });
     } 
     job_log = ''
     job_child_process.stdout.on('data', function(data) {
