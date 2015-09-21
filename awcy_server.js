@@ -60,7 +60,7 @@ function process_queue() {
     console.log('Starting job '+job.run_id);
     ircclient.say(channel,job.nick+': Starting '+job.run_id);
     var env = process.env;
-    env['PYTHONIOENCODING'] = 'utf-8';
+    env['LANG'] = 'en_US.UTF-8';
     env['CODEC'] = job.codec;
     env['EXTRA_OPTIONS'] = job.extra_options;
     if (job.videos) {
