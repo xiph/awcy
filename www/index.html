@@ -35,6 +35,7 @@
   <li class="active"><a href="#home" role="tab" data-toggle="tab">Home</a></li>
   <li><a href="#submit" role="tab" data-toggle="tab">Submit</a></li>
   <li><a href="#timeline" role="tab" data-toggle="tab">Timeline</a></li>
+  <li><a href="#images" role="tab" data-toggle="tab">Images</a></li>
   <li><a href="#about" role="tab" data-toggle="tab">About</a></li>
 </ul>
 </header>
@@ -244,6 +245,47 @@
     <h3><abbr title="Fast, Multi-Scale Structural Similarity">FastSSim</abbr></h3>
     <div id="fastssim_graph" style="height: 200px; width: 800px;"></div>
   </div>
+</article>
+
+<article id="images" class="container-fluid tab-pane">
+    <div class="col-md-3 row container" id="ab_left">
+        Video set:
+        <div class='row'>
+            <select id='ab_run_subsets' name="ab_run_subsets">
+                <option value="video-1-short">video-1-short</option>
+                <option value="video-hd-1">video-hd-1</option>
+                <option value="video-hd-2">video-hd-2</option>
+                <option value="ntt-short-1">ntt-short-1</option>
+                <option value="ntt-short-1-64">ntt-short-1-64</option>
+                <option value="ntt-short-1-vc-720p30">ntt-short-1-vc-720p30</option>
+                <option value="screenshots">screenshots</option>
+                <option value="subset1" selected >subset1</option>
+                <option value="subset2">subset2</option>
+                <option value="subset3">subset3</option>
+                <option value="subset4">subset4</option>
+                <option value="all">All</option>
+            </select>
+            <input class='btn' type="button" value="Refresh" onClick="ab_refresh()"></input>
+        </div>
+        Run ID A
+        <div id="ab_run_ids_a" class='ab_runs'> </div>
+        Run ID B
+        <div id="ab_run_ids_b" class='ab_runs'> </div>
+    </div>
+    <div class="col-md-9" id='ab_right'>
+        Bits per pixel
+        <div id='ab_run_bpps' class='row'> </div>
+        Image
+        <div id='ab_run_images'>
+            <div id='ab_run_images'> </div>
+        </div>
+        <img id="ab_image" src="blank.png" class="img-responsive">
+        <div id='ab_image_switcher' class='row ab_image_id'>
+            <div id='ab_image_id_a' class='col-md-4 ab_run ab_image_switcher'>Run ID A</div>
+            <div id='ab_image_id_b' class='col-md-4 ab_run ab_image_switcher'>Run ID B</div>
+        </div>
+    </div>
+    <br />
 </article>
 
 <article id="about" class="container tab-pane">
@@ -527,6 +569,150 @@ function load_runs() {
       run_selection_changed();
     });
   });
+}
+
+$('#images').click(ab_refresh());
+
+function ab_refresh() {
+    $.ajaxSetup({ async: false });
+    $.getJSON('ab_paths.json', function(data) {
+        var selected_subset = $('#ab_run_subsets option:selected').text();
+
+        $("#ab_run_ids_a").empty();
+        $("#ab_run_ids_b").empty();
+        $("#ab_run_bpps").empty();
+        $("#ab_run_images").empty();
+
+        var file_structure = data[0];
+        Object.keys(file_structure).forEach(function(time_stamp) {
+            subsets = file_structure[time_stamp][0];
+
+            // Check if this run has the current subset inside.
+            if (subsets[selected_subset] != null) {
+                $("#ab_run_ids_a").prepend('<div class="ab_run ab_run_id_a">' + time_stamp + '</div>');
+                $("#ab_run_ids_b").prepend('<div class="ab_run ab_run_id_b">' + time_stamp + '</div>');
+            }
+        });
+
+        var time_stamp = $('.ab_run_id_a').first().addClass('selected').text();
+        $('.ab_run_id_b').first().addClass('selected');
+
+        update_ab_selection('bpp', 'run_id_a');
+        update_ab_selection('image', 'run_id_a');
+        $('#ab_image_id_a').addClass('selected');
+
+        update_ab_image();
+    });
+}
+
+$('.ab_image_switcher').mouseover(function() {
+    $('.ab_image_switcher').removeClass('selected');
+
+    $(this).addClass('selected');
+    update_ab_image();
+});
+
+$('#ab_run_subsets').change(function() {
+    ab_refresh();
+    update_ab_image();
+});
+
+$("#ab_run_ids_a").on('click', '.ab_run_id_a', function() {
+    $('.ab_run_id_a').removeClass('selected');
+    $(this).addClass('selected');
+
+    update_ab_selection('bpp', 'run_id_a');
+    update_ab_selection('image', 'run_id_a');
+    update_ab_image();
+});
+
+$("#ab_run_ids_b").on('click', '.ab_run_id_b', function() {
+    $('.ab_run_id_b').removeClass('selected');
+    $(this).addClass('selected');
+
+    update_ab_selection('bpp', 'run_id_b');
+    update_ab_selection('image', 'run_id_b');
+    update_ab_image();
+});
+
+$('#ab_run_bpps').on('click', '.ab_run_bpp', function() {
+    $('.ab_run_bpp').removeClass('selected');
+    $(this).addClass('selected');
+
+    update_ab_image();
+});
+
+$('#ab_run_images').on('click', '.ab_run_image', function() {
+    $('.ab_run_image').removeClass('selected');
+    $(this).addClass('selected');
+
+    update_ab_image();
+});
+
+function ab_cur_selection(type) {
+    var ret;
+    if (type == 'run_id_a') { ret = $('.ab_run_id_a.selected').text(); }
+    else if (type == 'run_id_b') { ret = $('.ab_run_id_b.selected').text(); }
+    else if (type == 'bpp') { ret = $('.ab_run_bpp.selected').text(); }
+    else if (type == 'image') { ret = $('.ab_run_image.selected').text(); }
+    else if (type == 'subset') { ret = $('#ab_run_subsets option:selected').text(); }
+    else {
+        console.log('type', type, "doesn't match any selection types.");
+    }
+
+    return ret;
+}
+
+// The type of selection to update and who requested the update.
+function update_ab_selection(type, from) {
+    $.getJSON('ab_paths.json', function(json) {
+        var file_structure = json[0];
+        var time_stamp;
+        if (from == 'run_id_a') { time_stamp = ab_cur_selection('run_id_a'); }
+        else { time_stamp = ab_cur_selection('run_id_b'); }
+
+        var selected_subset = ab_cur_selection('subset');
+
+        if (type == 'bpp') {
+            $("#ab_run_bpps").empty();
+
+            var bpps = file_structure[time_stamp][0][selected_subset][0];
+            Object.keys(bpps).forEach(function(bpp) {
+                // Folders are named `bpp_0.1` so the `bpp_` must be trimmed.
+                $('#ab_run_bpps').append('<div class="ab_run ab_run_bpp col-md-1">' + bpp.substring(4) + '</div>');
+            });
+
+            $('.ab_run_bpp').first().addClass('selected');
+        } else if (type == 'image') {
+            $("#ab_run_images").empty();
+
+            // Folder names have `bpp_` prepended.
+            var bpp = 'bpp_' + ab_cur_selection('bpp');
+            var images = file_structure[time_stamp][0][selected_subset][0][bpp];
+
+            images.forEach(function(image, index, array) {
+                // Folders are named `bpp_0.1` so the `bpp_` must be trimmed.
+                $('#ab_run_images').append('<div class="ab_run ab_run_image">' + image + '</div>');
+            });
+
+            $('.ab_run_image').first().addClass('selected');
+        }
+    });
+}
+
+function update_ab_image() {
+    var bpp = $('#ab_run_bpps .selected').text();
+    var subset = $('#ab_run_subsets option:selected').text();
+    var run_switcher = $('#ab_image_switcher .selected').text();
+    var image = $('#ab_run_images .selected').text();
+
+    var run_id;
+    if (run_switcher == 'Run ID A') { run_id = $('#ab_run_ids_a .selected').text(); }
+    else { run_id = $('#ab_run_ids_b .selected').text(); }
+
+    var new_img_path = 'runs/' + run_id + '/' + subset + '/bpp_' + bpp + '/' + image;
+
+    $('#ab_image').attr('src', new_img_path);
 }
 
 function clear_runs() {
