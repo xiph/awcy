@@ -574,7 +574,6 @@ function load_runs() {
 $('#images').click(ab_refresh());
 
 function ab_refresh() {
-    $.ajaxSetup({ async: false });
     $.getJSON('ab_paths.json', function(data) {
         var selected_subset = $('#ab_run_subsets option:selected').text();
 
