@@ -493,8 +493,8 @@ function load_sets_for_filter() {
     total_option.html('Total');
     total_option.attr('value',filter_task+'/total.out');
     $('#video_name').append(total_option);
-    for (var i in data[filter_task]) {
-      var file_in_set = baseName(data[filter_task][i]);
+    for (var i in data[filter_task].sources) {
+      var file_in_set = baseName(data[filter_task].sources[i]);
       var file_option = $('<option>');
       file_option.html(file_in_set);
       file_option.attr('value',filter_task+'/'+file_in_set+'.y4m-daala.out');
