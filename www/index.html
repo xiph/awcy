@@ -599,8 +599,6 @@ function ab_refresh() {
         update_ab_selection('bpp', 'run_id_a');
         update_ab_selection('image', 'run_id_a');
         $('#ab_image_id_a').addClass('selected');
-
-        update_ab_image();
     });
 }
 
@@ -696,6 +694,7 @@ function update_ab_selection(type, from) {
 
             $('.ab_run_image').first().addClass('selected');
         }
+        update_ab_image();
     });
 }
 
