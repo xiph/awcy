@@ -571,7 +571,7 @@ function load_runs() {
   });
 }
 
-$('#images').click(ab_refresh());
+$("a[href='#images']").click(ab_refresh);
 
 function ab_refresh() {
     $.getJSON('ab_paths.json', function(data) {
