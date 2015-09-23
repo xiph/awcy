@@ -46,6 +46,9 @@ div.row {
   display: inline-block;
   float: none;
 }
+#ab_run_bpps {
+  height: 40px;
+}
 #ab_run_images {
   height: 200px;
   overflow-y: scroll;
