@@ -571,35 +571,28 @@ function load_runs() {
   });
 }
 
-$('#images').click(ab_refresh());
+$("a[href='#images'], #ab_run_subsets option").click(ab_refresh);
+
+function ab_clear() {
+    $("#ab_run_ids_a").empty();
+    $("#ab_run_ids_b").empty();
+    $("#ab_run_bpps").empty();
+    $("#ab_run_images").empty();
+}
 
 function ab_refresh() {
-    $.getJSON('ab_paths.json', function(data) {
-        var selected_subset = $('#ab_run_subsets option:selected').text();
+    ab_clear();
 
-        $("#ab_run_ids_a").empty();
-        $("#ab_run_ids_b").empty();
-        $("#ab_run_bpps").empty();
-        $("#ab_run_images").empty();
-
-        var file_structure = data[0];
-        Object.keys(file_structure).forEach(function(time_stamp) {
-            subsets = file_structure[time_stamp][0];
-
-            // Check if this run has the current subset inside.
-            if (subsets[selected_subset] != null) {
-                $("#ab_run_ids_a").prepend('<div class="ab_run ab_run_id_a">' + time_stamp + '</div>');
-                $("#ab_run_ids_b").prepend('<div class="ab_run ab_run_id_b">' + time_stamp + '</div>');
-            }
+    update_ab_selection('run_id', 'run_id_a')
+        .then(function() {
+            $('.ab_run_id_a').first().addClass('selected');
+            $('.ab_run_id_b').first().addClass('selected');
+        }).then(function() { return update_ab_selection('bpp', 'run_id_a');
+        }).then(function() { return update_ab_selection('image', 'run_id_a');
+        }).then(function() {
+            $('#ab_image_id_a').addClass('selected');
+            update_ab_image();
         });
-
-        var time_stamp = $('.ab_run_id_a').first().addClass('selected').text();
-        $('.ab_run_id_b').first().addClass('selected');
-
-        update_ab_selection('bpp', 'run_id_a');
-        update_ab_selection('image', 'run_id_a');
-        $('#ab_image_id_a').addClass('selected');
-    });
 }
 
 $('.ab_image_switcher').mouseover(function() {
@@ -609,27 +602,22 @@ $('.ab_image_switcher').mouseover(function() {
     update_ab_image();
 });
 
-$('#ab_run_subsets').change(function() {
-    ab_refresh();
-    update_ab_image();
-});
-
 $("#ab_run_ids_a").on('click', '.ab_run_id_a', function() {
     $('.ab_run_id_a').removeClass('selected');
     $(this).addClass('selected');
 
-    update_ab_selection('bpp', 'run_id_a');
-    update_ab_selection('image', 'run_id_a');
-    update_ab_image();
+    update_ab_selection('bpp', 'run_id_a')
+        .then(function() { return update_ab_selection('image', 'run_id_a'); })
+        .then(function() { update_ab_image(); });
 });
 
 $("#ab_run_ids_b").on('click', '.ab_run_id_b', function() {
     $('.ab_run_id_b').removeClass('selected');
     $(this).addClass('selected');
 
-    update_ab_selection('bpp', 'run_id_b');
-    update_ab_selection('image', 'run_id_b');
-    update_ab_image();
+    update_ab_selection('bpp', 'run_id_b')
+        .then(function() { return update_ab_selection('image', 'run_id_b'); })
+        .then(function() { update_ab_image(); });
 });
 
 $('#ab_run_bpps').on('click', '.ab_run_bpp', function() {
@@ -662,15 +650,34 @@ function ab_cur_selection(type) {
 
 // The type of selection to update and who requested the update.
 function update_ab_selection(type, from) {
-    $.getJSON('ab_paths.json', function(json) {
+    return $.getJSON('ab_paths.json', function(json) {
         var file_structure = json[0];
+        var selected_subset = ab_cur_selection('subset');
+
+        if (type == 'run_id') {
+            Object.keys(file_structure).forEach(function(time_stamp) {
+                subsets = file_structure[time_stamp][0];
+
+                // Check if this run has the current subset inside.
+                if (subsets[selected_subset] != null) {
+                    $("#ab_run_ids_a").prepend('<div class="ab_run ab_run_id_a">' + time_stamp + '</div>');
+                    $("#ab_run_ids_b").prepend('<div class="ab_run ab_run_id_b">' + time_stamp + '</div>');
+                }
+            });
+
+            return true;
+        }
+
         var time_stamp;
         if (from == 'run_id_a') { time_stamp = ab_cur_selection('run_id_a'); }
         else { time_stamp = ab_cur_selection('run_id_b'); }
 
-        var selected_subset = ab_cur_selection('subset');
-
-        if (type == 'bpp') {
+        // `time_stamp` is empty when switching to a subset with no images, this needs to be updated so old data and
+        // and images don't remain for a non-existant subset.
+        if (time_stamp === '') {
+            ab_clear();
+            update_ab_image();
+        } else if (type == 'bpp') {
             $("#ab_run_bpps").empty();
 
             var bpps = file_structure[time_stamp][0][selected_subset][0];
@@ -694,7 +701,6 @@ function update_ab_selection(type, from) {
 
             $('.ab_run_image').first().addClass('selected');
         }
-        update_ab_image();
     });
 }
 
