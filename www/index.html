@@ -573,11 +573,15 @@ function load_runs() {
 
 $("a[href='#images'], #ab_run_subsets").click(ab_refresh);
 
-function ab_refresh() {
+function ab_clear() {
     $("#ab_run_ids_a").empty();
     $("#ab_run_ids_b").empty();
     $("#ab_run_bpps").empty();
     $("#ab_run_images").empty();
+}
+
+function ab_refresh() {
+    ab_clear();
 
     update_ab_selection('run_id', 'run_id_a')
         .then(function() {
@@ -648,10 +652,6 @@ function ab_cur_selection(type) {
 function update_ab_selection(type, from) {
     return $.getJSON('ab_paths.json', function(json) {
         var file_structure = json[0];
-        var time_stamp;
-        if (from == 'run_id_a') { time_stamp = ab_cur_selection('run_id_a'); }
-        else { time_stamp = ab_cur_selection('run_id_b'); }
-
         var selected_subset = ab_cur_selection('subset');
 
         if (type == 'run_id') {
@@ -664,6 +664,19 @@ function update_ab_selection(type, from) {
                     $("#ab_run_ids_b").prepend('<div class="ab_run ab_run_id_b">' + time_stamp + '</div>');
                 }
             });
+
+            return true;
+        }
+
+        var time_stamp;
+        if (from == 'run_id_a') { time_stamp = ab_cur_selection('run_id_a'); }
+        else { time_stamp = ab_cur_selection('run_id_b'); }
+
+        // `time_stamp` is empty when switching to a subset with no images, this needs to be updated so old data and
+        // and images don't remain for a non-existant subset.
+        if (time_stamp === '') {
+            ab_clear();
+            update_ab_image();
         } else if (type == 'bpp') {
             $("#ab_run_bpps").empty();
 
