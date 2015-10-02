@@ -277,7 +277,7 @@
         <div id='ab_run_bpps' class='row'> </div>
         Image
         <div id='ab_run_images'> </div>
-        <img id="ab_image" src="blank.png" class="img-responsive">
+        <div id='ab_image_container'> </div>
         <div id='ab_image_switcher' class='row ab_image_id'>
             <div id='ab_image_id_a' class='col-md-4 ab_run ab_image_switcher'>Run ID A</div>
             <div id='ab_image_id_b' class='col-md-4 ab_run ab_image_switcher'>Run ID B</div>
@@ -715,7 +715,8 @@ function update_ab_image() {
 
     var new_img_path = 'runs/' + run_id + '/' + subset + '/bpp_' + bpp + '/' + image;
 
-    $('#ab_image').attr('src', new_img_path);
+    $('#ab_image_container').empty();
+    $('#ab_image_container').append("<img id='ab_image' src='" + new_img_path + "' class='img-responsive'>");
 }
 
 function clear_runs() {
