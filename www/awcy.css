@@ -48,6 +48,7 @@ div.row {
 #ab_image_id_b {
   display: inline-block;
   float: none;
+  padding: 10px 15px;
 }
 #ab_run_bpps {
   height: 40px;
