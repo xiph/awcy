@@ -276,9 +276,7 @@
         Bits per pixel
         <div id='ab_run_bpps' class='row'> </div>
         Image
-        <div id='ab_run_images'>
-            <div id='ab_run_images'> </div>
-        </div>
+        <div id='ab_run_images'> </div>
         <img id="ab_image" src="blank.png" class="img-responsive">
         <div id='ab_image_switcher' class='row ab_image_id'>
             <div id='ab_image_id_a' class='col-md-4 ab_run ab_image_switcher'>Run ID A</div>
@@ -608,7 +606,7 @@ $("#ab_run_ids_a").on('click', '.ab_run_id_a', function() {
 
     update_ab_selection('bpp', 'run_id_a')
         .then(function() { return update_ab_selection('image', 'run_id_a'); })
-        .then(function() { update_ab_image(); });
+        .then(update_ab_image);
 });
 
 $("#ab_run_ids_b").on('click', '.ab_run_id_b', function() {
@@ -617,7 +615,7 @@ $("#ab_run_ids_b").on('click', '.ab_run_id_b', function() {
 
     update_ab_selection('bpp', 'run_id_b')
         .then(function() { return update_ab_selection('image', 'run_id_b'); })
-        .then(function() { update_ab_image(); });
+        .then(update_ab_image);
 });
 
 $('#ab_run_bpps').on('click', '.ab_run_bpp', function() {
@@ -641,6 +639,7 @@ function ab_cur_selection(type) {
     else if (type == 'bpp') { ret = $('.ab_run_bpp.selected').text(); }
     else if (type == 'image') { ret = $('.ab_run_image.selected').text(); }
     else if (type == 'subset') { ret = $('#ab_run_subsets option:selected').text(); }
+    else if (type == 'image_switcher') { ret = $('.ab_image_switcher.selected').text(); }
     else {
         console.log('type', type, "doesn't match any selection types.");
     }
@@ -705,14 +704,14 @@ function update_ab_selection(type, from) {
 }
 
 function update_ab_image() {
-    var bpp = $('#ab_run_bpps .selected').text();
-    var subset = $('#ab_run_subsets option:selected').text();
-    var run_switcher = $('#ab_image_switcher .selected').text();
-    var image = $('#ab_run_images .selected').text();
+    var bpp = ab_cur_selection('bpp');
+    var subset = ab_cur_selection('subset');
+    var run_switcher = ab_cur_selection('image_switcher');
+    var image = ab_cur_selection('image');
 
     var run_id;
-    if (run_switcher == 'Run ID A') { run_id = $('#ab_run_ids_a .selected').text(); }
-    else { run_id = $('#ab_run_ids_b .selected').text(); }
+    if (run_switcher === 'Run ID A') { run_id = ab_cur_selection('run_id_a'); }
+    else { run_id = ab_cur_selection('run_id_b'); }
 
     var new_img_path = 'runs/' + run_id + '/' + subset + '/bpp_' + bpp + '/' + image;
 
