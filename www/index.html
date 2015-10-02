@@ -685,7 +685,8 @@ function update_ab_selection(type, from) {
                 $('#ab_run_bpps').append('<div class="ab_run ab_run_bpp col-md-1">' + bpp.substring(4) + '</div>');
             });
 
-            $('.ab_run_bpp').first().addClass('selected');
+            $('.ab_run_bpp').first()
+                            .addClass('selected');
         } else if (type == 'image') {
             $("#ab_run_images").empty();
 
@@ -698,7 +699,8 @@ function update_ab_selection(type, from) {
                 $('#ab_run_images').append('<div class="ab_run ab_run_image">' + image + '</div>');
             });
 
-            $('.ab_run_image').first().addClass('selected');
+            $('.ab_run_image').first()
+                              .addClass('selected');
         }
     });
 }
@@ -715,8 +717,8 @@ function update_ab_image() {
 
     var new_img_path = 'runs/' + run_id + '/' + subset + '/bpp_' + bpp + '/' + image;
 
-    $('#ab_image_container').empty();
-    $('#ab_image_container').append("<img id='ab_image' src='" + new_img_path + "' class='img-responsive'>");
+    $('#ab_image_container').empty()
+                            .append("<img id='ab_image' src='" + new_img_path + "' class='img-responsive'>");
 }
 
 function clear_runs() {
