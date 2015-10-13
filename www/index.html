@@ -672,7 +672,7 @@ function update_ab_selection(type, from) {
         else { time_stamp = ab_cur_selection('run_id_b'); }
 
         // `time_stamp` is empty when switching to a subset with no images, this needs to be updated so old data and
-        // and images don't remain for a non-existant subset.
+        // and images don't remain for a non-existent subset.
         if (time_stamp === '') {
             ab_clear();
             update_ab_image();
