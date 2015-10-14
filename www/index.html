@@ -267,10 +267,8 @@
             </select>
             <input class='btn' type="button" value="Refresh" onClick="ab_refresh()"></input>
         </div>
-        Run ID A
-        <div id="ab_run_ids_a" class='ab_runs'> </div>
-        Run ID B
-        <div id="ab_run_ids_b" class='ab_runs'> </div>
+        Run ID
+        <div id="ab_runs"> </div>
     </div>
     <div class="col-md-9" id='ab_right'>
         Bits per pixel
@@ -569,11 +567,34 @@ function load_runs() {
   });
 }
 
+function create_cell(job) {
+    var run = $(document.createElement('div'));
+    run.attr('class', 'ab_run');
+
+    var run_id_tag = $(document.createElement('span'));
+    run_id_tag.text(job.run_id);
+    run.append(run_id_tag);
+
+    var run_meta_tag = $(document.createElement('div'));
+    run_meta_tag.addClass('ab_run_meta');
+    run_meta_tag.text(job.info.nick + ' ' + job.date);
+    run.append(run_meta_tag);
+
+    if (job.info.codec == 'daala') {
+        var run_meta_tag = $(document.createElement('div'));
+        run_meta_tag.addClass('ab_run_meta');
+        run_meta_tag.text(job.info.commit);
+
+        run.append(run_meta_tag);
+    }
+
+    $('#ab_runs').prepend(run);
+}
+
 $("a[href='#images'], #ab_run_subsets option").click(ab_refresh);
 
 function ab_clear() {
-    $("#ab_run_ids_a").empty();
-    $("#ab_run_ids_b").empty();
+    $("#ab_runs").empty();
     $("#ab_run_bpps").empty();
     $("#ab_run_images").empty();
 }
@@ -583,11 +604,13 @@ function ab_refresh() {
 
     update_ab_selection('run_id', 'run_id_a')
         .then(function() {
-            $('.ab_run_id_a').first().addClass('selected');
-            $('.ab_run_id_b').first().addClass('selected');
+            // Setup the run ids
+            $('#ab_runs .ab_run:nth-child(1)').addClass('selected_a');
+            $('#ab_runs .ab_run:nth-child(2)').addClass('selected_b');
         }).then(function() { return update_ab_selection('bpp', 'run_id_a');
         }).then(function() { return update_ab_selection('image', 'run_id_a');
         }).then(function() {
+            // Setup the image switcher
             $('#ab_image_id_a').addClass('selected');
             update_ab_image();
         });
@@ -600,22 +623,32 @@ $('.ab_image_switcher').mouseover(function() {
     update_ab_image();
 });
 
-$("#ab_run_ids_a").on('click', '.ab_run_id_a', function() {
-    $('.ab_run_id_a').removeClass('selected');
-    $(this).addClass('selected');
+$("#ab_runs").on('click', '.ab_run', function() {
+    // Select with `a` if it doesn't already have `b` on it.
+    if ( !$(this).hasClass('selected_b') ) {
+        $('.ab_run').removeClass('selected_a');
+        $(this).addClass('selected_a');
+    }
 
     update_ab_selection('bpp', 'run_id_a')
         .then(function() { return update_ab_selection('image', 'run_id_a'); })
         .then(update_ab_image);
 });
 
-$("#ab_run_ids_b").on('click', '.ab_run_id_b', function() {
-    $('.ab_run_id_b').removeClass('selected');
-    $(this).addClass('selected');
+// On right click take action.
+$("div").on('contextmenu', '.ab_run', function() {
+    // Select with `b` if it doesn't already have `a` on it.
+    if ( !$(this).hasClass('selected_a') ) {
+        $('.ab_run').removeClass('selected_b');
+        $(this).addClass('selected_b');
+    }
 
+    // Disable the context menu inside this div.
     update_ab_selection('bpp', 'run_id_b')
         .then(function() { return update_ab_selection('image', 'run_id_b'); })
         .then(update_ab_image);
+
+    return false;
 });
 
 $('#ab_run_bpps').on('click', '.ab_run_bpp', function() {
@@ -634,8 +667,8 @@ $('#ab_run_images').on('click', '.ab_run_image', function() {
 
 function ab_cur_selection(type) {
     var ret;
-    if (type == 'run_id_a') { ret = $('.ab_run_id_a.selected').text(); }
-    else if (type == 'run_id_b') { ret = $('.ab_run_id_b.selected').text(); }
+    if (type == 'run_id_a') { ret = $('.ab_run.selected_a span').text(); }
+    else if (type == 'run_id_b') { ret = $('.ab_run.selected_b span').text(); }
     else if (type == 'bpp') { ret = $('.ab_run_bpp.selected').text(); }
     else if (type == 'image') { ret = $('.ab_run_image.selected').text(); }
     else if (type == 'subset') { ret = $('#ab_run_subsets option:selected').text(); }
@@ -649,20 +682,21 @@ function ab_cur_selection(type) {
 
 // The type of selection to update and who requested the update.
 function update_ab_selection(type, from) {
-    return $.getJSON('ab_paths.json', function(json) {
-        var file_structure = json[0];
+    return $.when($.getJSON('ab_paths.json'), $.getJSON('list.json')).then(function(ab_paths_json, list_json) {
+        var file_structure = ab_paths_json[0][0];
+        var runs = list_json[0];
+
         var selected_subset = ab_cur_selection('subset');
 
         if (type == 'run_id') {
-            Object.keys(file_structure).forEach(function(time_stamp) {
-                subsets = file_structure[time_stamp][0];
+            for (var i in runs) {
+                var job = runs[i];
+                
+                subsets = file_structure[job.run_id][0];
 
                 // Check if this run has the current subset inside.
-                if (subsets[selected_subset] != null) {
-                    $("#ab_run_ids_a").prepend('<div class="ab_run ab_run_id_a">' + time_stamp + '</div>');
-                    $("#ab_run_ids_b").prepend('<div class="ab_run ab_run_id_b">' + time_stamp + '</div>');
-                }
-            });
+                if (subsets[selected_subset] != null) { create_cell(job); }
+            };
 
             return true;
         }
