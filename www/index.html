@@ -276,10 +276,7 @@
         Image
         <div id='ab_run_images'> </div>
         <div id='ab_image_container'> </div>
-        <div id='ab_image_switcher' class='row ab_image_id'>
-            <div id='ab_image_id_a' class='col-md-4 ab_run ab_image_switcher'>Run ID A</div>
-            <div id='ab_image_id_b' class='col-md-4 ab_run ab_image_switcher'>Run ID B</div>
-        </div>
+        <div id='ab_image_switcher' class='row ab_image_id'> </div>
     </div>
     <br />
 </article>
@@ -599,6 +596,27 @@ function ab_clear() {
     $("#ab_run_images").empty();
 }
 
+function ab_update_switcher() {
+    $('#ab_image_switcher').empty();
+
+    $('#ab_runs .selected_a')
+        .clone()
+        .appendTo('#ab_image_switcher')
+        .removeClass('selected_a')
+        .addClass('col-md-4 ab_image_switcher')
+        .attr('id', 'ab_image_id_a');
+
+    $('#ab_runs .selected_b')
+        .clone()
+        .appendTo('#ab_image_switcher')
+        .removeClass('selected_b')
+        .addClass('col-md-4 ab_image_switcher')
+        .attr('id', 'ab_image_id_b');
+
+    // Setup the image switcher
+    $('#ab_image_id_a').addClass('selected');
+}
+
 function ab_refresh() {
     ab_clear();
 
@@ -609,14 +627,11 @@ function ab_refresh() {
             $('#ab_runs .ab_run:nth-child(2)').addClass('selected_b');
         }).then(function() { return update_ab_selection('bpp', 'run_id_a');
         }).then(function() { return update_ab_selection('image', 'run_id_a');
-        }).then(function() {
-            // Setup the image switcher
-            $('#ab_image_id_a').addClass('selected');
-            update_ab_image();
-        });
+        }).then(ab_update_switcher)
+          .then(update_ab_image);
 }
 
-$('.ab_image_switcher').mouseover(function() {
+$('#ab_image_switcher').on('mouseover', '.ab_image_switcher', function() {
     $('.ab_image_switcher').removeClass('selected');
 
     $(this).addClass('selected');
@@ -632,6 +647,7 @@ $("#ab_runs").on('click', '.ab_run', function() {
 
     update_ab_selection('bpp', 'run_id_a')
         .then(function() { return update_ab_selection('image', 'run_id_a'); })
+        .then(ab_update_switcher)
         .then(update_ab_image);
 });
 
@@ -646,6 +662,7 @@ $("div").on('contextmenu', '.ab_run', function() {
     // Disable the context menu inside this div.
     update_ab_selection('bpp', 'run_id_b')
         .then(function() { return update_ab_selection('image', 'run_id_b'); })
+        .then(ab_update_switcher)
         .then(update_ab_image);
 
     return false;
@@ -672,7 +689,7 @@ function ab_cur_selection(type) {
     else if (type == 'bpp') { ret = $('.ab_run_bpp.selected').text(); }
     else if (type == 'image') { ret = $('.ab_run_image.selected').text(); }
     else if (type == 'subset') { ret = $('#ab_run_subsets option:selected').text(); }
-    else if (type == 'image_switcher') { ret = $('.ab_image_switcher.selected').text(); }
+    else if (type == 'image_switcher') { ret = $('.ab_image_switcher.selected span').text(); }
     else {
         console.log('type', type, "doesn't match any selection types.");
     }
@@ -762,12 +779,8 @@ function update_ab_selection(type, from) {
 function update_ab_image() {
     var bpp = ab_cur_selection('bpp');
     var subset = ab_cur_selection('subset');
-    var run_switcher = ab_cur_selection('image_switcher');
+    var run_id = ab_cur_selection('image_switcher');
     var image = ab_cur_selection('image');
-
-    var run_id;
-    if (run_switcher === 'Run ID A') { run_id = ab_cur_selection('run_id_a'); }
-    else { run_id = ab_cur_selection('run_id_b'); }
 
     var new_img_path = 'runs/' + run_id + '/' + subset + '/bpp_' + bpp + '/' + image;
 
