@@ -701,24 +701,34 @@ function update_ab_selection(type, from) {
             return true;
         }
 
-        var time_stamp;
-        if (from == 'run_id_a') { time_stamp = ab_cur_selection('run_id_a'); }
-        else { time_stamp = ab_cur_selection('run_id_b'); }
+        var time_stamp = { a: ab_cur_selection('run_id_a'),
+                           b: ab_cur_selection('run_id_b') };
 
         // `time_stamp` is empty when switching to a subset with no images, this needs to be updated so old data and
         // and images don't remain for a non-existent subset.
-        if (time_stamp === '') {
+        if (time_stamp.a === '') {
             ab_clear();
             update_ab_image();
         } else if (type == 'bpp') {
             $("#ab_run_bpps").empty();
 
-            var bpps = file_structure[time_stamp][0][selected_subset][0];
-            Object.keys(bpps).forEach(function(bpp) {
-                // Folders are named `bpp_0.1` so the `bpp_` must be trimmed.
-                $('#ab_run_bpps').append('<div class="ab_run ab_run_bpp col-md-1">' + bpp.substring(4) + '</div>');
-            });
+            var bpps = { a: file_structure[time_stamp.a][0][selected_subset][0],
+                         b: file_structure[time_stamp.b][0][selected_subset][0] };
 
+            // Only add the bpp when both runs have the same bpp.
+            for (var bpp_a in bpps.a) {
+                for (var bpp_b in bpps.b) {
+                    if (bpp_a === bpp_b) {
+                        var div = $(document.createElement('div'));
+                        div.addClass('ab_run ab_run_bpp col-md-1');
+                        div.text(bpp_a.substring(4));
+
+                        $('#ab_run_bpps').append(div);
+                        break;
+                    }
+                }
+            }
+            
             $('.ab_run_bpp').first()
                             .addClass('selected');
         } else if (type == 'image') {
@@ -726,12 +736,22 @@ function update_ab_selection(type, from) {
 
             // Folder names have `bpp_` prepended.
             var bpp = 'bpp_' + ab_cur_selection('bpp');
-            var images = file_structure[time_stamp][0][selected_subset][0][bpp];
+            var images = { a: file_structure[time_stamp.a][0][selected_subset][0][bpp],
+                           b: file_structure[time_stamp.b][0][selected_subset][0][bpp] };
 
-            images.forEach(function(image, index, array) {
-                // Folders are named `bpp_0.1` so the `bpp_` must be trimmed.
-                $('#ab_run_images').append('<div class="ab_run ab_run_image">' + image + '</div>');
-            });
+            // Only add the bpp when both runs have the same bpp.
+            for (var image_a of images.a) {
+                for (var image_b of images.b) {
+                    if (image_a === image_b) {
+                        var div = $(document.createElement('div'));
+                        div.addClass('ab_run ab_run_image');
+                        div.text(image_a);
+
+                        $('#ab_run_images').append(div);
+                        break;
+                    }
+                }
+            }
 
             $('.ab_run_image').first()
                               .addClass('selected');
