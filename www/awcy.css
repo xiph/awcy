@@ -30,6 +30,10 @@ ul.nav-tabs {
   height: 500px;
   overflow-y: scroll;
 }
+#ab_runs {
+  height: 700px;
+  overflow-y: scroll;
+}
 .ab_runs {
   height: 300px;
   overflow-y: scroll;
@@ -73,23 +77,24 @@ div.row {
 .ab_run:hover {
   box-shadow: 0px 0px 0.2em rgba(0,0,0,0.5);
 }
-.run_id {
-}
-.run_meta {
+.run_meta,
+.ab_run_meta {
   font-size: 9px;
 }
 .run_flag {
   float: right;
 }
-#ab_runs {
-    height 500px;
-}
 #rd_graph {
   height: 500px;
   background-color: white;
 }
-.selected {
+.selected,
+.selected_a {
   background-color: green;
+}
+#ab_image_id_b.selected,
+.selected_b {
+  background-color: crimson;
 }
 header {
   background-color: #5F007D;
