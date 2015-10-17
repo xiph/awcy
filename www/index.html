@@ -710,6 +710,9 @@ function update_ab_selection(type, from) {
             for (var i in runs) {
                 var job = runs[i];
                 
+                // If `list_json` contains a run `ab_paths_json` doesn't, this will be undefined. Go to the next
+                // run if that occurs.
+                if (typeof file_structure[job.run_id] === 'undefined') { continue; }
                 subsets = file_structure[job.run_id][0];
 
                 // Check if this run has the current subset inside.
