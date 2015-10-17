@@ -707,9 +707,7 @@ function update_ab_selection(type, from) {
         var selected_subset = ab_cur_selection('subset');
 
         if (type == 'run_id') {
-            for (var i in runs) {
-                var job = runs[i];
-                
+            for (var job of runs) {
                 // If `list_json` contains a run `ab_paths_json` doesn't, this will be undefined. Go to the next
                 // run if that occurs.
                 if (typeof file_structure[job.run_id] === 'undefined') { continue; }
