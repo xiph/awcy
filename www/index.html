@@ -566,20 +566,20 @@ function load_runs() {
 }
 
 function create_cell(job) {
-    var run = $(document.createElement('div'));
+    var run = $('<div>');
     run.attr('class', 'ab_run');
 
-    var run_id_tag = $(document.createElement('span'));
+    var run_id_tag = $('<span>');
     run_id_tag.text(job.run_id);
     run.append(run_id_tag);
 
-    var run_meta_tag = $(document.createElement('div'));
+    var run_meta_tag = $('<div>');
     run_meta_tag.addClass('ab_run_meta');
     run_meta_tag.text(job.info.nick + ' ' + job.date);
     run.append(run_meta_tag);
 
     if (job.info.codec == 'daala') {
-        var run_meta_tag = $(document.createElement('div'));
+        var run_meta_tag = $('<div>');
         run_meta_tag.addClass('ab_run_meta');
         run_meta_tag.text(job.info.commit);
 
@@ -740,7 +740,7 @@ function update_ab_selection(type, from) {
             for (var bpp_a in bpps.a) {
                 for (var bpp_b in bpps.b) {
                     if (bpp_a === bpp_b) {
-                        var div = $(document.createElement('div'));
+                        var div = $('<div>');
                         div.addClass('ab_run ab_run_bpp col-md-1');
                         div.text(bpp_a.substring(4));
 
@@ -764,7 +764,7 @@ function update_ab_selection(type, from) {
             for (var image_a of images.a) {
                 for (var image_b of images.b) {
                     if (image_a === image_b) {
-                        var div = $(document.createElement('div'));
+                        var div = $('<div>');
                         div.addClass('ab_run ab_run_image');
                         div.text(image_a);
 
