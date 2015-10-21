@@ -20,6 +20,7 @@ npm install body-parser
 npm install cookie-parser
 npm install express
 npm install irc@0.3.7
+npm install fs-extra
 ```
 
 To run the server, execute the run_awcy.bat file

@@ -1,9 +1,13 @@
-var fs = require('fs');
+// fs-extra provides deleting directories recursively so I don't
+// have to manually implement it.
+var fs = require('fs-extra');
 var path = require('path');
 
 var jobs = [];
 
 fs.readdirSync('runs').forEach(function(run_id) {
+  if (erases_old_images(run_id)) return;
+
   var job = {}
   job.run_id = run_id;
   job.tasks = fs.readdirSync('runs/'+run_id);
@@ -53,3 +57,41 @@ function read_ab_image_paths(outer_path) {
   return entries;
 }
 
+function erases_old_images(run_id) {
+    var stat = fs.statSync('runs/' + run_id);
+
+    var age_ms = Date.now() - stat.mtime;
+    var age_days = age_ms / (1000 * 3600 * 24);
+
+    // Not old enough to erase files.
+    if (age_days < 30) { return false; }
+
+    var run_path = 'runs/' + run_id;
+    var removed_images = false;
+
+    // Remove images in the sets folder if it finds some.
+    fs.readdirSync(run_path).forEach(function(inside_run) {
+        var inside_run_path = run_path + '/' + inside_run;
+
+        if (fs.statSync(inside_run_path).isDirectory()) {
+            var set_path = inside_run_path;
+
+            fs.readdirSync(set_path).forEach(function(inside_set) {
+                var inside_set_path = set_path + '/' + inside_set;
+
+                if (fs.statSync(inside_set_path).isDirectory()) {
+                    removed_images = true;
+                    fs.removeSync(inside_set_path);
+                }
+            });
+        }
+    });
+
+    if (removed_images) {
+        console.log('ab images for', run_id, 'were removed since they were', age_days.toFixed(1), 'days old.');
+
+        return true;
+    }
+
+    return false;
+}
