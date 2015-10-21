@@ -70,6 +70,7 @@ function rdgraph_draw(selected_graphs, outfile) {
 
     var x_max = parseFloat($("#graph_x_range").val());
     options.xaxis.max = x_max * bpp_scaler;
+    options.xaxis.min = 0.003;
 
     if (bpp_scaler != 1) {
       options.xaxis.axisLabel = 'Mbps';
