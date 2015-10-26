@@ -34,10 +34,6 @@ ul.nav-tabs {
   height: 700px;
   overflow-y: scroll;
 }
-.ab_runs {
-  height: 300px;
-  overflow-y: scroll;
-}
 #ab_image {
     background: hsl(120,100%,95%); /* light green */
 }
