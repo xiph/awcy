@@ -266,8 +266,12 @@
             </select>
             <input class='btn' type="button" value="Refresh" onClick="ab_refresh()"></input>
         </div>
-        Run ID
-        <div id="ab_runs"> </div>
+        <div id='ab_runs'>
+            <h4>Reference runs:</h4>
+            <div id='ab_runs_reference'> </div>
+            <h4>Experimental runs:</h4>
+            <div id='ab_runs_experimental'> </div>
+        </div>
     </div>
     <div class="col-md-9" id='ab_right'>
         Bits per pixel
@@ -576,13 +580,15 @@ function create_cell(job) {
         run.append(run_meta_tag);
     }
 
-    $('#ab_runs').prepend(run);
+    if (job.info.special) { $('#ab_runs_reference').append(run); }
+    else { $('#ab_runs_experimental').prepend(run); }
 }
 
 $("a[href='#images'], #ab_run_subsets option").click(ab_refresh);
 
 function ab_clear() {
-    $("#ab_runs").empty();
+    $("#ab_runs_reference").empty();
+    $("#ab_runs_experimental").empty();
     $("#ab_run_bpps").empty();
     $("#ab_run_images").empty();
 }
@@ -613,9 +619,11 @@ function ab_refresh() {
 
     update_ab_selection('run_id', 'run_id_a')
         .then(function() {
-            // Setup the run ids
-            $('#ab_runs .ab_run:nth-child(1)').addClass('selected_a');
-            $('#ab_runs .ab_run:nth-child(2)').addClass('selected_b');
+            // Setup the run ids. `:first` is apparently slow because it's a jQuery
+            // extension and it is recommended to filter with it as a performance
+            // optimization as opposed to using it directly.
+            $('#ab_runs .ab_run:nth-child(1)').filter(':first').addClass('selected_a');
+            $('#ab_runs .ab_run:nth-child(2)').filter(':first').addClass('selected_b');
         }).then(function() { return update_ab_selection('bpp', 'run_id_a');
         }).then(function() { return update_ab_selection('image', 'run_id_a');
         }).then(ab_update_switcher)
