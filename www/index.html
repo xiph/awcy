@@ -514,36 +514,7 @@ function load_runs() {
       var job = data[i];
       run_list_by_name[job.run_id] = job;
       if ((job.tasks.indexOf(filter_task) != -1) || (filter_task == 'all')) {
-        var run = $(document.createElement('div'));
-        run.attr('id',job.run_id);
-        run.attr('class','run');
-        run.on('click',function() {
-          $(this).toggleClass('selected');
-          if (filter_task == 'all') {
-            load_sets();
-          }
-          run_selection_changed();
-          return false;
-        });
-        var run_id_tag = $(document.createElement('span'));
-        run_id_tag.addClass('run_id');
-        run_id_tag.text(job.run_id);
-        run.append(run_id_tag);
-        var run_meta_tag = $(document.createElement('div'));
-        run_meta_tag.addClass('run_meta');
-        run_meta_tag.text(job.info.nick + ' ' + job.date);
-        run.append(run_meta_tag);
-        if (job.info.codec == 'daala') {
-          var run_meta_tag = $(document.createElement('div'));
-          run_meta_tag.addClass('run_meta');
-          run_meta_tag.text(job.info.commit);
-          run.append(run_meta_tag);
-        }
-        if (job.info.special) {
-          $('#runs_latest').prepend(run);
-        } else {
-          $('#runs_experimental').append(run);
-        }
+        create_cell(job, 'graph');
       }
     }
     if (Array.isArray(urldata['r[]'])) {
@@ -559,29 +530,50 @@ function load_runs() {
   });
 }
 
-function create_cell(job) {
+function create_cell(job, page) {
     var run = $('<div>');
-    run.attr('class', 'ab_run');
-
     var run_id_tag = $('<span>');
-    run_id_tag.text(job.run_id);
-    run.append(run_id_tag);
-
     var run_meta_tag = $('<div>');
-    run_meta_tag.addClass('ab_run_meta');
+
+    if (page === 'images') { run.attr('class', 'ab_run'); }
+    else {
+        run.attr('id',job.run_id);
+        run.attr('class', 'run');
+
+        run.on('click',function() {
+            $(this).toggleClass('selected');
+
+            if (filter_task == 'all') { load_sets(); }
+            run_selection_changed();
+
+            return false;
+        });
+
+        run_id_tag.addClass('run_id');
+    }
+
+    run_meta_tag.addClass('run_meta');
+    run_id_tag.text(job.run_id);
     run_meta_tag.text(job.info.nick + ' ' + job.date);
+
+    run.append(run_id_tag);
     run.append(run_meta_tag);
 
     if (job.info.codec == 'daala') {
-        var run_meta_tag = $('<div>');
-        run_meta_tag.addClass('ab_run_meta');
-        run_meta_tag.text(job.info.commit);
+        var run_hash = $('<div>');
+        run_hash.addClass('run_meta');
+        run_hash.text(job.info.commit);
 
-        run.append(run_meta_tag);
+        run.append(run_hash);
     }
 
-    if (job.info.special) { $('#ab_runs_reference').append(run); }
-    else { $('#ab_runs_experimental').prepend(run); }
+    if (page === 'images') {
+        if (job.info.special) { $('#ab_runs_reference').append(run); }
+        else { $('#ab_runs_experimental').prepend(run); }
+    } else {
+        if (job.info.special) { $('#runs_latest').prepend(run); }
+        else { $('#runs_experimental').append(run); }
+    }
 }
 
 $("a[href='#images'], #ab_run_subsets option").click(ab_refresh);
@@ -718,7 +710,7 @@ function update_ab_selection(type, from) {
                 subsets = file_structure[job.run_id][0];
 
                 // Check if this run has the current subset inside.
-                if (subsets[selected_subset] != null) { create_cell(job); }
+                if (subsets[selected_subset] != null) { create_cell(job, 'images'); }
             };
 
             return true;
