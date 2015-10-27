@@ -697,12 +697,6 @@ function update_ab_selection(type, from) {
         var selected_subset = ab_cur_selection('subset');
 
         if (type == 'run_id') {
-            runs.sort(function(a, b) {
-                if (a.date < b.date) return -1;
-                else if (a.date > b.date) return 1;
-                else return 0;
-            });
-
             for (var job of runs) {
                 // If `list_json` contains a run `ab_paths_json` doesn't, this will be undefined. Go to the next
                 // run if that occurs.
@@ -713,6 +707,23 @@ function update_ab_selection(type, from) {
                 if (subsets[selected_subset] != null) { create_cell(job, 'images'); }
             };
 
+            // Extract the experimental run divs so they may be sorted.
+            var exp_runs = $('#ab_runs_experimental div.ab_run');
+
+            exp_runs.sort(function(a, b) {
+                // Grab the date from the meta tag and strip off the user nickname.
+                var date_a = $(a).find('.run_meta:first').text().split(' ')[1];
+                var date_b = $(b).find('.run_meta:first').text().split(' ')[1];
+
+                // Sort in descending order.
+                if (date_a < date_b) { return 1; }
+                else if (date_a > date_b) { return -1; }
+                else { return 0; }
+            });
+
+            // Doesn't require `empty()` before I append but I'm not exactly sure why. The example I saw didn't
+            // need it either so at least it's consistent.
+            $('#ab_runs_experimental').append(exp_runs);
             return true;
         }
 
