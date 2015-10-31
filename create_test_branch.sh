@@ -6,6 +6,8 @@ COMMIT="$1"
 
 TESTNAME="$2"
 
+CODEC="$3"
+
 cd $CODEC
 git fetch --all
 git checkout $COMMIT
