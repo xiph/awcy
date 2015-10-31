@@ -34,10 +34,6 @@ ul.nav-tabs {
   height: 700px;
   overflow-y: scroll;
 }
-.ab_runs {
-  height: 300px;
-  overflow-y: scroll;
-}
 #ab_image {
     background: hsl(120,100%,95%); /* light green */
 }
@@ -77,8 +73,7 @@ div.row {
 .ab_run:hover {
   box-shadow: 0px 0px 0.2em rgba(0,0,0,0.5);
 }
-.run_meta,
-.ab_run_meta {
+.run_meta {
   font-size: 9px;
 }
 .run_flag {

@@ -60,6 +60,15 @@ function read_ab_image_paths(outer_path) {
 function erases_old_images(run_id) {
     var stat = fs.statSync('runs/' + run_id);
 
+    var info = {};
+    try {
+        var infoFile = fs.readFileSync('runs/'+run_id+'/info.json');
+        info = JSON.parse(infoFile);
+    } catch (e) {};
+
+    // Never automatically erase special (reference) runs.
+    if (info.special) { return false; }
+
     var age_ms = Date.now() - stat.mtime;
     var age_days = age_ms / (1000 * 3600 * 24);
 

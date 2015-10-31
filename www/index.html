@@ -266,13 +266,17 @@
             </select>
             <input class='btn' type="button" value="Refresh" onClick="ab_refresh()"></input>
         </div>
-        Run ID
-        <div id="ab_runs"> </div>
+        <div id='ab_runs'>
+            <h4>Reference runs:</h4>
+            <div id='ab_runs_reference'> </div>
+            <h4>Experimental runs:</h4>
+            <div id='ab_runs_experimental'> </div>
+        </div>
     </div>
     <div class="col-md-9" id='ab_right'>
-        Bits per pixel
+        <h4>Bits per pixel</h4>
         <div id='ab_run_bpps' class='row'> </div>
-        Image
+        <h4>Image</h4>
         <div id='ab_run_images'> </div>
         <div id='ab_image_container'> </div>
         <div id='ab_image_switcher' class='row ab_image_id'> </div>
@@ -510,36 +514,7 @@ function load_runs() {
       var job = data[i];
       run_list_by_name[job.run_id] = job;
       if ((job.tasks.indexOf(filter_task) != -1) || (filter_task == 'all')) {
-        var run = $(document.createElement('div'));
-        run.attr('id',job.run_id);
-        run.attr('class','run');
-        run.on('click',function() {
-          $(this).toggleClass('selected');
-          if (filter_task == 'all') {
-            load_sets();
-          }
-          run_selection_changed();
-          return false;
-        });
-        var run_id_tag = $(document.createElement('span'));
-        run_id_tag.addClass('run_id');
-        run_id_tag.text(job.run_id);
-        run.append(run_id_tag);
-        var run_meta_tag = $(document.createElement('div'));
-        run_meta_tag.addClass('run_meta');
-        run_meta_tag.text(job.info.nick + ' ' + job.date);
-        run.append(run_meta_tag);
-        if (job.info.codec == 'daala') {
-          var run_meta_tag = $(document.createElement('div'));
-          run_meta_tag.addClass('run_meta');
-          run_meta_tag.text(job.info.commit);
-          run.append(run_meta_tag);
-        }
-        if (job.info.special) {
-          $('#runs_latest').prepend(run);
-        } else {
-          $('#runs_experimental').append(run);
-        }
+        create_cell(job, 'graph');
       }
     }
     if (Array.isArray(urldata['r[]'])) {
@@ -555,34 +530,57 @@ function load_runs() {
   });
 }
 
-function create_cell(job) {
+function create_cell(job, page) {
     var run = $('<div>');
-    run.attr('class', 'ab_run');
-
     var run_id_tag = $('<span>');
-    run_id_tag.text(job.run_id);
-    run.append(run_id_tag);
-
     var run_meta_tag = $('<div>');
-    run_meta_tag.addClass('ab_run_meta');
+
+    if (page === 'images') { run.attr('class', 'ab_run'); }
+    else {
+        run.attr('id',job.run_id);
+        run.attr('class', 'run');
+
+        run.on('click',function() {
+            $(this).toggleClass('selected');
+
+            if (filter_task == 'all') { load_sets(); }
+            run_selection_changed();
+
+            return false;
+        });
+
+        run_id_tag.addClass('run_id');
+    }
+
+    run_meta_tag.addClass('run_meta');
+    run_id_tag.text(job.run_id);
     run_meta_tag.text(job.info.nick + ' ' + job.date);
+
+    run.append(run_id_tag);
     run.append(run_meta_tag);
 
     if (job.info.codec == 'daala') {
-        var run_meta_tag = $('<div>');
-        run_meta_tag.addClass('ab_run_meta');
-        run_meta_tag.text(job.info.commit);
+        var run_hash = $('<div>');
+        run_hash.addClass('run_meta');
+        run_hash.text(job.info.commit);
 
-        run.append(run_meta_tag);
+        run.append(run_hash);
     }
 
-    $('#ab_runs').prepend(run);
+    if (page === 'images') {
+        if (job.info.special) { $('#ab_runs_reference').append(run); }
+        else { $('#ab_runs_experimental').prepend(run); }
+    } else {
+        if (job.info.special) { $('#runs_latest').prepend(run); }
+        else { $('#runs_experimental').append(run); }
+    }
 }
 
 $("a[href='#images'], #ab_run_subsets option").click(ab_refresh);
 
 function ab_clear() {
-    $("#ab_runs").empty();
+    $("#ab_runs_reference").empty();
+    $("#ab_runs_experimental").empty();
     $("#ab_run_bpps").empty();
     $("#ab_run_images").empty();
 }
@@ -613,9 +611,11 @@ function ab_refresh() {
 
     update_ab_selection('run_id', 'run_id_a')
         .then(function() {
-            // Setup the run ids
-            $('#ab_runs .ab_run:nth-child(1)').addClass('selected_a');
-            $('#ab_runs .ab_run:nth-child(2)').addClass('selected_b');
+            // Setup the run ids. `:first` is apparently slow because it's a jQuery
+            // extension and it is recommended to filter with it as a performance
+            // optimization as opposed to using it directly.
+            $('#ab_runs .ab_run:nth-child(1)').filter(':first').addClass('selected_a');
+            $('#ab_runs .ab_run:nth-child(2)').filter(':first').addClass('selected_b');
         }).then(function() { return update_ab_selection('bpp', 'run_id_a');
         }).then(function() { return update_ab_selection('image', 'run_id_a');
         }).then(ab_update_switcher)
@@ -697,12 +697,6 @@ function update_ab_selection(type, from) {
         var selected_subset = ab_cur_selection('subset');
 
         if (type == 'run_id') {
-            runs.sort(function(a, b) {
-                if (a.date < b.date) return -1;
-                else if (a.date > b.date) return 1;
-                else return 0;
-            });
-
             for (var job of runs) {
                 // If `list_json` contains a run `ab_paths_json` doesn't, this will be undefined. Go to the next
                 // run if that occurs.
@@ -710,9 +704,26 @@ function update_ab_selection(type, from) {
                 subsets = file_structure[job.run_id][0];
 
                 // Check if this run has the current subset inside.
-                if (subsets[selected_subset] != null) { create_cell(job); }
+                if (subsets[selected_subset] != null) { create_cell(job, 'images'); }
             };
 
+            // Extract the experimental run divs so they may be sorted.
+            var exp_runs = $('#ab_runs_experimental div.ab_run');
+
+            exp_runs.sort(function(a, b) {
+                // Grab the date from the meta tag and strip off the user nickname.
+                var date_a = $(a).find('.run_meta:first').text().split(' ')[1];
+                var date_b = $(b).find('.run_meta:first').text().split(' ')[1];
+
+                // Sort in descending order.
+                if (date_a < date_b) { return 1; }
+                else if (date_a > date_b) { return -1; }
+                else { return 0; }
+            });
+
+            // Doesn't require `empty()` before I append but I'm not exactly sure why. The example I saw didn't
+            // need it either so at least it's consistent.
+            $('#ab_runs_experimental').append(exp_runs);
             return true;
         }
 
