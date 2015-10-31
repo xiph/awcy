@@ -6,7 +6,7 @@ COMMIT="$1"
 
 TESTNAME="$2"
 
-cd daala
+cd $CODEC
 git fetch --all
 git checkout $COMMIT
 git checkout -b t-$TESTNAME
