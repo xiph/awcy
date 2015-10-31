@@ -354,7 +354,7 @@ function run_selection_changed() {
   var filter_task = $('#run_filter_task').val();
   raw_data = $('#raw_data');
   raw_data.html('');
-  
+
   for (var i in selected_graphs) {
     var header = $('<h4>').html(selected_graphs[i]);
     var link = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/'+outfile);
@@ -542,7 +542,7 @@ function create_cell(job, page) {
 
         run.on('click',function() {
             $(this).toggleClass('selected');
-
+            var filter_task = $('#run_filter_task').val();
             if (filter_task == 'all') { load_sets(); }
             run_selection_changed();
 
@@ -754,7 +754,7 @@ function update_ab_selection(type, from) {
                     }
                 }
             }
-            
+
             $('.ab_run_bpp').first()
                             .addClass('selected');
         } else if (type == 'image') {
