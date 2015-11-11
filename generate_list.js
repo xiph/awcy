@@ -22,7 +22,8 @@ fs.readdirSync('runs').forEach(function(run_id) {
   jobs.push(job);
 });
 
-fs.writeFile('list.json',JSON.stringify(jobs));
+fs.writeFileSync('list.json.new',JSON.stringify(jobs));
+fs.renameSync('list.json.new','list.json');
 
 file_structure = read_ab_image_paths('runs');
 fs.writeFile('ab_paths.json', JSON.stringify(file_structure, null, 4));

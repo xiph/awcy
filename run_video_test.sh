@@ -25,6 +25,13 @@ case $CODEC in
     make
     popd
     ;;
+  x265)
+    pushd x265/build/linux
+    ./make-Makefiles.bash
+    make
+    popd
+    ;;
+
 esac
 
 cd rd_tool
