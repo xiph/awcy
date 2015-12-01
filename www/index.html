@@ -563,13 +563,11 @@ function create_cell(job, page) {
     run.append(run_id_tag);
     run.append(run_meta_tag);
 
-    if (job.info.codec == 'daala') {
-        var run_hash = $('<div>');
-        run_hash.addClass('run_meta');
-        run_hash.text(job.info.commit);
+    var run_hash = $('<div>');
+    run_hash.addClass('run_meta');
+    run_hash.text(job.info.commit);
 
-        run.append(run_hash);
-    }
+    run.append(run_hash);
 
     if (page === 'images') {
         if (job.info.special) { $('#ab_runs_reference').append(run); }
