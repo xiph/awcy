@@ -25,6 +25,12 @@ case $CODEC in
     make
     popd
     ;;
+  x264)
+    pushd x264/
+    ./configure
+    make
+    popd
+    ;;
   x265)
     pushd x265/build/linux
     ./make-Makefiles.bash
