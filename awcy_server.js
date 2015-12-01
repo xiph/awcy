@@ -39,7 +39,7 @@ var last_job_completed_time = Date.now();
 var key = fs.readFileSync('secret_key', {encoding: 'utf8'}).trim();
 
 function check_key(req,res,next) {
-  if (req.cookies.key == key) {	
+  if (req.cookies.key == key) {
     next();
     return;
   } else if (key == req.body.key) {
@@ -72,7 +72,7 @@ function process_queue() {
       job_child_process = cp.spawn('./run_video_test.sh',
         [job.commit,job.run_id,job.task],
         { env: env });
-    } 
+    }
     job_log = ''
     job_child_process.stdout.on('data', function(data) {
       console.log(data.toString());
@@ -243,8 +243,9 @@ app.post('/submit/delete',function(req,res) {
 });
 
 app.post('/submit/kill',function(req,res) {
+  job_child_process.kill('SIGTERM');
   job_child_process.kill('SIGKILL');
-  res.send('ok');
+  res.send(job_child_process.pid);
 });
 
 app.post('/submit/restart', function(req,res) {
