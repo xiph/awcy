@@ -49,21 +49,7 @@
     <div id="runbox" class="col-md-3">
       <h3>Runs</h3>
       Video set:
-      <select id="run_filter_task" onChange="load_runs();load_sets()">
-        <option value="video-1-short">video-1-short</option>
-        <option value="video-hd-1">video-hd-1</option>
-        <option value="video-hd-2">video-hd-2</option>
-        <option value="ntt-short-1" selected>ntt-short-1</option>
-        <option value="ntt-short-1-64">ntt-short-1-64</option>
-        <option value="ntt-short-1-vc-720p30">ntt-short-1-vc-720p30</option>
-        <option value="screenshots">screenshots</option>
-        <option value="subset1">subset1</option>
-        <option value="subset2">subset2</option>
-        <option value="subset3">subset3</option>
-        <option value="subset4">subset4</option>
-        <option value="subset1-64">subset1-64</option>
-        <option value="all">All</option>
-      </select>
+      <span id="run_filter_task_container"></span>
       <input type="button" class="btn" value="Reset" onClick="clear_runs()"></input>
       <div id="runs">
         <h4>Reference codecs:</h4>
@@ -164,21 +150,7 @@
         </div>
         <div class="form-group">
           <label>Subset</label>
-          <select id="task" name="task" class="form-control">
-            <option value="video-1-short">video-1-short - 7 videos, 1-sec durations, 207 MB</option>
-            <option value="video-hd-1">video-hd-1 - ? videos, ? durations, ? MB</option>
-            <option value="video-hd-2">video-hd-2 - ? videos, ? durations, ? MB</option>
-            <option value="ntt-short-1">ntt-short-1 - ? videos, ? durations, ? MB</option>
-            <option value="ntt-short-1-64">ntt-short-1-64 - ? videos, ? durations, ? MB</option>
-            <option value="ntt-short-1-vc-720p30">ntt-short-1-vc-720p30 - 30fps video conferencing subset</option>
-            <option value="screenshots">jmspeex's screenshots</option>
-            <option value="subset1">subset1 - 51 images, 77.5 MB</option>
-            <option value="subset2">subset2 - 51 images, 79.6 MB</option>
-            <option value="subset3">subset3 - 1000 images, 1.58 GB</option>
-            <option value="subset4">subset4 - 1000 images, 1.58 GB</option>
-            <option value="subset1-64">subset1-64</option>
-            <option value="custom">Custom</option>
-          </select>
+          <span id="task_container"></span>
           <select name="custom_videos" id="custom_videos" class="form-control hidden" multiple>
           </select>
         </div>
@@ -253,22 +225,8 @@
     <div class="col-md-3 row container" id="ab_left">
         Video set:
         <div class='row'>
-            <select id='ab_run_subsets' name="ab_run_subsets">
-                <option value="video-1-short">video-1-short</option>
-                <option value="video-hd-1">video-hd-1</option>
-                <option value="video-hd-2">video-hd-2</option>
-                <option value="ntt-short-1">ntt-short-1</option>
-                <option value="ntt-short-1-64">ntt-short-1-64</option>
-                <option value="ntt-short-1-vc-720p30">ntt-short-1-vc-720p30</option>
-                <option value="screenshots">screenshots</option>
-                <option value="subset1" selected >subset1</option>
-                <option value="subset2">subset2</option>
-                <option value="subset3">subset3</option>
-                <option value="subset4">subset4</option>
-                <option value="subset1-64">subset1-64</option>
-                <option value="all">All</option>
-            </select>
-            <input class='btn' type="button" value="Refresh" onClick="ab_refresh()"></input>
+          <span id="ab_run_subsets_container"></span>
+          <input class='btn' type="button" value="Refresh" onClick="ab_refresh()"></input>
         </div>
         <div id='ab_runs'>
             <h4>Reference runs:</h4>
@@ -501,6 +459,16 @@ function load_sets_for_filter() {
       }
     }
   });
+}
+
+function set_selector() {
+  var ret = $('<select>');
+  var subsets = ['video-1-short','video-hd-1','video-hd-2','ntt-short-1',
+    'ntt-short-1-64','screenshots','subset1','subset2','subset3','subset4'];
+  for (var set of subsets) {
+    ret.append($('<option>').attr('value',set).html(set));
+  }
+  return ret;
 }
 
 function load_runs() {
@@ -842,6 +810,20 @@ function auto_refresh() {
 }
 
 $(function() {
+  // populate widgets
+  var task_selector = set_selector();
+  task_selector.attr('id','task');
+  task_selector.attr('name','task');
+  task_selector.addClass('form-control');
+  $('#task_container').append(task_selector);
+  var ab_run_subsets_selector = set_selector();
+  ab_run_subsets_selector.attr('id','ab_run_subsets');
+  ab_run_subsets_selector.attr('name','ab_run_subsets');
+  $('#ab_run_subsets_container').append(ab_run_subsets_selector);
+  var run_filter_task_selector = set_selector();
+  run_filter_task_selector.attr('id','run_filter_task');
+  run_filter_task_selector.attr('onChange','load_runs();load_sets();');
+  $('#run_filter_task_container').append(run_filter_task_selector);
   refresh_login_required();
   var uri = new URI();
   urldata = URI.parseQuery(uri.query());
