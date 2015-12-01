@@ -33,7 +33,7 @@ case $CODEC in
     ;;
   vp10)
     pushd vp10
-    ./configure --enable-vp10 --enable-experimental --enable-var_tx --enable-ext_tx --enable-misc_fixes --enable-ext_intra --enable-ext_inter --enable-ext_interp --enable-ext_refs --enable-supertx --enable-spatial_svc
+    ./configure --enable-vp10
     make
     popd
     ;;
