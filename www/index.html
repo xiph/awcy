@@ -819,6 +819,7 @@ $(function() {
   var ab_run_subsets_selector = set_selector();
   ab_run_subsets_selector.attr('id','ab_run_subsets');
   ab_run_subsets_selector.attr('name','ab_run_subsets');
+  ab_run_subsets_selector.children("option[value='subset1']").attr('selected', 'selected');
   $('#ab_run_subsets_container').append(ab_run_subsets_selector);
   var run_filter_task_selector = set_selector();
   run_filter_task_selector.attr('id','run_filter_task');
