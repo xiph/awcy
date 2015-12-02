@@ -43,6 +43,12 @@ case $CODEC in
     make
     popd
     ;;
+  vp9)
+    pushd vp9
+    ./configure --enable-vp9
+    make
+    popd
+    ;;
 esac
 
 cd rd_tool
