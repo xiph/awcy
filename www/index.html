@@ -466,7 +466,9 @@ function set_selector() {
   var subsets = ['video-1-short','video-hd-1','video-hd-2','ntt-short-1',
     'ntt-short-1-64','screenshots','subset1','subset2','subset3','subset4'];
   for (var set of subsets) {
-    ret.append($('<option>').attr('value',set).html(set));
+    var option = $('<option>').attr('value',set).html(set);
+    if (set == 'ntt-short-1') option.attr('selected','selected');
+    ret.append(option);
   }
   return ret;
 }
