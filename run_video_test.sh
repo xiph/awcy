@@ -20,8 +20,7 @@ case $CODEC in
     ./autogen.sh; ./configure --enable-static --disable-shared --disable-player --disable-dump-images --enable-logging --enable-dump-recons ; make -j4
     popd
     ;;
-  thor)
-  thor-rt)
+  thor | thor-rt)
     pushd thor/
     make
     popd
@@ -38,8 +37,7 @@ case $CODEC in
     make
     popd
     ;;
-  vp10)
-  vp10-rt)
+  vp10 | vp10-rt)
     pushd vp10
     ./configure --enable-vp10
     make
