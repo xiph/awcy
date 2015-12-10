@@ -21,7 +21,7 @@ case $CODEC in
     popd
     ;;
   thor | thor-rt)
-    pushd thor/
+    pushd $CODEC
     make
     popd
     ;;
@@ -38,7 +38,7 @@ case $CODEC in
     popd
     ;;
   vp10 | vp10-rt)
-    pushd vp10
+    pushd $CODEC
     ./configure --enable-vp10
     make
     popd
