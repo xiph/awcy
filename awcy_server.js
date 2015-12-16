@@ -178,11 +178,19 @@ app.get('/bd_rate',function(req,res) {
   var set = path.basename(req.query['set']);
   var a_file = __dirname+'/runs/'+a+'/'+set+'/'+file;
   var b_file = __dirname+'/runs/'+b+'/'+set+'/'+file;
-  cp.execFile('./bd_rate.m',[a_file,b_file],
-              {env: {'BUILD_ROOT': 'daalatool/', 'MIN_BPP': min_bpp, 'MAX_BPP': max_bpp}, cwd: __dirname+'/daalatool/tools/matlab/'},
-              function(error,stdout,stderr) {
-    res.send(stdout);
-  });
+  if (req.query['method'] == 'jm') {
+    cp.execFile('./bd_rate_jm.m',[a_file,b_file],
+                {},
+                function(error,stdout,stderr) {
+      res.send(stdout);
+    });
+  } else {
+    cp.execFile('./bd_rate.m',[a_file,b_file],
+                {env: {'BUILD_ROOT': 'daalatool/', 'MIN_BPP': min_bpp, 'MAX_BPP': max_bpp}, cwd: __dirname+'/daalatool/tools/matlab/'},
+                function(error,stdout,stderr) {
+      res.send(stdout);
+    });
+  }
 });
 
 app.use('/submit',check_key);
