@@ -33,7 +33,7 @@ case $CODEC in
     ;;
   x265)
     pushd x265/build/linux
-    ./make-Makefiles.bash
+    cmake ../../source/
     make
     popd
     ;;
