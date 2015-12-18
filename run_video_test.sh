@@ -33,7 +33,7 @@ case $CODEC in
     ;;
   x265)
     pushd x265/build/linux
-    cmake ../../source/
+    cmake -D ENABLE_SHARED=no ../../source/
     make
     popd
     ;;
