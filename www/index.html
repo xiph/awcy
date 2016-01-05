@@ -473,7 +473,8 @@ function set_selector() {
   var subsets = ['video-1-short','video-hd-1','video-hd-2','video-hd-3','ntt-short-1',
     'ntt-short-1-64','screenshots','subset1','subset2','subset3','subset4',
     'vc-360p-1', 'vc-720p-1', 'netflix-4k-1', 'netflix-2k-1', 'twitch-1'];
-  for (var set of subsets) {
+  for (var i in subsets) {
+    var set = subsets[i];
     var option = $('<option>').attr('value',set).html(set);
     if (set == 'ntt-short-1') option.attr('selected','selected');
     ret.append(option);
@@ -677,7 +678,8 @@ function update_ab_selection(type, from) {
         var selected_subset = ab_cur_selection('subset');
 
         if (type == 'run_id') {
-            for (var job of runs) {
+            for (var run_index in runs) {
+                var job = runs[run_index];
                 // If `list_json` contains a run `ab_paths_json` doesn't, this will be undefined. Go to the next
                 // run if that occurs.
                 if (typeof file_structure[job.run_id] === 'undefined') { continue; }
@@ -746,8 +748,11 @@ function update_ab_selection(type, from) {
                            b: file_structure[time_stamp.b][0][selected_subset][0][bpp] };
 
             // Only add the bpp when both runs have the same bpp.
-            for (var image_a of images.a) {
-                for (var image_b of images.b) {
+            for (var index_a in images.a) {
+                var image_a = images.a[index_a];
+
+                for (var index_b in images.b) {
+                    var image_b = images.b[index_b];
                     if (image_a === image_b) {
                         var div = $('<div>');
                         div.addClass('ab_run ab_run_image');
