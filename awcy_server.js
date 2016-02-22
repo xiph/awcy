@@ -63,6 +63,7 @@ function process_queue() {
     env['LANG'] = 'en_US.UTF-8';
     env['CODEC'] = job.codec;
     env['EXTRA_OPTIONS'] = job.extra_options;
+    env['BUILD_OPTIONS'] = job.build_options;
     env['RUN_ID'] = job.run_id;
     if (job.videos) {
       job_child_process = cp.spawn('./run_video_test2.sh',
@@ -213,6 +214,11 @@ app.post('/submit/job',function(req,res) {
     job.extra_options = req.body.extra_options;
   } else {
     job.extra_options = '';
+  }
+  if (req.body.build_options) {
+    job.build_options = req.body.build_options;
+  } else {
+    job.build_options = '';
   }
   if (req.body.codec) {
     job.codec = req.body.codec;

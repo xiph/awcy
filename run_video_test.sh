@@ -17,7 +17,7 @@ case $CODEC in
     pushd $DAALA_ROOT
     gcc -print-prog-name=cc1
     gcc -print-search-dirs
-    ./autogen.sh; ./configure --enable-static --disable-shared --disable-player --disable-dump-images --enable-logging --enable-dump-recons ; make -j4
+    ./autogen.sh; ./configure --enable-static --disable-shared --disable-player --disable-dump-images --enable-logging --enable-dump-recons $BUILD_OPTIONS; make -j4
     popd
     ;;
   thor | thor-rt)
@@ -27,25 +27,25 @@ case $CODEC in
     ;;
   x264)
     pushd x264/
-    ./configure
+    ./configure $BUILD_OPTIONS
     make
     popd
     ;;
   x265)
     pushd x265/build/linux
-    cmake -D ENABLE_SHARED=no ../../source/
+    cmake -D ENABLE_SHARED=no $BUILD_OPTIONS ../../source/
     make
     popd
     ;;
   vp10 | vp10-rt)
     pushd $CODEC
-    ./configure --enable-vp10
+    ./configure --enable-vp10 $BUILD_OPTIONS
     make
     popd
     ;;
   vp9)
     pushd vp9
-    ./configure --enable-vp9
+    ./configure --enable-vp9 $BUILD_OPTIONS
     make
     popd
     ;;
