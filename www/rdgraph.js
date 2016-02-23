@@ -31,6 +31,8 @@ function rdgraph_draw(selected_graphs, outfile) {
       }
       var series = {
         data: curve,
+        points: { show: true },
+        lines: { show: true },
         label: selected_graphs[j]
       };
       curves.push(series);
