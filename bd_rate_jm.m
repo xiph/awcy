@@ -14,7 +14,11 @@ for m=1:4
    for k=1:length(rates)-1
       a_rate = interp1(ya, log(ra), p(k):.01:p(k+1), interp_type);
       b_rate = interp1(yb, log(rb), p(k):.01:p(k+1), interp_type);
-      bdr(m,k)=100 * (exp(mean(b_rate-a_rate))-1);
+      if !length(a_rate) || !length(b_rate)
+        bdr(m,k) = NaN();
+      else
+        bdr(m,k)=100 * (exp(mean(b_rate-a_rate))-1);
+      end
    end
    printf("%s %f %f %f\n", met_name{m}, bdr(m, 1), bdr(m, 2), bdr(m, 3));
 end
