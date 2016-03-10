@@ -16,7 +16,7 @@ met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM'];
 def bdrate(file1, file2):
     a = loadtxt(file1);
     b = loadtxt(file2);
-    rates = [0.02,0.06];
+    rates = [0.06,0.2];
     ra = a[:,2]*8./a[:,1]
     rb = b[:,2]*8./b[:,1];
     interp_type = 'cubic';
