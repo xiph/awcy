@@ -108,6 +108,7 @@
         <option value="jm" selected="selected">Three ranges (cubic spline)</option>
         <option value="whole">Entire curve (old method)</option>
         <option value="usable">All IETF rates (0.005 - 0.2 bpp) (old method)</option>
+        <option value="report">Report</option>
       </select>
       <label><input id="reverse_bd" type="checkbox" onChange="run_selection_changed()"></input> Reverse</label>
       <p id="bd_rate_title"></p>
@@ -390,6 +391,9 @@ function bd_rate(selected_graphs,outfile) {
   switch( $('#bd_rate_range').val() ) {
     case 'jm':
       req['method'] = 'jm';
+      break;
+    case 'report':
+      req['method'] = 'report';
       break;
     case 'whole':
       req['min_bpp'] = '';
