@@ -356,6 +356,10 @@ function load_job_queue() {
     for (var i in data) {
       var job = data[i];
       var job_div = $('<div>');
+      var job_cancel = $('<button>X</button>')
+      job_cancel.on('click',function() {
+        $.post('/submit/cancel', { run_id: job });
+      })
       job_div.html(job.run_id);
       $('#job_queue').append(job_div);
     }
