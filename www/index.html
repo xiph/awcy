@@ -361,6 +361,7 @@ function load_job_queue() {
         $.post('/submit/cancel', { run_id: job });
       })
       job_div.html(job.run_id);
+      job_div.append(job_cancel);
       $('#job_queue').append(job_div);
     }
   });
