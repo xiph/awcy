@@ -332,10 +332,13 @@ function run_selection_changed() {
     link.html('Metric data ');
     var output_log = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/output.txt');
     output_log.html('Job log');
+    var job_options = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/info.json');
+    job_options.html('Job options');
     var item = $('<p>');
     item.append(header);
     item.append(link);
     item.append(output_log);
+    item.append(job_options);
     raw_data.append(item);
   }
   rdgraph_draw(selected_graphs, outfile);
