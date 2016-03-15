@@ -5,8 +5,9 @@ TESTNAME=$1
 if [ -n "$TESTNAME" ] ; then
   rm -rf runs/$TESTNAME
 
-  cd daala
+  pushd daala
   git branch -D t-$TESTNAME
+  popd
 fi
 
 node generate_list.js
