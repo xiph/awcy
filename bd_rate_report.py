@@ -58,8 +58,8 @@ for video in videos:
     metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+'-daala.out',args.run[1]+'/'+task+'/'+video+'-daala.out')
 
 print("AWCY Report v0.1")
-print('Reference: ' + info_data[0]['task'])
-print('Test Run: ' + info_data[1]['task'])
+print('Reference: ' + info_data[0]['run_id'])
+print('Test Run: ' + info_data[1]['run_id'])
 print("%40s %8s %8s %8s %8s" % ('file','PSNR','SSIM','PSNRHVS','FASTSSIM'))
 print('-----------------------------------------------------------------------------')
 for video in metric_data:
