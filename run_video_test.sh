@@ -53,4 +53,4 @@ esac
 
 cd rd_tool
 DAALA_ROOT=../daala python3 -u rd_tool.py -machines 14 -awsgroup "Daala" -codec $CODEC -prefix "../runs/$2/$3" "$3"
-#DAALA_ROOT=../daala python3 -u rd_tool.py -codec $CODEC -mode 'ab' -runid "$RUN_ID" "$3"
+DAALA_ROOT=../daala python3 -u rd_tool.py -codec $CODEC -mode 'ab' -runid "$RUN_ID" "$3"
