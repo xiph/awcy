@@ -65,6 +65,9 @@ function process_queue() {
     env['EXTRA_OPTIONS'] = job.extra_options;
     env['BUILD_OPTIONS'] = job.build_options;
     env['RUN_ID'] = job.run_id;
+    if (job.qualities) {
+      env['QUALITIES'] = job.qualities;
+    }
     if (job.videos) {
       job_child_process = cp.spawn('./run_video_test2.sh',
         [job.commit,job.run_id].concat(job.videos),
@@ -229,6 +232,9 @@ app.post('/submit/job',function(req,res) {
     job.build_options = req.body.build_options;
   } else {
     job.build_options = '';
+  }
+  if (req.body.qualities) {
+    job.qualities = req.body.qualities;
   }
   if (req.body.codec) {
     job.codec = req.body.codec;
