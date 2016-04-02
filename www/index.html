@@ -283,7 +283,14 @@ IRC: #daala @ irc.freenode.net
 <script>
 var run_list_by_name = {};
 
-var sets = {}
+var sets = {};
+var set_request = $.getJSON('/sets.json', function(data) {
+  sets = data;
+});
+var list = {};
+var list_request = $.getJSON('/list.json', function(data) {
+  list = data;
+});
 
 function updateParam(url, param, value) {
   var re = new RegExp(param+"(.+?)(&|$)","g");
@@ -458,29 +465,27 @@ function load_sets() {
 
 function load_sets_for_filter() {
   var filter_task = $('#run_filter_task').val();
-  $.getJSON('/sets.json', function(data) {
-    sets = data;
-    $('#video_name').html('');
-    var total_option = $('<option>');
-    total_option.html('Total');
-    total_option.attr('value',filter_task+'/total.out');
-    $('#video_name').append(total_option);
-    for (var i in data[filter_task].sources) {
-      var file_in_set = baseName(data[filter_task].sources[i]);
+  data = sets;
+  $('#video_name').html('');
+  var total_option = $('<option>');
+  total_option.html('Total');
+  total_option.attr('value',filter_task+'/total.out');
+  $('#video_name').append(total_option);
+  for (var i in data[filter_task].sources) {
+    var file_in_set = baseName(data[filter_task].sources[i]);
+    var file_option = $('<option>');
+    file_option.html(file_in_set);
+    file_option.attr('value',filter_task+'/'+file_in_set+'.y4m-daala.out');
+    $('#video_name').append(file_option);
+  }
+  for (var set in data) {
+    for (var filenum in data[set]) {
       var file_option = $('<option>');
-      file_option.html(file_in_set);
-      file_option.attr('value',filter_task+'/'+file_in_set+'.y4m-daala.out');
-      $('#video_name').append(file_option);
+      file_option.html(set+'/'+data[set][filenum]);
+      file_option.attr('value',set+'/'+data[set][filenum]);
+      $('#custom_videos').append(file_option);
     }
-    for (var set in data) {
-      for (var filenum in data[set]) {
-        var file_option = $('<option>');
-        file_option.html(set+'/'+data[set][filenum]);
-        file_option.attr('value',set+'/'+data[set][filenum]);
-        $('#custom_videos').append(file_option);
-      }
-    }
-  });
+  }
 }
 
 function set_selector() {
@@ -501,30 +506,29 @@ function load_runs() {
   var uri = new URI();
   urldata = URI.parseQuery(uri.query());
   var filter_task = $('#run_filter_task').val();
-  $.getJSON('/list.json', function(data) {
-    data.sort(function(a,b) {
-      return new Date(b.date) - new Date(a.date);
-    });
-    $('#runs_latest').html('');
-    $('#runs_experimental').html('');
-    run_list_by_name = {};
-    for (var i in data) {
-      var job = data[i];
-      run_list_by_name[job.run_id] = job;
-      if ((job.tasks.indexOf(filter_task) != -1) || (filter_task == 'all')) {
-        create_cell(job, 'graph');
-      }
+  data = list;
+  data.sort(function(a,b) {
+    return new Date(b.date) - new Date(a.date);
+  });
+  $('#runs_latest').html('');
+  $('#runs_experimental').html('');
+  run_list_by_name = {};
+  for (var i in data) {
+    var job = data[i];
+    run_list_by_name[job.run_id] = job;
+    if ((job.tasks.indexOf(filter_task) != -1) || (filter_task == 'all')) {
+      create_cell(job, 'graph');
     }
-    if (Array.isArray(urldata['r[]'])) {
-      var urlruns = urldata['r[]'];
-    } else {
-      var urlruns = [urldata['r[]']];
-    }
-    urlruns.forEach(function(run_id) {
-      console.log(run_id);
-      $(document.getElementById(run_id)).toggleClass('selected');
-      run_selection_changed();
-    });
+  }
+  if (Array.isArray(urldata['r[]'])) {
+    var urlruns = urldata['r[]'];
+  } else {
+    var urlruns = [urldata['r[]']];
+  }
+  urlruns.forEach(function(run_id) {
+    console.log(run_id);
+    $(document.getElementById(run_id)).toggleClass('selected');
+    run_selection_changed();
   });
 }
 
@@ -839,7 +843,7 @@ function auto_refresh() {
   window.setTimeout(auto_refresh,5000);
 }
 
-$(function() {
+$.when(set_request, list_request).done(function() {
   // populate widgets
   var task_selector = set_selector();
   task_selector.attr('id','task');
@@ -861,12 +865,12 @@ $(function() {
   if ('s' in urldata) {
     $('#run_filter_task').val(urldata['s']);
   }
+  load_sets();
   load_runs();
   var currentState = history.state;
   var date = new Date();
   $('#run_id').val(date.toISOString().replace(/:/g,'-'));
   load_job_queue();
-  load_sets();
   load_timelines();
   auto_refresh();
 });
