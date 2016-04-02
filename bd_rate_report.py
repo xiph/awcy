@@ -70,12 +70,12 @@ print('Reference: ' + info_data[0]['run_id'])
 print('Test Run: ' + info_data[1]['run_id'])
 print('Range: Anchor ' + info_data[2]['run_id'] + ' q range 20-50')
 print("%40s %9s %9s %9s %9s %9s" % ('file','PSNR','SSIM','PSNRHVS','FASTSSIM','CIEDE2000'))
-print('-----------------------------------------------------------------------------')
+print('------------------------------------------------------------------------------------------')
 for video in sorted(metric_data):
     metric = metric_data[video]
     print("%40s %9.2f %9.2f %9.2f %9.2f %9.2f" % (video, metric[0], metric[1], metric[2], metric[3], metric[4]))
-print('-----------------------------------------------------------------------------')
+print('------------------------------------------------------------------------------------------')
 avg = {}
-for m in range(0,4):
+for m in range(0,5):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
-print("%40s %8.2f %8.2f %8.2f %8.2f" % ('Average', avg[0], avg[1], avg[2], avg[3]))
+print("%40s %9.2f %9.2f %9.2f %9.2f %9.2f" % ('Average', avg[0], avg[1], avg[2], avg[3], avg[4]))
