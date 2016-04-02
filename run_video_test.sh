@@ -51,7 +51,7 @@ case $CODEC in
     ;;
 esac
 
-if [ -z "$QUALITIES" ]; then
+if [ "$QUALITIES" ]; then
   QUALITY_OPTS="-qualities $QUALITIES"
 fi
 
