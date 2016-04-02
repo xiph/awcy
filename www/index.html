@@ -77,16 +77,8 @@
       <br />
       X-Axis:
       <select id="graph_x_scaler" onChange="run_selection_changed()">
-        <option value="1">Bits per pixel</option>
-        <optgroup label="Streaming (16:9)">
-        <option value="5.5296">Mbps @ 360p, 24fps</option>
-        <option value="9.8304">Mbps @ 480p, 24fps</option>
-        <option value="22.118">Mbps @ 720p, 24fps</option>
-        <option value="49.7664">Mbps @1080p, 24fps</option>
-        </optgroup>
-        <optgroup label="Video Conferencing (16:9)">
-        <option value="55.296">Mbps @ 720p, 60fps</option>
-        </optgroup>
+        <option value="bpp">Bits per pixel</option>
+        <option value="mbps">Megabits per second</option>
       </select>
       X-Axis Range:
       <select id="graph_x_range" onChange="run_selection_changed()">
@@ -291,6 +283,8 @@ IRC: #daala @ irc.freenode.net
 <script>
 var run_list_by_name = {};
 
+var sets = {}
+
 function updateParam(url, param, value) {
   var re = new RegExp(param+"(.+?)(&|$)","g");
   return url.replace(re, param+'='+value)
@@ -345,7 +339,7 @@ function run_selection_changed() {
     item.append(job_options);
     raw_data.append(item);
   }
-  rdgraph_draw(selected_graphs, outfile);
+  rdgraph_draw(selected_graphs, outfile, sets[filter_task]);
   update_url();
 };
 
@@ -465,6 +459,7 @@ function load_sets() {
 function load_sets_for_filter() {
   var filter_task = $('#run_filter_task').val();
   $.getJSON('/sets.json', function(data) {
+    sets = data;
     $('#video_name').html('');
     var total_option = $('<option>');
     total_option.html('Total');
