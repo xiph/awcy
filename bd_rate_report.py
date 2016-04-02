@@ -9,11 +9,13 @@ import json
 
 parser = argparse.ArgumentParser(description='Produce bd-rate report')
 parser.add_argument('run',nargs=2,help='Run folders to compare')
+parser.add_argument('anchor',nargs=1,help='Anchor run folder')
 args = parser.parse_args()
 
-met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM'];
+met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000'];
 
-def bdrate(file1, file2):
+def bdrate(file1, file2, anchorfile):
+    anchor = flipud(loadtxt(anchorfile));
     a = flipud(loadtxt(file1));
     b = flipud(loadtxt(file2));
     rates = [0.06,0.2];
@@ -22,12 +24,15 @@ def bdrate(file1, file2):
     interp_type = 'cubic';
     bdr = zeros((4,4))
     ret = {}
-    for m in range(0,4):
+    for m in range(0,5):
         ya = a[:,3+m];
         yb = b[:,3+m];
+        yr = anchor[:,3+m];
         try:
-            p0 = interp1d(ra, ya, interp_type)(rates[0]);
-            p1 = interp1d(ra, ya, interp_type)(rates[1]);
+            #p0 = interp1d(ra, ya, interp_type)(rates[0]);
+            #p1 = interp1d(ra, ya, interp_type)(rates[1]);
+            p0 = yr[0];
+            p1 = yr[1];
             a_rate = interp1d(ya, log(ra), interp_type)(arange(p0,p1,0.01));
             b_rate = interp1d(yb, log(rb), interp_type)(arange(p0,p1,0.01));
             if not len(a_rate) or not len(b_rate):
@@ -45,8 +50,9 @@ def bdrate(file1, file2):
 info_data = {}
 info_data[0] = json.load(open(args.run[0]+'/info.json'))
 info_data[1] = json.load(open(args.run[1]+'/info.json'))
+info_data[2] = json.load(open(args.anchor[0]+'/info.json'))
 
-if info_data[0]['task'] != info_data[1]['task']:
+if info_data[0]['task'] != info_data[1]['task'] != info_data[2]['task']:
     print("Runs do not match.")
     sys.exit(1)
 
@@ -57,16 +63,17 @@ videos = sets[task]["sources"]
 
 metric_data = {}
 for video in videos:
-    metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+'-daala.out',args.run[1]+'/'+task+'/'+video+'-daala.out')
+    metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+'-daala.out',args.run[1]+'/'+task+'/'+video+'-daala.out',args.anchor[0]+'/'+task+'/'+video+'-daala.out')
 
-print("AWCY Report v0.1")
+print("AWCY Report v0.2")
 print('Reference: ' + info_data[0]['run_id'])
 print('Test Run: ' + info_data[1]['run_id'])
-print("%40s %8s %8s %8s %8s" % ('file','PSNR','SSIM','PSNRHVS','FASTSSIM'))
+print('Range: Anchor ' + info_data[2]['run_id'] + ' q range 20-50')
+print("%40s %9s %9s %9s %9s %9s" % ('file','PSNR','SSIM','PSNRHVS','FASTSSIM','CIEDE2000'))
 print('-----------------------------------------------------------------------------')
-for video in metric_data:
+for video in sorted(metric_data):
     metric = metric_data[video]
-    print("%40s %8.2f %8.2f %8.2f %8.2f" % (video, metric[0], metric[1], metric[2], metric[3]))
+    print("%40s %9.2f %9.2f %9.2f %9.2f %9.2f" % (video, metric[0], metric[1], metric[2], metric[3], metric[4]))
 print('-----------------------------------------------------------------------------')
 avg = {}
 for m in range(0,4):
