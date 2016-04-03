@@ -274,7 +274,7 @@ app.post('/submit/delete',function(req,res) {
 
 app.post('/submit/cancel',function(req,res) {
   var run = req.body.run_id;
-  var index = job_queue.findIndex(function(job) { return job.run_id == run; });
+  var index = job_queue.indexOf(job_queue.find(function(job) { return job.run_id == run; }));
   if (index < 0) {
     res.send('job not found');
   } else {
