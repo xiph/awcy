@@ -43,6 +43,12 @@ case $CODEC in
     make
     popd
     ;;
+  av1 | av1-rt)
+    pushd $CODEC
+    ./configure --enable-av1 $BUILD_OPTIONS
+    make
+    popd
+    ;;
   vp9)
     pushd vp9
     ./configure --enable-vp9 $BUILD_OPTIONS
