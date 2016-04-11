@@ -9,7 +9,7 @@ import json
 
 parser = argparse.ArgumentParser(description='Produce bd-rate report')
 parser.add_argument('run',nargs=2,help='Run folders to compare')
-parser.add_argument('anchor',nargs=1,help='Anchor run folder')
+parser.add_argument('anchor',nargs=1,help='Folder to find anchor runs')
 args = parser.parse_args()
 
 met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000'];
@@ -50,9 +50,8 @@ def bdrate(file1, file2, anchorfile):
 info_data = {}
 info_data[0] = json.load(open(args.run[0]+'/info.json'))
 info_data[1] = json.load(open(args.run[1]+'/info.json'))
-info_data[2] = json.load(open(args.anchor[0]+'/info.json'))
 
-if info_data[0]['task'] != info_data[1]['task'] != info_data[2]['task']:
+if info_data[0]['task'] != info_data[1]['task']:
     print("Runs do not match.")
     sys.exit(1)
 
@@ -60,6 +59,12 @@ task = info_data[0]['task']
 
 sets = json.load(open("rd_tool/sets.json"))
 videos = sets[task]["sources"]
+
+info_data[2] = json.load(open(args.anchor[0]+'/'+sets[task]['anchor']+'/info.json'))
+
+if info_data[2]['task'] != info_data[0]['task']:
+    print("Mismatched anchor data!")
+    sys.exit(1)
 
 metric_data = {}
 for video in videos:
