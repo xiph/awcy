@@ -68,7 +68,7 @@ if info_data[2]['task'] != info_data[0]['task']:
 
 metric_data = {}
 for video in videos:
-    metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+'-daala.out',args.run[1]+'/'+task+'/'+video+'-daala.out',args.anchor[0]+'/'+task+'/'+video+'-daala.out')
+    metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+'-daala.out',args.run[1]+'/'+task+'/'+video+'-daala.out',args.anchor[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+'-daala.out')
 
 print("AWCY Report v0.2")
 print('Reference: ' + info_data[0]['run_id'])
