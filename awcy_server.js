@@ -67,6 +67,8 @@ function process_queue() {
     env['RUN_ID'] = job.run_id;
     if (job.qualities) {
       env['QUALITIES'] = job.qualities;
+    } else {
+      env['QUALITIES'] = '';
     }
     if (job.videos) {
       job_child_process = cp.spawn('./run_video_test2.sh',
