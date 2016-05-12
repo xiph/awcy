@@ -3,6 +3,7 @@
 from numpy import *
 from scipy import *
 from scipy.interpolate import interp1d
+from scipy.interpolate import pchip
 import sys
 import argparse
 import json
@@ -20,8 +21,8 @@ def bdrate(file1, file2, anchorfile):
     b = flipud(loadtxt(file2));
     rates = [0.06,0.2];
     ra = a[:,2]*8./a[:,1]
-    rb = b[:,2]*8./b[:,1];
-    interp_type = 'cubic';
+    rb = b[:,2]*8./b[:,1]
+    interp_type = 'linear';    #only used for integration (pchip is used for metric interpolation)
     bdr = zeros((4,4))
     ret = {}
     for m in range(0,5):
@@ -33,8 +34,12 @@ def bdrate(file1, file2, anchorfile):
             #p1 = interp1d(ra, ya, interp_type)(rates[1]);
             p0 = yr[0];
             p1 = yr[1];
-            a_rate = interp1d(ya, log(ra), interp_type)(arange(p0,p1,0.01));
-            b_rate = interp1d(yb, log(rb), interp_type)(arange(p0,p1,0.01));
+            log_ra_interp = arange(log(ra[0]),log(ra[-1]),0.001)
+            ya_interp = pchip(log(ra), ya)(log_ra_interp)
+            log_rb_interp = arange(log(rb[0]),log(rb[-1]),0.001)
+            yb_interp = pchip(log(rb), yb)(log_rb_interp)
+            a_rate = interp1d(ya_interp, log_ra_interp, interp_type)(arange(p0,p1,0.01));
+            b_rate = interp1d(yb_interp, log_rb_interp, interp_type)(arange(p0,p1,0.01));
             if not len(a_rate) or not len(b_rate):
                 bdr = NaN;
             else:
@@ -70,7 +75,7 @@ metric_data = {}
 for video in videos:
     metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+'-daala.out',args.run[1]+'/'+task+'/'+video+'-daala.out',args.anchor[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+'-daala.out')
 
-print("AWCY Report v0.2")
+print("AWCY Report v0.3")
 print('Reference: ' + info_data[0]['run_id'])
 print('Test Run: ' + info_data[1]['run_id'])
 print('Range: Anchor ' + info_data[2]['run_id'] + ' q range 20-50')
