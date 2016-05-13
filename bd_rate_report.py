@@ -11,6 +11,7 @@ import json
 parser = argparse.ArgumentParser(description='Produce bd-rate report')
 parser.add_argument('run',nargs=2,help='Run folders to compare')
 parser.add_argument('anchor',nargs=1,help='Folder to find anchor runs')
+parser.add_argument('--suffix',help='Metric data suffix (default is .out)',default='.out')
 args = parser.parse_args()
 
 met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000'];
@@ -73,7 +74,7 @@ if info_data[2]['task'] != info_data[0]['task']:
 
 metric_data = {}
 for video in videos:
-    metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+'-daala.out',args.run[1]+'/'+task+'/'+video+'-daala.out',args.anchor[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+'-daala.out')
+    metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,args.anchor[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+args.suffix)
 
 print("AWCY Report v0.3")
 print('Reference: ' + info_data[0]['run_id'])
