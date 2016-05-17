@@ -85,10 +85,19 @@ for m in range(0,len(met_name)):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
     print("%10s: %9.2f" % (met_name[m], avg[m]))
 print()
-print("%40s %9s %9s %9s %9s %9s" % ('file','PSNR','SSIM','PSNRHVS','FASTSSIM','CIEDE2000'))
+print("%40s " % 'file', end='')
+for name in met_name:
+    print("%9s " % name, end='')
+print('')
 print('------------------------------------------------------------------------------------------')
 for video in sorted(metric_data):
     metric = metric_data[video]
-    print("%40s %9.2f %9.2f %9.2f %9.2f %9.2f" % (video, metric[0], metric[1], metric[2], metric[3], metric[4]))
+    print ("%40s " % video,end='')
+    for i in range(0,len(met_name)):
+        print("%9.2f" % metric[i],end='')
+    print('')
 print('------------------------------------------------------------------------------------------')
-print("%40s %9.2f %9.2f %9.2f %9.2f %9.2f" % ('Average', avg[0], avg[1], avg[2], avg[3], avg[4]))
+print("%40s " % 'Average',end='')
+for i in range(0,len(met_name)):
+    print("%9.2f " % metric[i],end='')
+print('')
