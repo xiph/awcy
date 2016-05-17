@@ -76,6 +76,10 @@ metric_data = {}
 for video in videos:
     metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,args.anchor[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+args.suffix)
 
+filename_len = 40
+for video in videos:
+    if filename_len < len(video):
+        filename_len = len(video)
 print("AWCY Report v0.3")
 print('Reference: ' + info_data[0]['run_id'])
 print('Test Run: ' + info_data[1]['run_id'])
@@ -85,19 +89,19 @@ for m in range(0,len(met_name)):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
     print("%10s: %9.2f" % (met_name[m], avg[m]))
 print()
-print("%40s " % 'file', end='')
+print(('%'+str(filename_len)+"s ") % 'file', end='')
 for name in met_name:
     print("%9s " % name, end='')
 print('')
 print('------------------------------------------------------------------------------------------')
 for video in sorted(metric_data):
     metric = metric_data[video]
-    print ("%40s " % video,end='')
+    print (('%'+str(filename_len)+"s ") % video,end='')
     for i in range(0,len(met_name)):
         print("%9.2f" % metric[i],end='')
     print('')
 print('------------------------------------------------------------------------------------------')
-print("%40s " % 'Average',end='')
+print(('%'+str(filename_len)+"s ") % 'Average',end='')
 for i in range(0,len(met_name)):
     print("%9.2f " % metric[i],end='')
 print('')
