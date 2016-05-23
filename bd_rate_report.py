@@ -10,7 +10,7 @@ import json
 
 parser = argparse.ArgumentParser(description='Produce bd-rate report')
 parser.add_argument('run',nargs=2,help='Run folders to compare')
-parser.add_argument('anchor',nargs=1,help='Folder to find anchor runs')
+parser.add_argument('--anchordir',nargs=1,help='Folder to find anchor runs')
 parser.add_argument('--suffix',help='Metric data suffix (default is .out)',default='.out')
 args = parser.parse_args()
 
@@ -61,7 +61,7 @@ task = info_data[0]['task']
 sets = json.load(open("rd_tool/sets.json"))
 videos = sets[task]["sources"]
 
-info_data[2] = json.load(open(args.anchor[0]+'/'+sets[task]['anchor']+'/info.json'))
+info_data[2] = json.load(open(args.anchordir[0]+'/'+sets[task]['anchor']+'/info.json'))
 
 if info_data[2]['task'] != info_data[0]['task']:
     print("Mismatched anchor data!")
@@ -69,7 +69,7 @@ if info_data[2]['task'] != info_data[0]['task']:
 
 metric_data = {}
 for video in videos:
-    metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,args.anchor[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+args.suffix)
+    metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,args.anchordir[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+args.suffix)
 
 filename_len = 40
 for video in videos:
