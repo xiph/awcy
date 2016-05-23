@@ -191,7 +191,7 @@ app.get('/bd_rate',function(req,res) {
       res.send(stdout);
     });
   } else if (req.query['method'] == 'report') {
-    cp.execFile('./bd_rate_report.py',[__dirname+'/runs/'+a,__dirname+'/runs/'+b,'--anchordir',__dirname+'/runs/'],
+    cp.execFile('./bd_rate_report.py',[__dirname+'/runs/'+a,__dirname+'/runs/'+b,'--anchordir',__dirname+'/runs/','--suffix=-daala.out'],
                 {},
                 function(error,stdout,stderr) {
       if (error) {
