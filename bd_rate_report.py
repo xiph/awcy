@@ -23,7 +23,6 @@ def bdrate(file1, file2, anchorfile):
     rates = [0.06,0.2];
     ra = a[:,2]*8./a[:,1]
     rb = b[:,2]*8./b[:,1]
-    interp_type = 'linear';    #only used for integration (pchip is used for metric interpolation)
     bdr = zeros((4,4))
     ret = {}
     for m in range(0,5):
@@ -35,12 +34,8 @@ def bdrate(file1, file2, anchorfile):
             #p1 = interp1d(ra, ya, interp_type)(rates[1]);
             p0 = yr[0];
             p1 = yr[1];
-            log_ra_interp = arange(log(ra[0]),log(ra[-1]),0.001)
-            ya_interp = pchip(log(ra), ya)(log_ra_interp)
-            log_rb_interp = arange(log(rb[0]),log(rb[-1]),0.001)
-            yb_interp = pchip(log(rb), yb)(log_rb_interp)
-            a_rate = interp1d(ya_interp, log_ra_interp, interp_type)(arange(p0,p1,0.01));
-            b_rate = interp1d(yb_interp, log_rb_interp, interp_type)(arange(p0,p1,0.01));
+            a_rate = pchip(ya, log(ra))(arange(p0,p1,abs(p1-p0)/5000.0));
+            b_rate = pchip(yb, log(rb))(arange(p0,p1,abs(p1-p0)/5000.0));
             if not len(a_rate) or not len(b_rate):
                 bdr = NaN;
             else:
@@ -80,7 +75,7 @@ filename_len = 40
 for video in videos:
     if filename_len < len(video):
         filename_len = len(video)
-print("AWCY Report v0.3")
+print("AWCY Report v0.4")
 print('Reference: ' + info_data[0]['run_id'])
 print('Test Run: ' + info_data[1]['run_id'])
 print('Range: Anchor ' + info_data[2]['run_id'] + ' q range 20-50')
