@@ -19,7 +19,8 @@ args = parser.parse_args()
 met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000'];
 
 def bdrate(file1, file2, anchorfile):
-    anchor = flipud(loadtxt(anchorfile));
+    if anchorfile:
+        anchor = flipud(loadtxt(anchorfile));
     a = flipud(loadtxt(file1));
     b = flipud(loadtxt(file2));
     rates = [0.06,0.2];
@@ -30,12 +31,19 @@ def bdrate(file1, file2, anchorfile):
     for m in range(0,5):
         ya = a[:,3+m];
         yb = b[:,3+m];
-        yr = anchor[:,3+m];
+        if anchor:
+            yr = anchor[:,3+m];
         try:
             #p0 = interp1d(ra, ya, interp_type)(rates[0]);
             #p1 = interp1d(ra, ya, interp_type)(rates[1]);
-            p0 = yr[0];
-            p1 = yr[1];
+            if anchor:
+                p0 = yr[0]
+                p1 = yr[-1]
+            else:
+                p0 = max(ya[0],yb[0])
+                p1 = min(ya[-1],yb[-1])
+            #p0 = yr[0]
+            #p1 = yr[-1]
             a_rate = pchip(ya, log(ra))(arange(p0,p1,abs(p1-p0)/5000.0));
             b_rate = pchip(yb, log(rb))(arange(p0,p1,abs(p1-p0)/5000.0));
             if not len(a_rate) or not len(b_rate):
@@ -75,6 +83,7 @@ try:
         metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,args.anchordir[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+args.suffix)
 except FileNotFoundError:
     # no info.json, using bare directories
+    info_data = None
     if not args.anchor:
         print("You must specify an anchor to use if comparing bare result directories.")
         exit(1)
