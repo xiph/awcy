@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 TESTNAME=$1
 
 if [ -n "$TESTNAME" ] ; then
