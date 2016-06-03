@@ -31,12 +31,12 @@ def bdrate(file1, file2, anchorfile):
     for m in range(0,5):
         ya = a[:,3+m];
         yb = b[:,3+m];
-        if anchor:
+        if anchor.any():
             yr = anchor[:,3+m];
         try:
             #p0 = interp1d(ra, ya, interp_type)(rates[0]);
             #p1 = interp1d(ra, ya, interp_type)(rates[1]);
-            if anchor:
+            if anchor.any():
                 p0 = yr[0]
                 p1 = yr[-1]
             else:
