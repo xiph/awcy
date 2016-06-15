@@ -132,10 +132,10 @@ for video in sorted(metric_data):
     metric = metric_data[video]
     print (('%'+str(filename_len)+"s ") % video,end='')
     for i in range(0,len(met_name)):
-        print("%9.2f" % metric[i],end='')
+        print("%9.2f " % metric[i],end='')
     print('')
 print('------------------------------------------------------------------------------------------')
 print(('%'+str(filename_len)+"s ") % 'Average',end='')
 for i in range(0,len(met_name)):
-    print("%9.2f" % avg[i],end='')
+    print("%9.2f " % avg[i],end='')
 print('')
