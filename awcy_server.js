@@ -200,6 +200,16 @@ app.get('/bd_rate',function(req,res) {
         res.send(stdout);
       }
     });
+  } else if (req.query['method'] == 'report-overlap') {
+    cp.execFile('./bd_rate_report.py',[__dirname+'/runs/'+a,__dirname+'/runs/'+b,'--anchordir',__dirname+'/runs/','--suffix=-daala.out','--overlap'],
+                {},
+                function(error,stdout,stderr) {
+      if (error) {
+        res.send(stderr);
+      } else {
+        res.send(stdout);
+      }
+    });
   } else {
     cp.execFile('./bd_rate.m',[a_file,b_file],
                 {env: {'BUILD_ROOT': 'daalatool/', 'MIN_BPP': min_bpp, 'MAX_BPP': max_bpp}, cwd: __dirname+'/daalatool/tools/matlab/'},

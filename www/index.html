@@ -109,6 +109,7 @@
         <option value="usable">All IETF rates (0.005 - 0.2 bpp) (old method)</option>
         -->
         <option value="report" selected>Report</option>
+        <option value="report-overlap">Report (Overlap)</option>
       </select>
       <label><input id="reverse_bd" type="checkbox" onChange="run_selection_changed()"></input> Reverse</label>
       <p id="bd_rate_title"></p>
@@ -417,6 +418,9 @@ function bd_rate(selected_graphs,outfile) {
       break;
     case 'report':
       req['method'] = 'report';
+      break;
+    case 'report-overlap':
+      req['method'] = 'report-overlap';
       break;
     case 'whole':
       req['min_bpp'] = '';
