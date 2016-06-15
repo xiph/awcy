@@ -31,11 +31,11 @@ def bdrate(file1, file2, anchorfile):
     bdr = zeros((4,4))
     ret = {}
     for m in range(0,len(met_name)):
-        ya = a[:,3+m];
-        yb = b[:,3+m];
-        if anchorfile:
-            yr = anchor[:,3+m];
         try:
+            ya = a[:,3+m];
+            yb = b[:,3+m];
+            if anchorfile:
+                yr = anchor[:,3+m];
             #p0 = interp1d(ra, ya, interp_type)(rates[0]);
             #p1 = interp1d(ra, ya, interp_type)(rates[1]);
             if anchorfile:
@@ -58,11 +58,13 @@ def bdrate(file1, file2, anchorfile):
             else:
                 bdr=100 * (exp(mean(b_rate-a_rate))-1);
         except ValueError:
-            bdr = NaN;
+            bdr = NaN
         except linalg.linalg.LinAlgError:
-            bdr = NaN;
+            bdr = NaN
+        except IndexError:
+            bdr = NaN
         if abs(bdr) > 1000:
-            bdr = NaN;
+            bdr = NaN
         ret[m] = bdr
     return ret
 
