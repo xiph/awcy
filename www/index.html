@@ -103,10 +103,10 @@
     <div class="controlbox col-md-6">
       <h3>BD rate</h3>
       <select id="bd_rate_range" onChange="run_selection_changed()">
-        <option value="jm" selected="selected">Three ranges (cubic spline)</option>
+        <option value="jm">Three ranges (cubic spline)</option>
         <option value="whole">Entire curve (old method)</option>
         <option value="usable">All IETF rates (0.005 - 0.2 bpp) (old method)</option>
-        <option value="report">Report</option>
+        <option value="report" selected>Report</option>
       </select>
       <label><input id="reverse_bd" type="checkbox" onChange="run_selection_changed()"></input> Reverse</label>
       <p id="bd_rate_title"></p>
