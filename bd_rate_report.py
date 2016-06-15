@@ -30,7 +30,7 @@ def bdrate(file1, file2, anchorfile):
     rb = b[:,2]*8./b[:,1]
     bdr = zeros((4,4))
     ret = {}
-    for m in range(0,5):
+    for m in range(0,len(met_name)):
         ya = a[:,3+m];
         yb = b[:,3+m];
         if anchorfile:
