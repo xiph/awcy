@@ -17,7 +17,7 @@ parser.add_argument('--anchordir',nargs=1,help='Folder to find anchor runs')
 parser.add_argument('--suffix',help='Metric data suffix (default is .out)',default='.out')
 args = parser.parse_args()
 
-met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000'];
+met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000', 'PSNR Cb', 'PSNR Cr', 'APSNR', 'APSNR Cb', 'APSNR Cr', 'MSSSIM'];
 
 def bdrate(file1, file2, anchorfile):
     if anchorfile:
