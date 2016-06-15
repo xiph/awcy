@@ -61,6 +61,8 @@ def bdrate(file1, file2, anchorfile):
             bdr = NaN;
         except linalg.linalg.LinAlgError:
             bdr = NaN;
+        if abs(bdr) > 1000:
+            bdr = NaN;
         ret[m] = bdr
     return ret
 
