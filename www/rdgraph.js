@@ -66,11 +66,13 @@ function rdgraph_draw(selected_graphs, outfile, set) {
         interactive: true
       },
       grid: {
+        /*
         markings: [
           { xaxis: { from: 0.005*bpp_scaler, to: 0.02*bpp_scaler }, color: "#fff0f0" },
           { xaxis: { from: 0.02*bpp_scaler, to: 0.06*bpp_scaler }, color: "#f0fff0" },
           { xaxis: { from: 0.06*bpp_scaler, to: 0.2*bpp_scaler }, color: "#f0f0ff" }
         ]
+        */
       }
     };
 
