@@ -564,7 +564,7 @@ function create_cell(job, page) {
 
     run_meta_tag.addClass('run_meta');
     run_id_tag.text(job.run_id);
-    run_meta_tag.text(job.info.nick + ' ' + job.date);
+    run_meta_tag.text(job.info.nick + ' ' + job.info.codec + ' ' + job.date);
 
     run.append(run_id_tag);
     run.append(run_meta_tag);
