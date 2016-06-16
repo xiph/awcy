@@ -180,6 +180,7 @@ app.get('/bd_rate',function(req,res) {
   var b = path.basename(req.query['b']);
   var min_bpp = req.query['min_bpp'];
   var max_bpp = req.query['max_bpp'];
+  var metric_score = req.query['metric_score'];
   var file = path.basename(req.query['file']);
   var set = path.basename(req.query['set']);
   var a_file = __dirname+'/runs/'+a+'/'+set+'/'+file;
@@ -202,6 +203,16 @@ app.get('/bd_rate',function(req,res) {
     });
   } else if (req.query['method'] == 'report-overlap') {
     cp.execFile('./bd_rate_report.py',[__dirname+'/runs/'+a,__dirname+'/runs/'+b,'--anchordir',__dirname+'/runs/','--suffix=-daala.out','--overlap'],
+                {},
+                function(error,stdout,stderr) {
+      if (error) {
+        res.send(stderr);
+      } else {
+        res.send(stdout);
+      }
+    });
+  } else if (req.query['method'] == 'metric-point') {
+    cp.execFile('./rate_delta_point.py',[a_file,b_file,metric_score],
                 {},
                 function(error,stdout,stderr) {
       if (error) {

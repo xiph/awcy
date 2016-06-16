@@ -65,7 +65,11 @@ function rdgraph_draw(selected_graphs, outfile, set) {
       pan: {
         interactive: true
       },
+      crosshair: {
+        mode: 'y'
+      },
       grid: {
+        hoverable: true
         /*
         markings: [
           { xaxis: { from: 0.005*bpp_scaler, to: 0.02*bpp_scaler }, color: "#fff0f0" },
@@ -91,5 +95,33 @@ function rdgraph_draw(selected_graphs, outfile, set) {
     }
 
     $.plot('#rd_graph',curves,options);
+
+    var cursor_in_flight = false;
+    $("#rd_graph").bind("plothover",  function (event, pos, item) {
+      if (cursor_in_flight) return;
+      cursor_in_flight = true;
+      req = {}
+      var selected_graphs = get_selected_graphs();
+      if ($('#reverse_bd').is(':checked')) {
+        req['a'] = selected_graphs[0];
+        req['b'] = selected_graphs[1];
+        } else {
+        req['a'] = selected_graphs[1];
+        req['b'] = selected_graphs[0];
+      }
+      req['metric_score'] = pos.y;
+      req['method'] = 'metric-point';
+      var filter_task = $('#run_filter_task').val();
+      var outfile = $("#video_name").val();
+      req['set'] = filter_task;
+      req['file'] = outfile;
+      $.get('/bd_rate',req,function(data) {
+        cursor_in_flight = false;
+        var metric_index = parseInt($('#metric').val())
+        var metric_value = data.split('\n')[metric_index];
+        console.log(metric_value);
+        $('#hover_delta').text(metric_value);
+      });
+    });
   });
 }
