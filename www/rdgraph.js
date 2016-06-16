@@ -96,32 +96,38 @@ function rdgraph_draw(selected_graphs, outfile, set) {
 
     $.plot('#rd_graph',curves,options);
 
-    var cursor_in_flight = false;
-    $("#rd_graph").bind("plothover",  function (event, pos, item) {
-      if (cursor_in_flight) return;
-      cursor_in_flight = true;
-      req = {}
-      var selected_graphs = get_selected_graphs();
-      if ($('#reverse_bd').is(':checked')) {
-        req['a'] = selected_graphs[0];
-        req['b'] = selected_graphs[1];
-        } else {
-        req['a'] = selected_graphs[1];
-        req['b'] = selected_graphs[0];
-      }
-      req['metric_score'] = pos.y;
-      req['method'] = 'metric-point';
-      var filter_task = $('#run_filter_task').val();
-      var outfile = $("#video_name").val();
-      req['set'] = filter_task;
-      req['file'] = outfile;
-      $.get('/bd_rate',req,function(data) {
-        cursor_in_flight = false;
-        var metric_index = parseInt($('#metric').val())
-        var metric_value = data.split('\n')[metric_index];
-        console.log(metric_value);
-        $('#hover_delta').text(metric_value);
-      });
-    });
+    $("#rd_graph").bind("plothover", update_cursor);
+  });
+}
+
+var cursor_pos = 0;
+var cursor_in_flight = false;
+function update_cursor(event, pos, item) {
+  cursor_pos = pos.y;
+  if (cursor_in_flight) return;
+  cursor_in_flight = true;
+  req = {}
+  var selected_graphs = get_selected_graphs();
+  if ($('#reverse_bd').is(':checked')) {
+    req['a'] = selected_graphs[0];
+    req['b'] = selected_graphs[1];
+    } else {
+    req['a'] = selected_graphs[1];
+    req['b'] = selected_graphs[0];
+  }
+  req['metric_score'] = pos.y;
+  req['method'] = 'metric-point';
+  var filter_task = $('#run_filter_task').val();
+  var outfile = $("#video_name").val();
+  req['set'] = filter_task;
+  req['file'] = outfile;
+  $.get('/bd_rate',req,function(data) {
+    cursor_in_flight = false;
+    var metric_index = parseInt($('#metric').val())
+    var metric_value = data.split('\n')[metric_index];
+    $('#hover_delta').text(metric_value);
+    if (cursor_pos != pos.y) {
+      update_cursor(undefined, {y: cursor_pos}, undefined);
+    }
   });
 }
