@@ -124,8 +124,8 @@ function update_cursor(event, pos, item) {
   $.get('/bd_rate',req,function(data) {
     cursor_in_flight = false;
     var metric_index = parseInt($('#metric').val())
-    var metric_value = data.split('\n')[metric_index];
-    $('#hover_delta').text(metric_value);
+    var metric_value = parseFloat(data.split('\n')[metric_index])*100;
+    $('#hover_delta').text(metric_value.toFixed(2) + '%');
     if (cursor_pos != pos.y) {
       update_cursor(undefined, {y: cursor_pos}, undefined);
     }
