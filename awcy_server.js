@@ -65,6 +65,9 @@ function process_queue() {
     env['EXTRA_OPTIONS'] = job.extra_options;
     env['BUILD_OPTIONS'] = job.build_options;
     env['RUN_ID'] = job.run_id;
+    if (job.ab_compare) {
+      env['AB_COMPARE'] = '1';
+    }
     if (job.qualities) {
       env['QUALITIES'] = job.qualities;
     } else {
@@ -271,6 +274,11 @@ app.post('/submit/job',function(req,res) {
   }
   if (req.body.master) {
     job.master = req.body.master;
+  }
+  if (req.body.ab_compare) {
+    job.ab_compare = req.body.ab_compare;
+  } else {
+    job.ab_compare = true;
   }
   job.task_type = 'video';
   if (job.run_id.length > 256) {
