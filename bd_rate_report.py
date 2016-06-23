@@ -15,6 +15,7 @@ parser.add_argument('--anchor',help='Explicit anchor to use')
 parser.add_argument('--overlap',action='store_true',help='Use traditional overlap instead of anchor')
 parser.add_argument('--anchordir',nargs=1,help='Folder to find anchor runs')
 parser.add_argument('--suffix',help='Metric data suffix (default is .out)',default='.out')
+parser.add_argument('--format',help='Format of output',default='text')
 args = parser.parse_args()
 
 met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000', 'PSNR Cb', 'PSNR Cr', 'APSNR', 'APSNR Cb', 'APSNR Cr', 'MSSSIM'];
@@ -112,32 +113,40 @@ filename_len = 40
 for video in videos:
     if filename_len < len(video):
         filename_len = len(video)
-print("AWCY Report v0.4")
-if info_data:
-    print('Reference: ' + info_data[0]['run_id'])
-    print('Test Run: ' + info_data[1]['run_id'])
-if args.overlap:
-    print('Range: overlap')
-elif info_data:
-    print('Range: Anchor ' + info_data[2]['run_id'])
 avg = {}
 for m in range(0,len(met_name)):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
-    print("%10s: %9.2f" % (met_name[m], avg[m]))
-print()
-print(('%'+str(filename_len)+"s ") % 'file', end='')
-for name in met_name:
-    print("%9s " % name, end='')
-print('')
-print('------------------------------------------------------------------------------------------')
-for video in sorted(metric_data):
-    metric = metric_data[video]
-    print (('%'+str(filename_len)+"s ") % video,end='')
-    for i in range(0,len(met_name)):
-        print("%9.2f " % metric[i],end='')
+if args.format == 'text':
+    print("AWCY Report v0.4")
+    if info_data:
+        print('Reference: ' + info_data[0]['run_id'])
+        print('Test Run: ' + info_data[1]['run_id'])
+    if args.overlap:
+        print('Range: overlap')
+    elif info_data:
+        print('Range: Anchor ' + info_data[2]['run_id'])
+    for m in range(0,len(met_name)):
+        print("%10s: %9.2f" % (met_name[m], avg[m]))
+    print()
+    print(('%'+str(filename_len)+"s ") % 'file', end='')
+    for name in met_name:
+        print("%9s " % name, end='')
     print('')
-print('------------------------------------------------------------------------------------------')
-print(('%'+str(filename_len)+"s ") % 'Average',end='')
-for i in range(0,len(met_name)):
-    print("%9.2f " % avg[i],end='')
-print('')
+    print('------------------------------------------------------------------------------------------')
+    for video in sorted(metric_data):
+        metric = metric_data[video]
+        print (('%'+str(filename_len)+"s ") % video,end='')
+        for i in range(0,len(met_name)):
+            print("%9.2f " % metric[i],end='')
+        print('')
+    print('------------------------------------------------------------------------------------------')
+    print(('%'+str(filename_len)+"s ") % 'Average',end='')
+    for i in range(0,len(met_name)):
+        print("%9.2f " % avg[i],end='')
+    print('')
+elif args.format == 'json':
+    output = {}
+    output['metric_names'] = met_name
+    output['metric_data'] = metric_data
+    output['average'] = avg
+    print(json.dumps(output))
