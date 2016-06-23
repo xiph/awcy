@@ -196,7 +196,7 @@ app.get('/bd_rate',function(req,res) {
                 {},
                 function(error,stdout,stderr) {
       if (error) {
-        res.send(stderr);
+        res.send(stderr + stdout);
       } else {
         res.send(stdout);
       }
@@ -206,7 +206,7 @@ app.get('/bd_rate',function(req,res) {
                 {},
                 function(error,stdout,stderr) {
       if (error) {
-        res.send(stderr);
+        res.send(stderr + stdout);
       } else {
         res.send(stdout);
       }
