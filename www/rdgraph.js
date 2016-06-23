@@ -59,9 +59,6 @@ function rdgraph_draw(selected_graphs, outfile, set) {
         },
         shadowSize: 0
       },
-      zoom: {
-        interactive: true
-      },
       pan: {
         interactive: true
       },
