@@ -117,6 +117,12 @@ avg = {}
 for m in range(0,len(met_name)):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
 if args.format == 'text':
+    print("%10s: %9.2f%% %9.2f%% %9.2f%%" % ('PSNR YCbCr', avg[0], avg[5], avg[6]))
+    print("%10s: %9.2f%%" % ('PSNRHVS', avg[1]))
+    print("%10s: %9.2f%%" % ('SSIM', avg[2]))
+    print("%10s: %9.2f%%" % ('MSSSIM', avg[10]))
+    print("%10s: %9.2f%%" % ('CIEDE2000', avg[4]))
+    print()
     print(('%'+str(filename_len)+"s ") % 'file', end='')
     for name in met_name:
         print("%9s " % name, end='')
@@ -141,9 +147,6 @@ if args.format == 'text':
         print('Range: overlap')
     elif info_data:
         print('Range: Anchor ' + info_data[2]['run_id'])
-    for m in range(0,len(met_name)):
-        print("%10s: %9.2f" % (met_name[m], avg[m]))
-    print()
 elif args.format == 'json':
     output = {}
     output['metric_names'] = met_name
