@@ -117,17 +117,6 @@ avg = {}
 for m in range(0,len(met_name)):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
 if args.format == 'text':
-    print("AWCY Report v0.4")
-    if info_data:
-        print('Reference: ' + info_data[0]['run_id'])
-        print('Test Run: ' + info_data[1]['run_id'])
-    if args.overlap:
-        print('Range: overlap')
-    elif info_data:
-        print('Range: Anchor ' + info_data[2]['run_id'])
-    for m in range(0,len(met_name)):
-        print("%10s: %9.2f" % (met_name[m], avg[m]))
-    print()
     print(('%'+str(filename_len)+"s ") % 'file', end='')
     for name in met_name:
         print("%9s " % name, end='')
@@ -144,6 +133,17 @@ if args.format == 'text':
     for i in range(0,len(met_name)):
         print("%9.2f " % avg[i],end='')
     print('')
+    print("AWCY Report v0.4")
+    if info_data:
+        print('Reference: ' + info_data[0]['run_id'])
+        print('Test Run: ' + info_data[1]['run_id'])
+    if args.overlap:
+        print('Range: overlap')
+    elif info_data:
+        print('Range: Anchor ' + info_data[2]['run_id'])
+    for m in range(0,len(met_name)):
+        print("%10s: %9.2f" % (met_name[m], avg[m]))
+    print()
 elif args.format == 'json':
     output = {}
     output['metric_names'] = met_name
