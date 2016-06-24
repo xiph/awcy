@@ -110,9 +110,6 @@ else:
         metric_data[video] = bdrate(args.run[0]+'/'+video,args.run[1]+'/'+video,args.anchor+'/'+video)
 
 filename_len = 40
-for video in videos:
-    if filename_len < len(video):
-        filename_len = len(video)
 avg = {}
 for m in range(0,len(met_name)):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
@@ -130,7 +127,7 @@ if args.format == 'text':
     print('------------------------------------------------------------------------------------------')
     for video in sorted(metric_data):
         metric = metric_data[video]
-        print (('%'+str(filename_len)+"s ") % video,end='')
+        print (('%'+str(filename_len)+"s ") % video[0:filename_len],end='')
         for i in range(0,len(met_name)):
             print("%9.2f " % metric[i],end='')
         print('')
