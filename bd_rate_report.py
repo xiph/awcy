@@ -18,7 +18,8 @@ parser.add_argument('--suffix',help='Metric data suffix (default is .out)',defau
 parser.add_argument('--format',help='Format of output',default='text')
 args = parser.parse_args()
 
-met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000', 'PSNR Cb', 'PSNR Cr', 'APSNR', 'APSNR Cb', 'APSNR Cr', 'MSSSIM'];
+met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'MSSSIM', 'CIEDE2000', 'PSNR Cb', 'PSNR Cr']
+met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4, 'PSNR Cb': 5, 'PSNR Cr': 6, 'APSNR': 7, 'APSNR Cb': 8, 'APSNR Cr':9, 'MSSSIM':10}
 
 def bdrate(file1, file2, anchorfile):
     if anchorfile:
@@ -31,7 +32,7 @@ def bdrate(file1, file2, anchorfile):
     rb = b[:,2]*8./b[:,1]
     bdr = zeros((4,4))
     ret = {}
-    for m in range(0,len(met_name)):
+    for m in range(0,len(met_index)):
         try:
             ya = a[:,3+m];
             yb = b[:,3+m];
@@ -111,7 +112,7 @@ else:
 
 filename_len = 40
 avg = {}
-for m in range(0,len(met_name)):
+for m in range(0,len(met_index)):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
 if args.format == 'text':
     print("%10s: %9.2f%% %9.2f%% %9.2f%%" % ('PSNR YCbCr', avg[0], avg[5], avg[6]))
@@ -128,13 +129,13 @@ if args.format == 'text':
     for video in sorted(metric_data):
         metric = metric_data[video]
         print (('%'+str(filename_len)+"s ") % video[0:filename_len],end='')
-        for i in range(0,len(met_name)):
-            print("%9.2f " % metric[i],end='')
+        for met in met_name:
+            print("%9.2f " % metric[met_index[met]],end='')
         print('')
     print('------------------------------------------------------------------------------------------')
     print(('%'+str(filename_len)+"s ") % 'Average',end='')
-    for i in range(0,len(met_name)):
-        print("%9.2f " % avg[i],end='')
+    for met in met_name:
+        print("%9.2f " % avg[met_index[met]],end='')
     print('')
     print("AWCY Report v0.4")
     if info_data:
