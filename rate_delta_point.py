@@ -23,3 +23,5 @@ for m in range(0,11):
         print(exp(b_rate - a_rate) - 1)
     except IndexError:
         print('NaN')
+    except ValueError:
+        print('NaN')
