@@ -45,7 +45,7 @@ case $CODEC in
     ;;
   av1 | av1-rt)
     pushd $CODEC
-    ./configure --enable-av1 $BUILD_OPTIONS
+    ./configure --enable-av1 --disable-unit-tests --disable-docs $BUILD_OPTIONS
     make
     popd
     ;;
