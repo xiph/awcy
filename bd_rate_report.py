@@ -47,8 +47,8 @@ def bdrate(file1, file2, anchorfile):
                 minq = 20
                 maxq = 55
                 try:
-                    minq_index = q.index(minq)
-                    maxq_index = q.index(maxq)
+                    minq_index = q.tolist().index(minq)
+                    maxq_index = q.tolist().index(maxq)
                 except ValueError:
                     print('Q bound not in results')
                 p0 = max(ya[minq_index],yb[maxq_index])
