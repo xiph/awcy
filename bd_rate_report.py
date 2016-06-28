@@ -51,6 +51,8 @@ def bdrate(file1, file2, anchorfile):
                     maxq_index = q.tolist().index(maxq)
                 except ValueError:
                     print('Q bound not in results')
+                    minq_index = 0
+                    maxq_index = -1
                 p0 = max(ya[minq_index],yb[maxq_index])
                 p1 = min(ya[minq_index],yb[maxq_index])
             a_rate = pchip(ya, log(ra))(arange(p0,p1,abs(p1-p0)/5000.0));
