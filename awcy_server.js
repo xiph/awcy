@@ -158,7 +158,7 @@ function pollAmazon() {
     autoScalingGroups = data;
   });
   if ((!job_in_progress) && (job_queue.length == 0)) {
-    var shutdown_threshold = 1000*60*10; // 10 minutes
+    var shutdown_threshold = 1000*60*30.5; // 30.5 minutes
     if ((Date.now() - last_job_completed_time) > shutdown_threshold) {
       console.log("Shutting down all Amazon instances because idle.");
       shutdownAmazon();
