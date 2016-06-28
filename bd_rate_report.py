@@ -53,8 +53,8 @@ def bdrate(file1, file2, anchorfile):
                     print('Q bound not in results')
                     minq_index = 0
                     maxq_index = -1
-                p0 = max(ya[minq_index],yb[maxq_index])
-                p1 = min(ya[minq_index],yb[maxq_index])
+                p0 = max(ya[maxq_index],yb[maxq_index])
+                p1 = min(ya[minq_index],yb[minq_index])
             a_rate = pchip(ya, log(ra))(arange(p0,p1,abs(p1-p0)/5000.0));
             b_rate = pchip(yb, log(rb))(arange(p0,p1,abs(p1-p0)/5000.0));
             if not len(a_rate) or not len(b_rate):
