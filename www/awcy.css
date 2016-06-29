@@ -100,7 +100,7 @@ header {
   border-radius: 3px;
   word-wrap: break-word;
 }
-#job_log {
+.log {
   height: 300px;
   overflow: scroll;
 }

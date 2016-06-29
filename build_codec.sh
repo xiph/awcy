@@ -4,7 +4,7 @@ set -e
 echo Building...
 case $CODEC in
   daala)
-    pushd $DAALA_ROOT
+    pushd $CODEC
     gcc -print-prog-name=cc1
     gcc -print-search-dirs
     ./autogen.sh; ./configure --enable-static --disable-shared --disable-player --disable-dump-images --enable-logging --enable-dump-recons $BUILD_OPTIONS; make -j4

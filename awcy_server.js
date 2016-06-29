@@ -1,19 +1,14 @@
+'use strict';
+
 var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser')
 var cookieParser = require('cookie-parser')
-var fs = require('fs');
+var fs = require('fs-extra');
 var cp = require('child_process');
 var irc = require('irc');
 var AWS = require('aws-sdk');
 var app = express();
-
-var have_aws = true;
-try {
-  AWS.config.loadFromPath('./aws.json');
-} catch(err) {
-  console.log('Starting without AWS support.');
-}
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
@@ -29,14 +24,9 @@ ircclient.addListener('error', function(message) {
     console.log('error: ', message);
 });
 
-var job;
-var job_queue = [];
-var job_in_progress = false;
-var job_child_process = null;
-var job_log = ''
-var last_job_completed_time = Date.now();
-
 var key = fs.readFileSync('secret_key', {encoding: 'utf8'}).trim();
+
+var last_job_completed_time = Date.now();
 
 function check_key(req,res,next) {
   if (req.cookies.key == key) {
@@ -51,57 +41,133 @@ function check_key(req,res,next) {
   }
 };
 
-function process_queue() {
+var binaries = {
+  'daala':['examples/encoder_example'],
+  'x264': ['x264'],
+  'x265': ['build/linux/x265'],
+  'vp8': ['vpxenc','vpxdec'],
+  'vp9': ['vpxenc','vpxdec'],
+  'av1': ['aomenc','aomdec'],
+  'thor': ['build/Thorenc','build/Thordec']
+};
+
+/* The build queue. Only one job can be built at a time. */
+
+var build_job;
+var build_job_queue = [];
+var run_job;
+var run_job_queue = [];
+var run_job_in_progress = false
+var build_job_in_progress = false;
+var build_job_child_process = null;
+var run_job_child_process = null;
+var last_build_job_completed_time = Date.now();
+
+function process_build_queue() {
   cp.exec('node generate_list.js');
-  if (job_in_progress) { return; };
-  if (job_queue.length > 0) {
-    job_in_progress = true;
-    job = job_queue.shift();
-    console.log('Starting job '+job.run_id);
-    ircclient.say(channel,job.nick+': Starting '+job.run_id);
+  if (build_job_in_progress) { return; };
+  if (build_job_queue.length > 0) {
+    build_job_in_progress = true;
+    build_job = build_job_queue.shift();
+    console.log('Starting build_job '+build_job.run_id);
+    ircclient.say(channel,build_job.nick+': Starting '+build_job.run_id);
     var env = process.env;
     env['LANG'] = 'en_US.UTF-8';
-    env['CODEC'] = job.codec;
-    env['EXTRA_OPTIONS'] = job.extra_options;
-    env['BUILD_OPTIONS'] = job.build_options;
-    env['RUN_ID'] = job.run_id;
-    if (job.ab_compare) {
+    env['CODEC'] = build_job.codec;
+    env['EXTRA_OPTIONS'] = build_job.extra_options;
+    env['BUILD_OPTIONS'] = build_job.build_options;
+    env['RUN_ID'] = build_job.run_id;
+    if (build_job.ab_compare) {
       env['AB_COMPARE'] = '1';
     }
-    if (job.qualities) {
-      env['QUALITIES'] = job.qualities;
+    if (build_job.qualities) {
+      env['QUALITIES'] = build_job.qualities;
     } else {
       env['QUALITIES'] = '';
     }
-    job_child_process = cp.spawn('./run_video_test.sh',
-      [job.commit,job.run_id,job.task],
+    build_job_child_process = cp.spawn('./create_test_branch.sh',
+      [build_job.commit, build_job.run_id, build_job.codec],
       { env: env });
-    job_log = ''
-    job_child_process.stdout.on('data', function(data) {
+    var job_log = ''
+    build_job_child_process.stdout.on('data', function(data) {
       console.log(data.toString());
-      job_log += data;
+      fs.appendFile('runs/'+build_job.run_id+'/output.txt',data);
     });
-    job_child_process.stderr.on('data', function(data) {
+    build_job_child_process.stderr.on('data', function(data) {
       console.log(data.toString());
-      job_log += data;
+      fs.appendFile('runs/'+build_job.run_id+'/output.txt',data);
     });
-    job_child_process.on('close', function(error) {
-      if (error == 0) {
-        console.log('video test succeeded');
-        ircclient.say(channel,job.nick+': Finished '+job.run_id);
-      } else {
-        ircclient.say(channel,job.nick+': Exploded '+job.run_id+
-          ' see https://arewecompressedyet.com/error.txt');
+    build_job_child_process.on('close', function(error) {
+      for (var binary of binaries[build_job.codec]) {
+        fs.copySync(build_job.codec+'/'+binary,'runs/'+binary);
       }
-      fs.writeFile('runs/'+job.run_id+'/output.txt',job_log);
-      fs.writeFile('error.txt',job_log);
-      job_in_progress = false;
-      job = null;
-      last_job_completed_time = Date.now();
-      process_queue();
+      if (error == 0) {
+        add_to_run_queue(build_job);
+      } else {
+        ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
+          ' https://arewecompressedyet.com/runs/'+build_job.run_id+'/buildlog.txt');
+      }
+      build_job_in_progress = false;
+      build_job = undefined;
+      process_build_queue();
     });
   }
 };
+
+function add_to_run_queue(job) {
+  run_job_queue.push(job);
+  process_run_queue();
+}
+
+function process_run_queue() {
+  if (run_job_in_progress) { return; };
+  if (run_job_queue.length == 0) return;
+  run_job_in_progress = true;
+  var job = run_job_queue.shift();
+  run_job = job;
+  var env = process.env;
+  env['LANG'] = 'en_US.UTF-8';
+  env['CODEC'] = job.codec;
+  env['EXTRA_OPTIONS'] = job.extra_options;
+  env['BUILD_OPTIONS'] = job.build_options;
+  env['RUN_ID'] = job.run_id;
+  if (job.ab_compare) {
+    env['AB_COMPARE'] = '1';
+  }
+  if (job.qualities) {
+    env['QUALITIES'] = job.qualities;
+  } else {
+    env['QUALITIES'] = '';
+  }
+  run_job_child_process = cp.spawn('./run_video_test.sh',
+    [job.commit,job.run_id,job.task],
+    { env: env });
+  var job_log = ''
+  run_job_child_process.stdout.on('data', function(data) {
+    fs.appendFile('runs/'+job.run_id+'/output.txt',data);
+  });
+  run_job_child_process.stderr.on('data', function(data) {
+    fs.appendFile('runs/'+job.run_id+'/output.txt',data);
+  });
+  run_job_child_process.on('close', function(error) {
+    if (error == 0) {
+      console.log('video test succeeded');
+      ircclient.say(channel,job.nick+': Finished '+job.run_id);
+    } else {
+      ircclient.say(channel,job.nick+': Exploded '+job.run_id+
+        ' see https://arewecompressedyet.com/error.txt');
+    }
+    run_job = undefined;
+    run_job_in_progress = false;
+    last_job_completed_time = Date.now();
+    if (error == 0) {
+    } else {
+      ircclient.say(channel,job.nick+': Exploded '+job.run_id+
+        ' https://arewecompressedyet.com/runs/'+job.run_id+'/output.txt');
+    }
+    process_run_queue();
+  });
+}
 
 app.use(express.static(__dirname + '/www'));
 app.use('/runs',express.static(__dirname + '/runs'));
@@ -118,20 +184,24 @@ app.get('/run_list.json',function(req,res) {
   });
 });
 
-app.get('/job_queue.json',function(req,res) {
-  res.json(job_queue);
+app.get('/build_job_queue.json',function(req,res) {
+  res.json(build_job_queue);
 });
 
-app.get('/job',function(req,res) {
-  res.json(job);
+app.get('/run_job_queue.json',function(req,res) {
+  res.json(run_job_queue);
 });
 
-app.get('/job_log',function(req,res) {
-  res.send(job_log);
+app.get('/run_job.json',function(req,res) {
+  res.json(run_job);
 });
 
-autoScalingInstances = null;
-autoScalingGroups = null;
+app.get('/build_job.json',function(req,res) {
+  res.json(build_job);
+});
+
+let autoScalingInstances = null;
+let autoScalingGroups = null;
 
 function shutdownAmazon() {
   var autoscaling = new AWS.AutoScaling();
@@ -151,16 +221,16 @@ function pollAmazon() {
   autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: [config.scaling_group]}, function(err,data) {
     autoScalingGroups = data;
   });
-  if ((!job_in_progress) && (job_queue.length == 0)) {
+  if ((!build_job_in_progress) && (build_job_queue.length == 0)) {
     var shutdown_threshold = 1000*60*30.5; // 30.5 minutes
-    if ((Date.now() - last_job_completed_time) > shutdown_threshold) {
+    if ((Date.now() - last_build_job_completed_time) > shutdown_threshold) {
       console.log("Shutting down all Amazon instances because idle.");
       shutdownAmazon();
     }
   }
 }
 
-if (have_aws) {
+if (config.have_aws) {
   setInterval(pollAmazon, 60*1*1000);
 }
 
@@ -289,8 +359,8 @@ app.post('/submit/job',function(req,res) {
   }
   fs.mkdirSync('runs/'+job.run_id);
   fs.writeFile('runs/'+job.run_id+'/info.json',JSON.stringify(job));
-  job_queue.push(job);
-  process_queue();
+  build_job_queue.push(job);
+  process_build_queue();
   res.send('ok');
 });
 

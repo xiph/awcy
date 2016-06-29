@@ -16,3 +16,5 @@ git clean -d -x -f
 
 cd ..
 mkdir -p runs/$TESTNAME
+
+./build_codec.sh
