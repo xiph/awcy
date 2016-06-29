@@ -73,15 +73,9 @@ function process_queue() {
     } else {
       env['QUALITIES'] = '';
     }
-    if (job.videos) {
-      job_child_process = cp.spawn('./run_video_test2.sh',
-        [job.commit,job.run_id].concat(job.videos),
-        { env: env });
-    } else {
-      job_child_process = cp.spawn('./run_video_test.sh',
-        [job.commit,job.run_id,job.task],
-        { env: env });
-    }
+    job_child_process = cp.spawn('./run_video_test.sh',
+      [job.commit,job.run_id,job.task],
+      { env: env });
     job_log = ''
     job_child_process.stdout.on('data', function(data) {
       console.log(data.toString());
