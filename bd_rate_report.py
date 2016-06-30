@@ -18,8 +18,8 @@ parser.add_argument('--suffix',help='Metric data suffix (default is .out)',defau
 parser.add_argument('--format',help='Format of output',default='text')
 args = parser.parse_args()
 
-met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'MSSSIM', 'CIEDE2000', 'PSNR Cb', 'PSNR Cr']
-met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4, 'PSNR Cb': 5, 'PSNR Cr': 6, 'APSNR': 7, 'APSNR Cb': 8, 'APSNR Cr':9, 'MSSSIM':10}
+met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'MSSSIM', 'Encode time', 'CIEDE2000', 'PSNR Cb', 'PSNR Cr']
+met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4, 'PSNR Cb': 5, 'PSNR Cr': 6, 'APSNR': 7, 'APSNR Cb': 8, 'APSNR Cr':9, 'MSSSIM':10, 'Encode time':11}
 
 def bdrate(file1, file2, anchorfile):
     if anchorfile:
@@ -121,6 +121,7 @@ if args.format == 'text':
     print("%10s: %9.2f%%" % ('PSNRHVS', avg[1]))
     print("%10s: %9.2f%%" % ('SSIM', avg[2]))
     print("%10s: %9.2f%%" % ('MSSSIM', avg[10]))
+    print("%10s: %8.2fs" % ('Encode time', avg[11]))
     print("%10s: %9.2f%%" % ('CIEDE2000', avg[4]))
     print()
     print(('%'+str(filename_len)+"s ") % 'file', end='')
