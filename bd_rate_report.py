@@ -96,7 +96,7 @@ else:
         exit(1)
     videos = os.listdir(args.anchor)
 
-if info_data:
+if info_data and not args.overlap:
     info_data[2] = json.load(open(args.anchordir[0]+'/'+sets[task]['anchor']+'/info.json'))
     if info_data[2]['task'] != info_data[0]['task']:
         print("Mismatched anchor data!")
