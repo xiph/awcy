@@ -272,7 +272,7 @@ app.post('/submit/job',function(req,res) {
   if (req.body.ab_compare) {
     job.ab_compare = req.body.ab_compare;
   } else {
-    job.ab_compare = true;
+    job.ab_compare = false;
   }
   job.task_type = 'video';
   if (job.run_id.length > 256) {
