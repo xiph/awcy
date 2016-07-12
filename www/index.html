@@ -37,7 +37,7 @@
   <li><a href="#submit" role="tab" data-toggle="tab">Submit</a></li>
   <li><a href="#timeline" role="tab" data-toggle="tab">Timeline</a></li>
   <li><a href="#images" role="tab" data-toggle="tab">Images</a></li>
-  <li><a href="#about" role="tab" data-toggle="tab">About</a></li>
+  <li><a href="#about" role="tab" data-toggle="tab">Help</a></li>
 </ul>
 </header>
 <noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
@@ -267,17 +267,34 @@
 </article>
 
 <article id="about" class="container tab-pane">
-<h2>What is this?</h2>
-AreWeCompressedYet is a continuous-integration system used to test the Daala video codec's compression abilities. It also supports running other video codecs, for comparison purposes.
-<h2>How do I use it?</h2>
-<h3>Home</h3>
-This tool lets you plot rate-distortion curves from different runs of the tool. Runs can be selected on the left. When selected, they will turn green and appear on the graph. Only curves from the same set of videos can be compared. The combobox on top of the list of runs lets you choose which set of videos to use.
-<h3>Submission</h3>
-Contact TD-Linux on #daala on irc.freenode.net if you would like to submit jobs to AreWeCompressedYet. You can also run the tools locally, by using the rd_collect.sh script in the Daala repository.
-<h3>Timeline</h3>
-The timeline shows Daala's performance over time at one specific bitrate. It is automatically updated every time new code is pushed to master.
-<h2>How to Contribute or Report Bugs</h2>
-IRC: #daala @ irc.freenode.net
+<h2>About</h2>
+AreWeCompressedYet is a continuous-integration system used to test video codecs' compression abilities. It is used for the development of free codecs such as AV1.
+<h2>Viewing run data</h2>
+<ol>
+<li>Choose the home tab.
+<li>Select two runs on the left by clicking them.
+<li>Rate distortion graphs will appear. These plot bitrate on the X axis, and quality on the Y axis.
+<li>Different metrics and videos can be selected from the dropdowns on top of the graph.
+<li>A BD-Rate report, which shows a summary of the graph data, can be accessed underneath the graph. Negative percentages show improvements, positive percentages show regressions.
+</ol>
+<h2>Submission</h2>
+<p>You must have a changeset in an approved Git repository. If you would like your personal Git repository approved, see the contact information below. You will also need an access key.
+<ol>
+<li>If not entered already, type your access key into the Secret Key field and choose Login.
+<li>Type a unique name into the Run ID field. A unique name is already filled out for you, but you can choose something more descriptive if you like.
+<li>Enter a Git hash to run. You can also use any valid Git reference, such as "origin/master" for the latest version.
+<li>All other fields are optional. Here are some useful ones:
+  <ul>
+    <li>The Subset box allows you to choose a custom set of videos to run. In most cases, you should use objective-1-fast.
+    <li>The Codec box allows you to choose a different codec. This is useful for comparing codecs against each other.
+    <li>The Extra Build Options allows you to specify custom options to the configure script. This is how you enable experimental features in AV1, for example:
+      <pre>--enable-experimental --enable-dering</pre>
+  </ul>
+<li>Submit a run. It will be entered into the queue. When it is complete, it will appear in the list of runs.
+</ol>
+<h2>Contact information</h2>
+<p>tdaede@mozilla.com
+<p>IRC: #aomedia or #daala @ irc.freenode.net
 </article>
 <br />
 
