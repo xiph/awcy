@@ -53,7 +53,6 @@ function check_key(req,res,next) {
 
 function process_queue() {
   cp.exec('node generate_list.js');
-  return;
   if (job_in_progress) { return; };
   if (job_queue.length > 0) {
     job_in_progress = true;
