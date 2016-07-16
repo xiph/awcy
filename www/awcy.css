@@ -107,6 +107,9 @@ header {
 div.cancel {
   overflow: auto;
   margin-bottom: 10px;
+  padding-top: 5px;
+  border-top: 1px solid #ddd;
+  word-break: break-all;
 }
 button.cancel {
   float: right;
