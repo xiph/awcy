@@ -394,8 +394,7 @@ function update_url() {
 function load_job_queue() {
   $.getJSON('/job_queue.json', function(data) {
     $('#job_queue').html('');
-    for (var i in data) {
-      var job = data[i];
+    data.forEach(function(job) {
       var job_div = $('<div>');
       var job_cancel = $('<button>X</button>')
       job_cancel.on('click',function() {
@@ -404,7 +403,7 @@ function load_job_queue() {
       job_div.html(job.run_id);
       job_div.append(job_cancel);
       $('#job_queue').append(job_div);
-    }
+    });
   });
   $.getJSON('/job', function(data) {
     var job = data;
