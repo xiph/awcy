@@ -104,3 +104,10 @@ header {
   height: 300px;
   overflow: scroll;
 }
+div.cancel {
+  overflow: auto;
+  margin-bottom: 10px;
+}
+button.cancel {
+  float: right;
+}

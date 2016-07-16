@@ -395,13 +395,17 @@ function load_job_queue() {
   $.getJSON('/job_queue.json', function(data) {
     $('#job_queue').html('');
     data.forEach(function(job) {
-      var job_div = $('<div>');
-      var job_cancel = $('<button>X</button>')
+      var job_div = $('<div class="cancel">');
+      var job_cancel = $('<button class="cancel">X</button>')
       job_cancel.on('click',function() {
         $.post('/submit/cancel', { run_id: job.run_id });
       })
-      job_div.html(job.run_id);
       job_div.append(job_cancel);
+      job_div.append(job.run_id);
+      var run_meta_tag = $('<div>');
+      run_meta_tag.addClass('run_meta');
+      run_meta_tag.text(job.nick + ' ' + job.codec);
+      job_div.append(run_meta_tag);
       $('#job_queue').append(job_div);
     });
   });
