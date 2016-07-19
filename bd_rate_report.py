@@ -21,6 +21,8 @@ args = parser.parse_args()
 met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'MSSSIM', 'CIEDE2000', 'PSNR Cb', 'PSNR Cr']
 met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4, 'PSNR Cb': 5, 'PSNR Cr': 6, 'APSNR': 7, 'APSNR Cb': 8, 'APSNR Cr':9, 'MSSSIM':10}
 
+q_not_found = False
+
 def bdrate(file1, file2, anchorfile):
     if anchorfile:
         anchor = flipud(loadtxt(anchorfile));
@@ -53,7 +55,7 @@ def bdrate(file1, file2, anchorfile):
                     minqb_index = qb.tolist().index(minq)
                     maxqb_index = qb.tolist().index(maxq)
                 except ValueError:
-                    print('Q bound not in results')
+                    q_not_found = True
                     minqa_index = -1
                     maxqa_index = 0
                     minqb_index = -1
@@ -122,6 +124,8 @@ avg = {}
 for m in range(0,len(met_index)):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
 if args.format == 'text':
+    if q_not_found:
+        print("Warning: Quantizers 20 and 55 not found in results, using maximum overlap")
     print("%10s: %9.2f%% %9.2f%% %9.2f%%" % ('PSNR YCbCr', avg[0], avg[5], avg[6]))
     print("%10s: %9.2f%%" % ('PSNRHVS', avg[1]))
     print("%10s: %9.2f%%" % ('SSIM', avg[2]))
