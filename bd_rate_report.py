@@ -27,7 +27,8 @@ def bdrate(file1, file2, anchorfile):
     a = flipud(loadtxt(file1));
     b = flipud(loadtxt(file2));
     rates = [0.06,0.2];
-    q = a[:,0]
+    qa = a[:,0]
+    qb = b[:,0]
     ra = a[:,2]*8./a[:,1]
     rb = b[:,2]*8./b[:,1]
     bdr = zeros((4,4))
@@ -47,14 +48,18 @@ def bdrate(file1, file2, anchorfile):
                 minq = 20
                 maxq = 55
                 try:
-                    minq_index = q.tolist().index(minq)
-                    maxq_index = q.tolist().index(maxq)
+                    minqa_index = qa.tolist().index(minq)
+                    maxqa_index = qa.tolist().index(maxq)
+                    minqb_index = qb.tolist().index(minq)
+                    maxqb_index = qb.tolist().index(maxq)
                 except ValueError:
                     print('Q bound not in results')
-                    minq_index = 0
-                    maxq_index = -1
-                p0 = max(ya[maxq_index],yb[maxq_index])
-                p1 = min(ya[minq_index],yb[minq_index])
+                    minqa_index = -1
+                    maxqa_index = 0
+                    minqb_index = -1
+                    maxqb_index = 0
+                p0 = max(ya[maxqa_index],yb[maxqb_index])
+                p1 = min(ya[minqa_index],yb[minqb_index])
             a_rate = pchip(ya, log(ra))(arange(p0,p1,abs(p1-p0)/5000.0));
             b_rate = pchip(yb, log(rb))(arange(p0,p1,abs(p1-p0)/5000.0));
             if not len(a_rate) or not len(b_rate):
