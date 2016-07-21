@@ -231,8 +231,13 @@ app.use('/submit',check_key);
 
 app.post('/submit/job',function(req,res) {
   var job = {};
+  var gerrit_detect_re = /I[0-9a-f].*/g;
   job.codec = 'daala';
   job.commit = req.body.commit;
+  if (gerrit_detect_re.test(job.commit)) {
+    res.status(400).send('Error: Commit looks like a Gerrit Change-Id. Use the commit hash instead.');
+    return;
+  }
   job.run_id = req.body.run_id.replace(' ','_');
   if (req.body.task) {
     if (req.body.task == 'custom') {
