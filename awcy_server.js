@@ -5,6 +5,7 @@ var path = require('path');
 var bodyParser = require('body-parser')
 var cookieParser = require('cookie-parser')
 var fs = require('fs-extra');
+var path = require('path');
 var cp = require('child_process');
 var irc = require('irc');
 var AWS = require('aws-sdk');
@@ -99,7 +100,7 @@ function process_build_queue() {
     });
     build_job_child_process.on('close', function(error) {
       for (var binary of binaries[build_job.codec]) {
-        fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+binary);
+        fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
         fs.copySync(build_job.codec+'/'+binary,'runs/'+build_job.run_id+'/x86_64/'+binary);
       }
       if (error == 0) {
