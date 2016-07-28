@@ -872,7 +872,7 @@ function clear_key_cookie() {
 }
 
 function load_job_log() {
-  $.get('run_job.json', function(run_job) {
+  $.getJSON('run_job.json', function(run_job) {
     $('#run_job_run_id').text(run_job.run_id);
     $.get('runs/'+run_job.run_id+'/output.txt',function(data) {
       $('#job_log').html(data);
@@ -883,6 +883,8 @@ function load_job_log() {
         $('#job_progress').html(last_line[0] + ' / ' + last_line[3]);
       }
     });
+  }).error(function() {
+    $('#run_job_run_id').text('None');
   });
   $.getJSON('build_job.json', function(build_job) {
     $('#build_job_box').removeClass('hidden');
