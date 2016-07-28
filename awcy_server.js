@@ -99,7 +99,8 @@ function process_build_queue() {
     });
     build_job_child_process.on('close', function(error) {
       for (var binary of binaries[build_job.codec]) {
-        fs.copySync(build_job.codec+'/'+binary,'runs/'+binary);
+        fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+binary);
+        fs.copySync(build_job.codec+'/'+binary,'runs/'+build_job.run_id+'/x86_64/'+binary);
       }
       if (error == 0) {
         add_to_run_queue(build_job);
