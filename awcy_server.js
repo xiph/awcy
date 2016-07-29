@@ -388,9 +388,9 @@ app.post('/submit/cancel',function(req,res) {
 });
 
 app.post('/submit/kill',function(req,res) {
-  job_child_process.kill('SIGTERM');
-  job_child_process.kill('SIGKILL');
-  res.send(job_child_process.pid);
+  run_job_child_process.kill('SIGTERM');
+  run_job_child_process.kill('SIGKILL');
+  res.send(run_job_child_process.pid);
 });
 
 app.post('/submit/restart', function(req,res) {
