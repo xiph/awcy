@@ -100,14 +100,14 @@ function process_build_queue() {
     });
     build_job_child_process.on('close', function(error) {
       for (var binary of binaries[build_job.codec]) {
-        fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
+        fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+path.dirname(binary)z);
         fs.copySync(build_job.codec+'/'+binary,'runs/'+build_job.run_id+'/x86_64/'+binary);
       }
       if (error == 0) {
         add_to_run_queue(build_job);
       } else {
         ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
-          ' https://arewecompressedyet.com/runs/'+build_job.run_id+'/buildlog.txt');
+          ' https://arewecompressedyet.com/runs/'+build_job.run_id+'/output.txt');
       }
       build_job_in_progress = false;
       build_job = undefined;
