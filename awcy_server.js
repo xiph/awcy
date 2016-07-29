@@ -376,9 +376,9 @@ app.post('/submit/delete',function(req,res) {
 
 app.post('/submit/cancel',function(req,res) {
   var run = req.body.run_id;
-  job_queue.forEach(function(job, index) {
+  run_job_queue.forEach(function(job, index) {
     if (job.run_id == run) {
-      job_queue.splice(index, 1);
+      run_job_queue.splice(index, 1);
     }
   });
   res.send('ok');
