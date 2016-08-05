@@ -187,26 +187,26 @@
       </form>
     </div>
     <div class="controlbox col-md-8">
-      <h3>Current Job</h3>
-      <div id="current_job">No jobs running currently.</div>
+      <h3>Running: <span id="run_job_run_id"></span></h3>
       <div class="progress">
         <div id="job_progress" class="progress-bar" role="progressbar" style="min-width: 5em; width: 0%;">
         0 / 0
         </div>
       </div>
-      <form action="submit/kill" method="post" class="loginrequired" style="float:left">
-        <button type="submit" class="btn btn-danger">Kill</button>
-      </form>
-      <form action="submit/restart" method="post" class="loginrequired" style="float:left">
-        <button type="submit" class="btn btn-danger">Restart Server</button>
-      </form>
-      <br />
-      <br />
-      <pre id="job_log"></pre>
+      <pre id="job_log" class="log"></pre>
+      <div id="build_job_box" class="hidden">
+        <h3>Building: <span id="build_job_run_id"></span></h3>
+        <pre id="build_job_log" class="log"></pre>
+      </div>
     </div>
     <div class="controlbox col-md-4">
       <h3>Job Queue</h3>
       <div id="job_queue"></div>
+      <h3>Build Job Queue</h3>
+      <div id="build_job_queue"></div>
+      <form action="submit/restart" method="post" class="loginrequired" style="float:left">
+        <button type="submit" class="btn btn-danger">Restart Server</button>
+      </form>
     </div>
     <div class="controlbox col-md-4">
       <h3>AWS Machine Info</h3>
@@ -392,7 +392,19 @@ function update_url() {
 };
 
 function load_job_queue() {
-  $.getJSON('/job_queue.json', function(data) {
+  $.getJSON('/build_job_queue.json', function(data) {
+    $('#build_job_queue').html('');
+    data.forEach(function(job) {
+      var job_div = $('<div>');
+      job_div.append(job.run_id);
+      var run_meta_tag = $('<div>');
+      run_meta_tag.addClass('run_meta');
+      run_meta_tag.text(job.nick + ' ' + job.codec);
+      job_div.append(run_meta_tag);
+      $('#build_job_queue').append(job_div);
+    });
+  });
+  $.getJSON('/run_job_queue.json', function(data) {
     $('#job_queue').html('');
     data.forEach(function(job) {
       var job_div = $('<div class="cancel">');
@@ -408,15 +420,6 @@ function load_job_queue() {
       job_div.append(run_meta_tag);
       $('#job_queue').append(job_div);
     });
-  });
-  $.getJSON('/job', function(data) {
-    var job = data;
-    var job_div = $('#current_job');
-    if (job) {
-      job_div.html(job.run_id);
-    } else {
-      job_div.html('No jobs running');
-    }
   });
 }
 function bd_rate(selected_graphs,outfile) {
@@ -864,14 +867,28 @@ function clear_key_cookie() {
 }
 
 function load_job_log() {
-  $.get('job_log',function(data) {
-    $('#job_log').html(data);
-    last_line = data.match(/([0-9]+) out of ([0-9]+)/g).slice(-1)[0].split(' ');
-    if (last_line) {
-      percentage = 100 * last_line[0] / last_line[3] + '%';
-      $('#job_progress').width(percentage);
-      $('#job_progress').html(last_line[0] + ' / ' + last_line[3]);
-    }
+  $.getJSON('run_job.json', function(run_job) {
+    $('#run_job_run_id').text(run_job.run_id);
+    $.get('runs/'+run_job.run_id+'/output.txt',function(data) {
+      $('#job_log').html(data);
+      last_line = data.match(/([0-9]+) out of ([0-9]+)/g).slice(-1)[0].split(' ');
+      if (last_line) {
+        percentage = 100 * last_line[0] / last_line[3] + '%';
+        $('#job_progress').width(percentage);
+        $('#job_progress').html(last_line[0] + ' / ' + last_line[3]);
+      }
+    });
+  }).error(function() {
+    $('#run_job_run_id').text('None');
+  });
+  $.getJSON('build_job.json', function(build_job) {
+    $('#build_job_box').removeClass('hidden');
+    $('#build_job_run_id').text(build_job.run_id);
+    $.get('runs/'+build_job.run_id+'/output.txt', function(data) {
+      $('#build_job_log').text(data);
+    });
+  }).error(function() {
+    $('#build_job_box').addClass('hidden');
   });
 }
 
