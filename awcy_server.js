@@ -68,7 +68,13 @@ var run_job_child_process = null;
 var last_build_job_completed_time = Date.now();
 
 function process_build_queue() {
-  cp.exec('node generate_list.js');
+  cp.exec('node generate_list.js', (error, stdout, stderr) => {
+  if (error) {
+    console.error(`exec error: ${error}`);
+    return;
+  }
+  console.log(`stdout: ${stdout}`);
+  console.log(`stderr: ${stderr}`);
   if (build_job_in_progress) { return; };
   if (build_job_queue.length > 0) {
     build_job_in_progress = true;
@@ -117,6 +123,7 @@ function process_build_queue() {
       process_build_queue();
     });
   }
+ });
 };
 
 function add_to_run_queue(job) {
