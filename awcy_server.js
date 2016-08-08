@@ -74,7 +74,6 @@ function process_build_queue() {
     build_job_in_progress = true;
     build_job = build_job_queue.shift();
     console.log('Starting build_job '+build_job.run_id);
-    ircclient.say(channel,build_job.nick+': Starting '+build_job.run_id);
     var env = process.env;
     env['LANG'] = 'en_US.UTF-8';
     env['CODEC'] = build_job.codec;
@@ -131,6 +130,7 @@ function process_run_queue() {
   var job = run_job_queue.shift();
   run_job = job;
   var env = process.env;
+  ircclient.say(channel,run_job.nick+': Starting '+run_job.run_id);
   env['LANG'] = 'en_US.UTF-8';
   env['CODEC'] = job.codec;
   env['EXTRA_OPTIONS'] = job.extra_options;
