@@ -68,7 +68,6 @@ var run_job_child_process = null;
 var last_build_job_completed_time = Date.now();
 
 function process_build_queue() {
-  cp.exec('node generate_list.js');
   if (build_job_in_progress) { return; };
   if (build_job_queue.length > 0) {
     build_job_in_progress = true;
@@ -165,6 +164,7 @@ function process_run_queue() {
       ircclient.say(channel,job.nick+': Exploded '+job.run_id+
         ' https://arewecompressedyet.com/runs/'+job.run_id+'/output.txt');
     }
+    cp.exec('node generate_list.js');
     process_run_queue();
   });
 }
