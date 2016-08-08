@@ -155,17 +155,12 @@ function process_run_queue() {
     fs.appendFile('runs/'+job.run_id+'/output.txt',data);
   });
   run_job_child_process.on('close', function(error) {
-    if (error == 0) {
-      console.log('video test succeeded');
-      ircclient.say(channel,job.nick+': Finished '+job.run_id);
-    } else {
-      ircclient.say(channel,job.nick+': Exploded '+job.run_id+
-        ' see https://arewecompressedyet.com/error.txt');
-    }
     run_job = undefined;
     run_job_in_progress = false;
     last_job_completed_time = Date.now();
     if (error == 0) {
+      console.log('video test succeeded');
+      ircclient.say(channel,job.nick+': Finished '+job.run_id);
     } else {
       ircclient.say(channel,job.nick+': Exploded '+job.run_id+
         ' https://arewecompressedyet.com/runs/'+job.run_id+'/output.txt');
