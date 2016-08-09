@@ -132,6 +132,8 @@ function process_run_queue() {
   run_job = job;
   var env = process.env;
   ircclient.say(channel,run_job.nick+': Starting '+run_job.run_id);
+  env['SCALING_GROUP'] = config.scaling_group;
+  env['NUM_MACHINES'] = config.num_machines.toString();
   env['LANG'] = 'en_US.UTF-8';
   env['CODEC'] = job.codec;
   env['EXTRA_OPTIONS'] = job.extra_options;
