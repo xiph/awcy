@@ -108,7 +108,7 @@ function process_build_queue() {
         add_to_run_queue(build_job);
       } else {
         ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
-          ' https://arewecompressedyet.com/runs/'+build_job.run_id+'/output.txt');
+          ' '+config.base_url+'/runs/'+build_job.run_id+'/output.txt');
       }
       build_job_in_progress = false;
       build_job = undefined;
@@ -162,7 +162,7 @@ function process_run_queue() {
       ircclient.say(channel,job.nick+': Finished '+job.run_id);
     } else {
       ircclient.say(channel,job.nick+': Exploded '+job.run_id+
-        ' https://arewecompressedyet.com/runs/'+job.run_id+'/output.txt');
+        ' '+config.base_url+'/runs/'+job.run_id+'/output.txt');
     }
     cp.exec('node generate_list.js');
     process_run_queue();
