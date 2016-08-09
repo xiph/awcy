@@ -437,7 +437,7 @@ function bd_rate(selected_graphs,outfile) {
   }
 
   //update BD rate title
-  $('#bd_rate_title').html(req['a']+' → '+req['b']);
+  $('#bd_rate_title').text(req['a']+' → '+req['b']);
 
   //clip range if needed
   switch( $('#bd_rate_range').val() ) {
@@ -467,7 +467,7 @@ function bd_rate(selected_graphs,outfile) {
   /* call bd_rate.m with our settings
      and shove results in bd_rate <pre> box */
   $.get('/bd_rate',req,function(data) {
-    $('#bd_rate').html(data);
+    $('#bd_rate').text(data);
   });
 }
 
@@ -516,14 +516,14 @@ function load_sets_for_filter() {
   for (var i in data[filter_task].sources) {
     var file_in_set = baseName(data[filter_task].sources[i]);
     var file_option = $('<option>');
-    file_option.html(file_in_set);
+    file_option.text(file_in_set);
     file_option.attr('value',filter_task+'/'+file_in_set+'.y4m-daala.out');
     $('#video_name').append(file_option);
   }
   for (var set in data) {
     for (var filenum in data[set]) {
       var file_option = $('<option>');
-      file_option.html(set+'/'+data[set][filenum]);
+      file_option.text(set+'/'+data[set][filenum]);
       file_option.attr('value',set+'/'+data[set][filenum]);
       $('#custom_videos').append(file_option);
     }
@@ -870,12 +870,12 @@ function load_job_log() {
   $.getJSON('run_job.json', function(run_job) {
     $('#run_job_run_id').text(run_job.run_id);
     $.get('runs/'+run_job.run_id+'/output.txt',function(data) {
-      $('#job_log').html(data);
+      $('#job_log').text(data);
       last_line = data.match(/([0-9]+) out of ([0-9]+)/g).slice(-1)[0].split(' ');
       if (last_line) {
         percentage = 100 * last_line[0] / last_line[3] + '%';
         $('#job_progress').width(percentage);
-        $('#job_progress').html(last_line[0] + ' / ' + last_line[3]);
+        $('#job_progress').text(last_line[0] + ' / ' + last_line[3]);
       }
     });
   }).error(function() {
