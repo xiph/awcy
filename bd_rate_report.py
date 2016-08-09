@@ -28,6 +28,8 @@ def bdrate(file1, file2, anchorfile):
         anchor = flipud(loadtxt(anchorfile));
     a = flipud(loadtxt(file1));
     b = flipud(loadtxt(file2));
+    a.sort(axis=0);
+    b.sort(axis=0);
     rates = [0.06,0.2];
     qa = a[:,0]
     qb = b[:,0]
