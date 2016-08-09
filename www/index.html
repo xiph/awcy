@@ -880,6 +880,8 @@ function load_job_log() {
     });
   }).error(function() {
     $('#run_job_run_id').text('None');
+    $('#job_progress').width(100);
+    $('#job_progress').text('Done');
   });
   $.getJSON('build_job.json', function(build_job) {
     $('#build_job_box').removeClass('hidden');
