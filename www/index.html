@@ -899,6 +899,12 @@ function auto_refresh() {
   window.setTimeout(auto_refresh,5000);
 }
 
+$(function() {
+  if (location.origin == "https://beta.arewecompressedyet.com") {
+    $('header').css('background-color','#F00');
+  }
+});
+
 $.when(set_request, list_request).done(function() {
   // populate widgets
   var task_selector = set_selector();
