@@ -18,6 +18,8 @@ var config = require('./config.json');
 
 var channel = config.channel;
 
+AWS.config.update({region: 'us-west-2'});
+
 var ircclient = new irc.Client('irc.freenode.net', 'XiphAWCY', {
     channels: [channel],
 });
