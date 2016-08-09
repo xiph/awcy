@@ -216,7 +216,11 @@ function shutdownAmazon() {
 function pollAmazon() {
   var autoscaling = new AWS.AutoScaling();
   autoscaling.describeAutoScalingInstances({},function(err,data) {
-    autoScalingInstances = data;
+    if (err) {
+      console.log(err);
+    } else {
+      autoScalingInstances = data;
+    }
   });
   autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: [config.scaling_group]}, function(err,data) {
     autoScalingGroups = data;
