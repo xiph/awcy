@@ -26,10 +26,12 @@ q_not_found = False
 def bdrate(file1, file2, anchorfile):
     if anchorfile:
         anchor = flipud(loadtxt(anchorfile));
-    a = flipud(loadtxt(file1));
-    b = flipud(loadtxt(file2));
-    a.sort(axis=0);
-    b.sort(axis=0);
+    a = loadtxt(file1)
+    b = loadtxt(file2)
+    a = a[a[:,0].argsort()]
+    b = b[b[:,0].argsort()]
+    a = flipud(a)
+    b = flipud(b)
     rates = [0.06,0.2];
     qa = a[:,0]
     qb = b[:,0]
