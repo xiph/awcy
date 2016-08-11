@@ -142,6 +142,9 @@ function process_run_queue() {
   if (job.ab_compare) {
     env['AB_COMPARE'] = '1';
   }
+  if (job.save_encode) {
+    env['SAVE_ENCODE'] = '1';
+  }
   if (job.qualities) {
     env['QUALITIES'] = job.qualities;
   } else {
