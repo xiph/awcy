@@ -47,7 +47,7 @@ function rdgraph_draw(selected_graphs, outfile, set) {
         axisLabel: 'Bits per Pixel',
       },
       yaxis: {
-        axisLabel: 'Picture quality (dB)'
+        axisLabel: metric_index == 11 ? 'Encode time (seconds)' : 'Picture quality (dB)'
       },
       legend: {
         show: true,
