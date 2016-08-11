@@ -67,7 +67,7 @@ var run_job_in_progress = false
 var build_job_in_progress = false;
 var build_job_child_process = null;
 var run_job_child_process = null;
-var last_build_job_completed_time = Date.now();
+var last_run_job_completed_time = Date.now();
 
 function process_build_queue() {
   if (build_job_in_progress) { return; };
@@ -160,7 +160,7 @@ function process_run_queue() {
   run_job_child_process.on('close', function(error) {
     run_job = undefined;
     run_job_in_progress = false;
-    last_job_completed_time = Date.now();
+    last_run_job_completed_time = Date.now();
     if (error == 0) {
       console.log('video test succeeded');
       ircclient.say(channel,job.nick+': Finished '+job.run_id);
@@ -230,9 +230,9 @@ function pollAmazon() {
   autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: [config.scaling_group]}, function(err,data) {
     autoScalingGroups = data;
   });
-  if ((!build_job_in_progress) && (build_job_queue.length == 0)) {
+  if ((!run_job_in_progress) && (run_job_queue.length == 0)) {
     var shutdown_threshold = 1000*60*30.5; // 30.5 minutes
-    if ((Date.now() - last_build_job_completed_time) > shutdown_threshold) {
+    if ((Date.now() - last_run_job_completed_time) > shutdown_threshold) {
       console.log("Shutting down all Amazon instances because idle.");
       shutdownAmazon();
     }
