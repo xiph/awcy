@@ -255,6 +255,10 @@ app.get('/describeAutoScalingInstances',function(req,res) {
 });
 
 app.get('/bd_rate',function(req,res) {
+  if (!(req.query['a'] && req.query['b'])) {
+    res.send('');
+    return;
+  }
   var a = path.basename(req.query['a']);
   var b = path.basename(req.query['b']);
   var min_bpp = req.query['min_bpp'];
