@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "sourceMap": true,
+    "noImplicitAny": false
+  },
+  "files": [
+    "awcy_server.ts",
+    "generate_list.ts"
+  ]
+}

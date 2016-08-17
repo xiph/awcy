@@ -1,3 +1,10 @@
+awcy_server.js
+generate_list.js
+
+ab_paths.json
+config.json
+list.json
+
 # Logs
 logs
 *.log
@@ -25,3 +32,6 @@ build/Release
 node_modules
 secret_key
 runs
+
+# Source maps
+*.js.map

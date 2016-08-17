@@ -4,15 +4,18 @@
   "description": "Are We Compressed Yet?",
   "main": "awcy_server.js",
   "scripts": {
-    "start": "node awcy_server.js"
+    "tsc": "tsc",
+    "start": "tsc; node awcy_server.js"
   },
   "dependencies": {
+    "@types/node": "^6.0.34",
     "aws-sdk": "^2.5.1",
     "body-parser": "^1.15.2",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
     "fs-extra": "^0.30.0",
-    "irc": "^0.5.0"
+    "irc": "^0.5.0",
+    "typescript": "^2.0.0"
   },
   "devDependencies": {},
   "repository": {
