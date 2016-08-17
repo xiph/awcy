@@ -9,11 +9,19 @@ file called `config.json`, and a `secret_key` file which houses a password. The 
 file contains only one setting right now, which is the IRC channel that the AWCY bot will join. The
 password allows run submission to awcy. Awcy will run with any password.
 
+Here is an example config.json:
+
+```
+{ "channel": "#daalatest",
+  "have_aws": false,
+  "port": 3000
+}
+```
+
 These commands will create the configuration files and install the node.js modules that get used by
 awcy. Open a node command line and run the following:
 
 ```
-echo '{ "channel": "#daalatest" }' > config.json
 echo 'fake_password_to_compile' > secret_key
 npm install aws-sdk
 npm install body-parser
