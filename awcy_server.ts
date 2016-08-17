@@ -312,56 +312,37 @@ app.get('/bd_rate',function(req,res) {
 app.use('/submit',check_key);
 
 app.post('/submit/job',function(req,res) {
-  var job = {};
-  var gerrit_detect_re = /I[0-9a-f].*/g;
-  job.codec = 'daala';
-  job.commit = req.body.commit;
+  if (!req.body.codec) {
+    req.body.codec = 'daala';
+  }
+  if (!req.body.nick) {
+    req.body.nick = 'AWCY'
+  }
+  if (!req.body.extra_options) {
+    req.body.extra_options = ''
+  }
+  if (!req.body.build_options) {
+    req.body.build_options = ''
+  }
+  let job = {
+    'codec': req.body.codec,
+    'commit': req.body.commit,
+    'nick': req.body.nick,
+    'run_id': req.body.run_id.replace(' ','_'),
+    'task': req.body.task,
+    'extra_options': req.body.extra_options,
+    'build_options': req.body.build_options,
+    'qualities': req.body.qualities,
+    'master': req.body.master,
+    'ab_compare': req.body.ab_compare,
+    'task_type': 'video'
+  }
+
+  let gerrit_detect_re = /I[0-9a-f].*/g;
   if (gerrit_detect_re.test(job.commit)) {
     res.status(400).send('Error: Commit looks like a Gerrit Change-Id. Use the commit hash instead.');
     return;
   }
-  job.run_id = req.body.run_id.replace(' ','_');
-  if (req.body.task) {
-    if (req.body.task == 'custom') {
-      job.videos = req.body.custom_videos;
-    } else {
-      job.task = req.body.task;
-    }
-  } else {
-    job.task = 'ntt-short-1';
-  }
-  if (req.body.extra_options) {
-    job.extra_options = req.body.extra_options;
-  } else {
-    job.extra_options = '';
-  }
-  if (req.body.build_options) {
-    job.build_options = req.body.build_options;
-  } else {
-    job.build_options = '';
-  }
-  if (req.body.qualities) {
-    job.qualities = req.body.qualities;
-  }
-  if (req.body.codec) {
-    job.codec = req.body.codec;
-  } else {
-    job.codec = 'daala';
-  }
-  if (req.body.nick) {
-    job.nick = req.body.nick;
-  } else {
-    job.nick = 'AWCY';
-  }
-  if (req.body.master) {
-    job.master = req.body.master;
-  }
-  if (req.body.ab_compare) {
-    job.ab_compare = req.body.ab_compare;
-  } else {
-    job.ab_compare = false;
-  }
-  job.task_type = 'video';
   if (job.run_id.length > 256) {
     res.status(400).send('Choose a shorter run id, silly.\n');
   }
@@ -369,6 +350,7 @@ app.post('/submit/job',function(req,res) {
     res.status(400).send('ID is not unique! Choose another.\n');
     return;
   }
+
   fs.mkdirSync('runs/'+job.run_id);
   fs.writeFile('runs/'+job.run_id+'/info.json',JSON.stringify(job));
   build_job_queue.push(job);

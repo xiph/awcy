@@ -8,24 +8,28 @@ var jobs = [];
 fs.readdirSync('runs').forEach(function(run_id) {
   if (erases_old_images(run_id)) return;
 
-  var job = {}
-  job.run_id = run_id;
-  job.tasks = fs.readdirSync('runs/'+run_id);
-  var stat = fs.statSync('runs/'+run_id);
-  var info = {};
+  // TODO: define a typescript interface for info.json
+  let info: any = {};
   try {
     var infoFile = fs.readFileSync('runs/'+run_id+'/info.json');
     info = JSON.parse(infoFile);
   } catch (e) {};
-  job.date = stat.mtime;
-  job.info = info;
+
+  let stat = fs.statSync('runs/'+run_id);
+
+  let job = {
+    'run_id': run_id,
+    'tasks': fs.readdirSync('runs/'+run_id),
+    'date': stat.mtime,
+    'info': info
+  }
   jobs.push(job);
 });
 
 fs.writeFileSync('list.json.new',JSON.stringify(jobs));
 fs.renameSync('list.json.new','list.json');
 
-file_structure = read_ab_image_paths('runs');
+let file_structure = read_ab_image_paths('runs');
 fs.writeFile('ab_paths.json', JSON.stringify(file_structure, null, 4));
 
 // The structure is that each folder contains an array of files.
@@ -61,7 +65,8 @@ function read_ab_image_paths(outer_path) {
 function erases_old_images(run_id) {
     var stat = fs.statSync('runs/' + run_id);
 
-    var info = {};
+    // TODO: define a typescript interface for info.json
+    let info: any = {};
     try {
         var infoFile = fs.readFileSync('runs/'+run_id+'/info.json');
         info = JSON.parse(infoFile);
