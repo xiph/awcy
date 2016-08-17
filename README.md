@@ -23,12 +23,8 @@ awcy. Open a node command line and run the following:
 
 ```
 echo 'fake_password_to_compile' > secret_key
-npm install aws-sdk
-npm install body-parser
-npm install cookie-parser
-npm install express
-npm install irc@0.3.7
-npm install fs-extra
+npm install
+npm start
 ```
 
 To run the server, execute the run_awcy.bat file
