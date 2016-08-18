@@ -8,6 +8,7 @@ import fs = require('fs-extra');
 import cp = require('child_process');
 import irc = require('irc');
 import AWS = require('aws-sdk');
+import request = require('request');
 
 const app = express();
 
@@ -133,59 +134,9 @@ function process_build_queue() {
 };
 
 function add_to_run_queue(job) {
-  run_job_queue.push(job);
-  process_run_queue();
-}
-
-function process_run_queue() {
-  if (run_job_in_progress) { return; };
-  if (run_job_queue.length == 0) return;
-  run_job_in_progress = true;
-  const job = run_job_queue.shift();
-  run_job = job;
-  const env = process.env;
-  ircclient.say(channel,run_job.nick+': Starting '+run_job.run_id);
-  env['SCALING_GROUP'] = config.scaling_group;
-  env['NUM_MACHINES'] = config.num_machines.toString();
-  env['LANG'] = 'en_US.UTF-8';
-  env['CODEC'] = job.codec;
-  env['EXTRA_OPTIONS'] = job.extra_options;
-  env['BUILD_OPTIONS'] = job.build_options;
-  env['RUN_ID'] = job.run_id;
-  if (job.ab_compare) {
-    env['AB_COMPARE'] = '1';
-  }
-  if (job.save_encode) {
-    env['SAVE_ENCODE'] = '1';
-  }
-  if (job.qualities) {
-    env['QUALITIES'] = job.qualities;
-  } else {
-    env['QUALITIES'] = '';
-  }
-  run_job_child_process = cp.spawn('./run_video_test.sh',
-    [job.commit,job.run_id,job.task],
-    { env: env });
-  const job_log = ''
-  run_job_child_process.stdout.on('data', function(data) {
-    fs.appendFile('runs/'+job.run_id+'/output.txt',data);
-  });
-  run_job_child_process.stderr.on('data', function(data) {
-    fs.appendFile('runs/'+job.run_id+'/output.txt',data);
-  });
-  run_job_child_process.on('close', function(error) {
-    run_job = undefined;
-    run_job_in_progress = false;
-    last_run_job_completed_time = Date.now();
-    if (error == 0) {
-      console.log('video test succeeded');
-      ircclient.say(channel,job.nick+': Finished '+job.run_id);
-    } else {
-      ircclient.say(channel,job.nick+': Exploded '+job.run_id+
-        ' '+config.base_url+'/runs/'+job.run_id+'/output.txt');
-    }
-    cp.exec('node generate_list.js');
-    process_run_queue();
+  request('http://localhost:4000/submit?run_id='+job.run_id, function (error, response, body) {
+    console.log(error);
+    console.log(body);
   });
 }
 
