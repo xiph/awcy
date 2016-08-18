@@ -4,6 +4,7 @@
   "description": "Are We Compressed Yet?",
   "main": "awcy_server.js",
   "scripts": {
+    "generate_list": "tsc generate_list.ts; node generate_list.js",
     "tsc": "tsc",
     "start": "tsc; node awcy_server.js"
   },
