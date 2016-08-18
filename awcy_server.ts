@@ -345,6 +345,7 @@ app.post('/submit/job',function(req,res) {
     'qualities': req.body.qualities,
     'master': req.body.master,
     'ab_compare': req.body.ab_compare,
+    'save_encode': req.body.save_encode,
     'task_type': 'video'
   }
 
