@@ -1,16 +1,20 @@
-function rdgraph_draw(selected_graphs, outfile, set) {
+function rdgraph_draw(selected_graphs, outfile, set, video_name) {
   //get output data
   var graph_requests = [];
   for (var i in selected_graphs) {
     graph_requests.push($.get('/runs/'+selected_graphs[i]+'/'+outfile));
   }
 
+  $('#analyzer').html('Loading...');
+
   var bpp_mode = $("#graph_x_scaler").val();
   var metric_index = parseInt($('#metric').val());
   var logarithmic = $('#logarithmic').prop('checked');
+  var filter_task = $('#run_filter_task').val();
 
   // draw chart
   $.when.apply($,graph_requests).done(function() {
+    $('#analyzer').html('');
     if (selected_graphs.length == 1) {
       var argument_list = [ arguments ];
     } else {
@@ -19,12 +23,28 @@ function rdgraph_draw(selected_graphs, outfile, set) {
 
     var curves = [];
 
+    var populate_analyzer = true;
+    if (video_name == 'total') {
+      populate_analyzer = false;
+      $('#analyzer').html('Select an individual video for analzyer links.');
+    }
+
     for (var j in argument_list) {
       var curve = [];
       var data = argument_list[j][0];
       var lines = data.split('\n');
+      if (populate_analyzer) {
+        var analyzer_header = $('<h4>'+selected_graphs[j]+'</h4>');
+        $('#analyzer').append(analyzer_header);
+      }
       for (var i in lines) {
         var line = lines[i].split(' ');
+        var quantizer = line[0];
+        if (populate_analyzer) {
+          var analyzer_link = $('<a>'+quantizer+' </a>');
+          analyzer_link.attr('href','http://aomanalyzer.org/?file=https://arewecompressedyet.com/runs/'+selected_graphs[j]+'/'+filter_task+'/'+video_name+'-'+quantizer+'.ivf');
+          $('#analyzer').append(analyzer_link);
+        }
         //line[0-6] --> quantizer, pixels, bytes, PSNR, PSNR-HVS, SSim, FastSSim
         var bpp_scaler = 1;
         if (bpp_mode == 'mbps') {
@@ -114,8 +134,13 @@ function update_cursor(event, pos, item) {
   }
   req['metric_score'] = pos.y;
   req['method'] = 'metric-point';
+  var video_name = $("#video_name").val();
   var filter_task = $('#run_filter_task').val();
-  var outfile = $("#video_name").val();
+  if (video_name == 'total') {
+    var outfile = filter_task + '/total.out';
+  } else {
+    var outfile = filter_task + '/' + video_name + '.y4m-daala.out';
+  }
   req['set'] = filter_task;
   req['file'] = outfile;
   $.get('/bd_rate',req,function(data) {

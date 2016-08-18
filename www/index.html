@@ -121,6 +121,10 @@
       <h3>Raw Data</h3>
       <div id="raw_data"></div>
     </div>
+    <div class="controlbox col-md-6">
+      <h3>Analyzer Links</h3>
+      <div id="analyzer"></div>
+    </div>
   </div>
 </article>
 
@@ -361,10 +365,15 @@ function run_selection_changed() {
   var selected_graphs = get_selected_graphs();
 
   //figure out BD rates
-  var outfile = $("#video_name").val();
+  var video_name = $("#video_name").val();
+  var filter_task = $('#run_filter_task').val();
+  if (video_name == 'total') {
+    var outfile = filter_task + '/total.out';
+  } else {
+    var outfile = filter_task + '/' + video_name + '.y4m-daala.out';
+  }
   bd_rate(selected_graphs,outfile);
 
-  var filter_task = $('#run_filter_task').val();
   raw_data = $('#raw_data');
   raw_data.html('');
 
@@ -383,7 +392,7 @@ function run_selection_changed() {
     item.append(job_options);
     raw_data.append(item);
   }
-  rdgraph_draw(selected_graphs, outfile, sets[filter_task]);
+  rdgraph_draw(selected_graphs, outfile, sets[filter_task], video_name);
   update_url();
 };
 
@@ -515,13 +524,13 @@ function load_sets_for_filter() {
   $('#video_name').html('');
   var total_option = $('<option>');
   total_option.html('Total');
-  total_option.attr('value',filter_task+'/total.out');
+  total_option.attr('value','total');
   $('#video_name').append(total_option);
   for (var i in data[filter_task].sources) {
     var file_in_set = baseName(data[filter_task].sources[i]);
     var file_option = $('<option>');
     file_option.text(file_in_set);
-    file_option.attr('value',filter_task+'/'+file_in_set+'.y4m-daala.out');
+    file_option.attr('value',file_in_set);
     $('#video_name').append(file_option);
   }
   for (var set in data) {
