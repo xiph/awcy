@@ -9,27 +9,27 @@ import cp = require('child_process');
 import irc = require('irc');
 import AWS = require('aws-sdk');
 
-var app = express();
+const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
 
-var config = require('./config.json');
+const config = require('./config.json');
 
-var channel = config.channel;
+const channel = config.channel;
 
 AWS.config.update({region: 'us-west-2'});
 
-var ircclient = new irc.Client('irc.freenode.net', 'XiphAWCY', {
+const ircclient = new irc.Client('irc.freenode.net', 'XiphAWCY', {
     channels: [channel],
 });
 ircclient.addListener('error', function(message) {
     console.log('error: ', message);
 });
 
-var key = fs.readFileSync('secret_key', {encoding: 'utf8'}).trim();
+const key = fs.readFileSync('secret_key', {encoding: 'utf8'}).trim();
 
-var last_job_completed_time = Date.now();
+const last_job_completed_time = Date.now();
 
 function check_key(req,res,next) {
   if (req.cookies.key == key) {
@@ -44,7 +44,7 @@ function check_key(req,res,next) {
   }
 };
 
-var binaries = {
+const binaries = {
   'daala':['examples/encoder_example'],
   'x264': ['x264'],
   'x265': ['build/linux/x265'],
@@ -59,15 +59,15 @@ var binaries = {
 
 /* The build queue. Only one job can be built at a time. */
 
-var build_job;
-var build_job_queue = [];
-var run_job;
-var run_job_queue = [];
-var run_job_in_progress = false
-var build_job_in_progress = false;
-var build_job_child_process = null;
-var run_job_child_process = null;
-var last_run_job_completed_time = Date.now();
+let build_job;
+const build_job_queue = [];
+let run_job;
+const run_job_queue = [];
+let run_job_in_progress = false
+let build_job_in_progress = false;
+let build_job_child_process = null;
+let run_job_child_process = null;
+let last_run_job_completed_time = Date.now();
 
 function process_build_queue() {
   if (build_job_in_progress) { return; };
@@ -75,7 +75,7 @@ function process_build_queue() {
     build_job_in_progress = true;
     build_job = build_job_queue.shift();
     console.log('Starting build_job '+build_job.run_id);
-    var env = process.env;
+    const env = process.env;
     env['LANG'] = 'en_US.UTF-8';
     env['CODEC'] = build_job.codec;
     env['EXTRA_OPTIONS'] = build_job.extra_options;
@@ -92,7 +92,7 @@ function process_build_queue() {
     build_job_child_process = cp.spawn('./create_test_branch.sh',
       [build_job.commit, build_job.run_id, build_job.codec],
       { env: env });
-    var job_log = ''
+    const job_log = ''
     build_job_child_process.stdout.on('data', function(data) {
       console.log(data.toString());
       fs.appendFile('runs/'+build_job.run_id+'/output.txt',data);
@@ -102,7 +102,7 @@ function process_build_queue() {
       fs.appendFile('runs/'+build_job.run_id+'/output.txt',data);
     });
     build_job_child_process.on('close', function(error) {
-      for (var binary of binaries[build_job.codec]) {
+      for (const binary of binaries[build_job.codec]) {
         fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
         fs.copySync(build_job.codec+'/'+binary,'runs/'+build_job.run_id+'/x86_64/'+binary);
       }
@@ -128,9 +128,9 @@ function process_run_queue() {
   if (run_job_in_progress) { return; };
   if (run_job_queue.length == 0) return;
   run_job_in_progress = true;
-  var job = run_job_queue.shift();
+  const job = run_job_queue.shift();
   run_job = job;
-  var env = process.env;
+  const env = process.env;
   ircclient.say(channel,run_job.nick+': Starting '+run_job.run_id);
   env['SCALING_GROUP'] = config.scaling_group;
   env['NUM_MACHINES'] = config.num_machines.toString();
@@ -153,7 +153,7 @@ function process_run_queue() {
   run_job_child_process = cp.spawn('./run_video_test.sh',
     [job.commit,job.run_id,job.task],
     { env: env });
-  var job_log = ''
+  const job_log = ''
   run_job_child_process.stdout.on('data', function(data) {
     fs.appendFile('runs/'+job.run_id+'/output.txt',data);
   });
@@ -176,7 +176,7 @@ function process_run_queue() {
   });
 }
 
-var cors_options = {
+const cors_options = {
   setHeaders: function(res, path, stat) {
     res.append('Access-Control-Allow-Origin','*')
   }
@@ -225,7 +225,7 @@ declare module "aws-sdk" {
 }
 
 function shutdownAmazon() {
-  var autoscaling: any = new AWS.AutoScaling();
+  const autoscaling: any = new AWS.AutoScaling();
   autoscaling.setDesiredCapacity({
     AutoScalingGroupName: config.scaling_group,
     DesiredCapacity: 0,
@@ -235,7 +235,7 @@ function shutdownAmazon() {
 }
 
 function pollAmazon() {
-  var autoscaling: any = new AWS.AutoScaling();
+  const autoscaling: any = new AWS.AutoScaling();
   autoscaling.describeAutoScalingInstances({},function(err,data) {
     if (err) {
       console.log(err);
@@ -247,7 +247,7 @@ function pollAmazon() {
     autoScalingGroups = data;
   });
   if ((!run_job_in_progress) && (run_job_queue.length == 0)) {
-    var shutdown_threshold = 1000*60*30.5; // 30.5 minutes
+    const shutdown_threshold = 1000*60*30.5; // 30.5 minutes
     if ((Date.now() - last_run_job_completed_time) > shutdown_threshold) {
       console.log("Shutting down all Amazon instances because idle.");
       shutdownAmazon();
@@ -272,15 +272,15 @@ app.get('/bd_rate',function(req,res) {
     res.send('');
     return;
   }
-  var a = path.basename(req.query['a']);
-  var b = path.basename(req.query['b']);
-  var min_bpp = req.query['min_bpp'];
-  var max_bpp = req.query['max_bpp'];
-  var metric_score = req.query['metric_score'];
-  var file = path.basename(req.query['file']);
-  var set = path.basename(req.query['set']);
-  var a_file = __dirname+'/runs/'+a+'/'+set+'/'+file;
-  var b_file = __dirname+'/runs/'+b+'/'+set+'/'+file;
+  const a = path.basename(req.query['a']);
+  const b = path.basename(req.query['b']);
+  const min_bpp = req.query['min_bpp'];
+  const max_bpp = req.query['max_bpp'];
+  const metric_score = req.query['metric_score'];
+  const file = path.basename(req.query['file']);
+  const set = path.basename(req.query['set']);
+  const a_file = __dirname+'/runs/'+a+'/'+set+'/'+file;
+  const b_file = __dirname+'/runs/'+b+'/'+set+'/'+file;
   if (req.query['method'] == 'jm') {
     cp.execFile('./bd_rate_jm.m',[a_file,b_file],
                 {},
@@ -341,7 +341,7 @@ app.post('/submit/job',function(req,res) {
   if (!req.body.build_options) {
     req.body.build_options = ''
   }
-  let job = {
+  const job = {
     'codec': req.body.codec,
     'commit': req.body.commit,
     'nick': req.body.nick,
@@ -356,7 +356,7 @@ app.post('/submit/job',function(req,res) {
     'task_type': 'video'
   }
 
-  let gerrit_detect_re = /I[0-9a-f].*/g;
+  const gerrit_detect_re = /I[0-9a-f].*/g;
   if (gerrit_detect_re.test(job.commit)) {
     res.status(400).send('Error: Commit looks like a Gerrit Change-Id. Use the commit hash instead.');
     return;
@@ -377,7 +377,7 @@ app.post('/submit/job',function(req,res) {
 });
 
 app.post('/submit/delete',function(req,res) {
-  var run = path.basename(req.body.run_id);
+  const run = path.basename(req.body.run_id);
   cp.execFile('nuke_branch.sh',[run],
               function(error,stdout,stderr) {
     res.send(stderr+stdout);
@@ -385,7 +385,7 @@ app.post('/submit/delete',function(req,res) {
 });
 
 app.post('/submit/cancel',function(req,res) {
-  var run = req.body.run_id;
+  const run = req.body.run_id;
   run_job_queue.forEach(function(job, index) {
     if (job.run_id == run) {
       run_job_queue.splice(index, 1);
@@ -406,7 +406,7 @@ app.post('/submit/restart', function(req,res) {
 });
 
 app.post('/submit/setDesiredCapacity',function(req,res) {
-  var autoscaling: any = new AWS.AutoScaling();
+  const autoscaling: any = new AWS.AutoScaling();
   autoscaling.setDesiredCapacity({
     AutoScalingGroupName: config.scaling_group,
     DesiredCapacity: req.body.DesiredCapacity,
