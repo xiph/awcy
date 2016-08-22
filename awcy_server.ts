@@ -1,14 +1,14 @@
 'use strict';
 
-var express = require('express');
-var path = require('path');
-var bodyParser = require('body-parser')
-var cookieParser = require('cookie-parser')
-var fs = require('fs-extra');
-var path = require('path');
-var cp = require('child_process');
-var irc = require('irc');
-var AWS = require('aws-sdk');
+import express = require('express');
+import path = require('path');
+import bodyParser = require('body-parser')
+import cookieParser = require('cookie-parser')
+import fs = require('fs-extra');
+import cp = require('child_process');
+import irc = require('irc');
+import AWS = require('aws-sdk');
+
 var app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -217,8 +217,15 @@ app.get('/build_job.json',function(req,res) {
 let autoScalingInstances = null;
 let autoScalingGroups = null;
 
+// The typings for aws-sdk are incomplete, so we declare an empty
+// AutoScaling class and cast it to 'any' when we use it.
+declare module "aws-sdk" {
+  export class AutoScaling {
+  }
+}
+
 function shutdownAmazon() {
-  var autoscaling = new AWS.AutoScaling();
+  var autoscaling: any = new AWS.AutoScaling();
   autoscaling.setDesiredCapacity({
     AutoScalingGroupName: config.scaling_group,
     DesiredCapacity: 0,
@@ -228,7 +235,7 @@ function shutdownAmazon() {
 }
 
 function pollAmazon() {
-  var autoscaling = new AWS.AutoScaling();
+  var autoscaling: any = new AWS.AutoScaling();
   autoscaling.describeAutoScalingInstances({},function(err,data) {
     if (err) {
       console.log(err);
@@ -399,7 +406,7 @@ app.post('/submit/restart', function(req,res) {
 });
 
 app.post('/submit/setDesiredCapacity',function(req,res) {
-  var autoscaling = new AWS.AutoScaling();
+  var autoscaling: any = new AWS.AutoScaling();
   autoscaling.setDesiredCapacity({
     AutoScalingGroupName: config.scaling_group,
     DesiredCapacity: req.body.DesiredCapacity,

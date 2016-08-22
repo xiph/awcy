@@ -1,7 +1,7 @@
 // fs-extra provides deleting directories recursively so I don't
 // have to manually implement it.
-var fs = require('fs-extra');
-var path = require('path');
+import fs = require('fs-extra');
+import path = require('path');
 
 var jobs = [];
 
@@ -11,7 +11,7 @@ fs.readdirSync('runs').forEach(function(run_id) {
   // TODO: define a typescript interface for info.json
   let info: any = {};
   try {
-    var infoFile = fs.readFileSync('runs/'+run_id+'/info.json');
+    var infoFile = fs.readFileSync('runs/'+run_id+'/info.json').toString();
     info = JSON.parse(infoFile);
   } catch (e) {};
 
@@ -68,14 +68,14 @@ function erases_old_images(run_id) {
     // TODO: define a typescript interface for info.json
     let info: any = {};
     try {
-        var infoFile = fs.readFileSync('runs/'+run_id+'/info.json');
+        var infoFile = fs.readFileSync('runs/'+run_id+'/info.json').toString();
         info = JSON.parse(infoFile);
     } catch (e) {};
 
     // Never automatically erase special (reference) runs.
     if (info.special) { return false; }
 
-    var age_ms = Date.now() - stat.mtime;
+    var age_ms = Date.now().valueOf() - stat.mtime.valueOf();
     var age_days = age_ms / (1000 * 3600 * 24);
 
     // Not old enough to erase files.
