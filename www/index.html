@@ -195,13 +195,8 @@
       </form>
     </div>
     <div class="controlbox col-md-8">
-      <h3>Running: <span id="run_job_run_id"></span></h3>
-      <div class="progress">
-        <div id="job_progress" class="progress-bar" role="progressbar" style="min-width: 5em; width: 0%;">
-        0 / 0
-        </div>
+      <div id="run_job_box">
       </div>
-      <pre id="job_log" class="log"></pre>
       <div id="build_job_box" class="hidden">
         <h3>Building: <span id="build_job_run_id"></span></h3>
         <pre id="build_job_log" class="log"></pre>
@@ -880,21 +875,20 @@ function clear_key_cookie() {
 }
 
 function load_job_log() {
-  $.getJSON('run_job.json', function(run_job) {
-    $('#run_job_run_id').text(run_job.run_id);
-    $.get('runs/'+run_job.run_id+'/output.txt',function(data) {
-      $('#job_log').text(data);
-      last_line = data.match(/([0-9]+) out of ([0-9]+)/g).slice(-1)[0].split(' ');
-      if (last_line) {
-        percentage = 100 * last_line[0] / last_line[3] + '%';
-        $('#job_progress').width(percentage);
-        $('#job_progress').text(last_line[0] + ' / ' + last_line[3]);
-      }
-    });
-  }).error(function() {
-    $('#run_job_run_id').text('None');
-    $('#job_progress').width(100);
-    $('#job_progress').text('Done');
+  $.getJSON('run_status.json', function(run_status) {
+    $('#run_job_box').html('');
+    for (run_number in run_status) {
+      var run = run_status[run_number];
+      var header = $('<h3>'+run.run_id+'</h3>');
+      var progress = $('<div class="progress"></div>');
+      var progress_bar = $('<div id="job_progress" class="progress-bar" role="progressbar" style="min-width: 5em; width: 0%;"></div>');
+      var percentage = 100 * run.completed / run.total + '%';
+      progress_bar.width(percentage);
+      progress_bar.text(toString(run.completed) + ' / ' + toString(run.total));
+      $('#run_job_box').append(header);
+      progress.append(progress_bar);
+      $('#run_job_box').append(progress);
+    }
   });
   $.getJSON('build_job.json', function(build_job) {
     $('#build_job_box').removeClass('hidden');
