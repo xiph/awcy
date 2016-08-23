@@ -102,11 +102,11 @@ function process_build_queue() {
       fs.appendFile('runs/'+build_job.run_id+'/output.txt',data);
     });
     build_job_child_process.on('close', function(error) {
-      for (const binary of binaries[build_job.codec]) {
-        fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
-        fs.copySync(build_job.codec+'/'+binary,'runs/'+build_job.run_id+'/x86_64/'+binary);
-      }
       if (error == 0) {
+        for (const binary of binaries[build_job.codec]) {
+          fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
+          fs.copySync(build_job.codec+'/'+binary,'runs/'+build_job.run_id+'/x86_64/'+binary);
+        }
         add_to_run_queue(build_job);
       } else {
         ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
