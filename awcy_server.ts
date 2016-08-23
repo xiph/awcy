@@ -225,6 +225,12 @@ app.get('/describeAutoScalingInstances',function(req,res) {
   res.send(autoScalingInstances);
 });
 
+app.get('/run_status.json', function(req, res) {
+  request('http://localhost:4000/run_list.json', function (error, response, body) {
+    res.send(body);
+  });
+});
+
 app.get('/bd_rate',function(req,res) {
   if (!(req.query['a'] && req.query['b'])) {
     res.send('');
