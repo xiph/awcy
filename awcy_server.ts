@@ -134,7 +134,7 @@ function process_build_queue() {
 };
 
 function add_to_run_queue(job) {
-  request('http://localhost:4000/submit?run_id='+job.run_id, function (error, response, body) {
+  request(config.rd_server_url+'/submit?run_id='+job.run_id, function (error, response, body) {
     console.log(error);
     console.log(body);
   });
@@ -220,7 +220,7 @@ app.get('/describeAutoScalingInstances',function(req,res) {
 });
 
 app.get('/run_status.json', function(req, res) {
-  request('http://localhost:4000/run_list.json', function (error, response, body) {
+  request(config.rd_server_url+'/run_list.json', function (error, response, body) {
     res.send(body);
   });
 });
