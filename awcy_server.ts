@@ -178,13 +178,7 @@ declare module "aws-sdk" {
 }
 
 function shutdownAmazon() {
-  const autoscaling: any = new AWS.AutoScaling();
-  autoscaling.setDesiredCapacity({
-    AutoScalingGroupName: config.scaling_group,
-    DesiredCapacity: 0,
-    HonorCooldown: true
-  }, function (err, data) {
-  });
+  /* blank for now, should talk to rd_server.py */
 }
 
 function pollAmazon() {
