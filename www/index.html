@@ -879,7 +879,7 @@ function load_job_log() {
     $('#run_job_box').html('');
     for (run_number in run_status) {
       var run = run_status[run_number];
-      var header = $('<h3>'+run.run_id+'</h3>');
+      var header = $('<h3><a href="runs/'+run.run_id+'/output.txt">'+run.run_id+'</a></h3>');
       var progress = $('<div class="progress"></div>');
       var progress_bar = $('<div id="job_progress" class="progress-bar" role="progressbar" style="min-width: 5em; width: 0%;"></div>');
       var percentage = 100 * run.completed / run.total + '%';
