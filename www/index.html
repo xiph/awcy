@@ -884,7 +884,7 @@ function load_job_log() {
       var progress_bar = $('<div id="job_progress" class="progress-bar" role="progressbar" style="min-width: 5em; width: 0%;"></div>');
       var percentage = 100 * run.completed / run.total + '%';
       progress_bar.width(percentage);
-      progress_bar.text(toString(run.completed) + ' / ' + toString(run.total));
+      progress_bar.text(run.completed + ' / ' + run.total);
       $('#run_job_box').append(header);
       progress.append(progress_bar);
       $('#run_job_box').append(progress);
