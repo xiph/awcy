@@ -134,7 +134,7 @@ function process_build_queue() {
 };
 
 function add_to_run_queue(job) {
-  ircclient.say(channel,run_job.nick+': Starting '+run_job.run_id);
+  ircclient.say(channel,job.nick+': Starting '+job.run_id);
   request(config.rd_server_url+'/submit?run_id='+job.run_id, function (error, response, body) {
     console.log(error);
     console.log(body);
