@@ -9,6 +9,7 @@ import cp = require('child_process');
 import irc = require('irc');
 import AWS = require('aws-sdk');
 import request = require('request');
+import querystring = require('querystring');
 
 const app = express();
 
@@ -135,7 +136,7 @@ function process_build_queue() {
 
 function add_to_run_queue(job) {
   ircclient.say(channel,job.nick+': Starting '+job.run_id);
-  request(config.rd_server_url+'/submit?run_id='+job.run_id, function (error, response, body) {
+  request(config.rd_server_url+'/submit?'+querystring.stringify({run_id: job.run_id}), function (error, response, body) {
     console.log(error);
     console.log(body);
   });
