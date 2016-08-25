@@ -227,6 +227,12 @@ app.get('/run_status.json', function(req, res) {
   });
 });
 
+app.get('/machine_usage.json', function(req, res) {
+  request(config.rd_server_url+'/machine_usage.json', function (error, response, body) {
+    res.send(body);
+  });
+});
+
 app.get('/bd_rate',function(req,res) {
   if (!(req.query['a'] && req.query['b'])) {
     res.send('');
