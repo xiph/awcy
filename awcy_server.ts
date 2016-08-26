@@ -229,6 +229,24 @@ app.get('/machine_usage.json', function(req, res) {
   });
 });
 
+let last_runs = {};
+function check_for_completed_runs() {
+  request(config.rd_server_url+'/run_list.json', function (error, response, body) {
+    let current_runs = {};
+    for (let run of JSON.parse(body)) {
+      current_runs[run.run_id] = true;
+    }
+    for (let run in last_runs) {
+      if (!(run in current_runs)) {
+        ircclient.say(channel,'Finished '+run);
+      }
+    }
+    last_runs = current_runs;
+  });
+};
+
+setInterval(check_for_completed_runs, 10*1000);
+
 app.get('/bd_rate',function(req,res) {
   if (!(req.query['a'] && req.query['b'])) {
     res.send('');
