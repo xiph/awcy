@@ -135,6 +135,7 @@ function add_to_run_queue(job) {
     console.log(error);
     console.log(body);
   });
+  cp.exec('node generate_list.js');
 }
 
 express.static.mime.define({'text/plain': ['out']});
