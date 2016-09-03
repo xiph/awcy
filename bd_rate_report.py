@@ -50,24 +50,41 @@ def bdrate(file1, file2, anchorfile):
             if anchorfile:
                 p0 = yr[0]
                 p1 = yr[-1]
+                yya = ya
+                yyb = yb
+                rra = ra
+                rrb = rb
             else:
                 minq = 20
                 maxq = 55
                 try:
+                    # path if quantizers 20 and 55 are in set
                     minqa_index = qa.tolist().index(minq)
                     maxqa_index = qa.tolist().index(maxq)
                     minqb_index = qb.tolist().index(minq)
                     maxqb_index = qb.tolist().index(maxq)
+                    yya = ya[maxqa_index:minqa_index+1]
+                    yyb = yb[maxqb_index:minqb_index+1]
+                    rra = ra[maxqa_index:minqa_index+1]
+                    rrb = rb[maxqb_index:minqb_index+1]
                 except ValueError:
+                    # path if quantizers 20 and 55 are not found - use
+                    # entire range of quantizers found, and fit curve
+                    # on all the points, and set q_not_found to print
+                    # a warning
                     q_not_found = True
                     minqa_index = -1
                     maxqa_index = 0
                     minqb_index = -1
                     maxqb_index = 0
+                    yya = ya
+                    yyb = yb
+                    rra = ra
+                    rrb = rb
                 p0 = max(ya[maxqa_index],yb[maxqb_index])
                 p1 = min(ya[minqa_index],yb[minqb_index])
-            a_rate = pchip(ya, log(ra))(arange(p0,p1,abs(p1-p0)/5000.0));
-            b_rate = pchip(yb, log(rb))(arange(p0,p1,abs(p1-p0)/5000.0));
+            a_rate = pchip(yya, log(rra))(arange(p0,p1,abs(p1-p0)/5000.0));
+            b_rate = pchip(yyb, log(rrb))(arange(p0,p1,abs(p1-p0)/5000.0));
             if not len(a_rate) or not len(b_rate):
                 bdr = NaN;
             else:
