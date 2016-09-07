@@ -23,28 +23,25 @@ function rdgraph_draw(selected_graphs, outfile, set, video_name) {
 
     var curves = [];
 
-    var populate_analyzer = true;
     if (video_name == 'total') {
-      populate_analyzer = false;
       $('#analyzer').html('Select an individual video for analzyer links.');
+    } else {
+      [8,20,32,43,55,63].forEach(function(quantizer) {
+        var analyzer_link = $('<a>'+quantizer+' </a>')
+        var analyzer_url = 'http://aomanalyzer.org/?';
+        for (var j in selected_graphs) {
+          analyzer_url += 'decoder='+window.location.origin+'/runs/'+selected_graphs[j]+'/js/decoder.js&file='+window.location.origin+'/runs/'+selected_graphs[j]+'/'+filter_task+'/'+video_name+'.y4m-'+quantizer+'.ivf&';
+        }
+        analyzer_link.attr('href',analyzer_url);
+        $('#analyzer').append(analyzer_link);
+      });
     }
-
     for (var j in argument_list) {
       var curve = [];
       var data = argument_list[j][0];
       var lines = data.split('\n');
-      if (populate_analyzer) {
-        var analyzer_header = $('<h4>'+selected_graphs[j]+'</h4>');
-        $('#analyzer').append(analyzer_header);
-      }
       for (var i in lines) {
         var line = lines[i].split(' ');
-        var quantizer = line[0];
-        if (populate_analyzer) {
-          var analyzer_link = $('<a>'+quantizer+' </a>');
-          analyzer_link.attr('href','http://aomanalyzer.org/?decoder='+window.location.origin+'/runs/'+selected_graphs[j]+'/js/decoder.js&file='+window.location.origin+'/runs/'+selected_graphs[j]+'/'+filter_task+'/'+video_name+'.y4m-'+quantizer+'.ivf');
-          $('#analyzer').append(analyzer_link);
-        }
         //line[0-6] --> quantizer, pixels, bytes, PSNR, PSNR-HVS, SSim, FastSSim
         var bpp_scaler = 1;
         if (bpp_mode == 'mbps') {
