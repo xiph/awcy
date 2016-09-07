@@ -37,6 +37,10 @@ case $CODEC in
     pushd $CODEC
     ./configure --enable-av1 --disable-unit-tests --disable-docs $BUILD_OPTIONS
     make
+    mkdir -p x86_64
+    mv aomenc aomdec x86_64/
+    ../build_av1_analyzer.sh || true
+    mv x86_64/* ./
     popd
     ;;
   vp9)

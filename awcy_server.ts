@@ -107,6 +107,12 @@ function process_build_queue() {
           fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
           fs.copySync(build_job.codec+'/'+binary,'runs/'+build_job.run_id+'/x86_64/'+binary);
         }
+        try {
+          fs.mkdirSync('runs/'+build_job.run_id+'/js');
+          fs.copySync(build_job.codec+'/asm/examples/decoder.js','runs/'+build_job.run_id+'/js/decoder.js');
+        } catch (e) {
+          /* no analyzer */
+        }
         add_to_run_queue(build_job);
       } else {
         ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
