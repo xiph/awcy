@@ -42,7 +42,7 @@ function rdgraph_draw(selected_graphs, outfile, set, video_name) {
         var quantizer = line[0];
         if (populate_analyzer) {
           var analyzer_link = $('<a>'+quantizer+' </a>');
-          analyzer_link.attr('href','http://aomanalyzer.org/?decoder='+window.location.origin+'/runs/'+selected_graphs[j]+'/js/decoder.json&file='+window.location.origin+'/runs/'+selected_graphs[j]+'/'+filter_task+'/'+video_name+'.y4m-'+quantizer+'.ivf');
+          analyzer_link.attr('href','http://aomanalyzer.org/?decoder='+window.location.origin+'/runs/'+selected_graphs[j]+'/js/decoder.js&file='+window.location.origin+'/runs/'+selected_graphs[j]+'/'+filter_task+'/'+video_name+'.y4m-'+quantizer+'.ivf');
           $('#analyzer').append(analyzer_link);
         }
         //line[0-6] --> quantizer, pixels, bytes, PSNR, PSNR-HVS, SSim, FastSSim
