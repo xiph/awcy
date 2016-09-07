@@ -19,4 +19,3 @@ emcc -O3 examples/analyzer_decoder.bc -o examples/decoder.js -s TOTAL_MEMORY=134
 popd
 mkdir -p ins/bin
 cp asm/examples/decoder.js ins/bin/decoder.js
-cp asm/examples/decoder.js.mem ins/bin/decoder.js.mem
