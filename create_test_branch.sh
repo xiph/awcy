@@ -11,6 +11,7 @@ CODEC="$3"
 cd $CODEC
 git fetch --all
 git checkout $COMMIT
+git reset --hard
 git checkout -b t-$TESTNAME
 git clean -d -x -f
 
