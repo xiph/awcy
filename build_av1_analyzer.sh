@@ -12,7 +12,7 @@ echo Building Analyzer
 echo Configuring Analyzer
 mkdir -p asm
 pushd asm
-emconfigure ../configure --disable-multithread --disable-runtime-cpu-detect --target=generic-gnu --enable-accounting
+emconfigure ../configure --disable-multithread --disable-runtime-cpu-detect --target=generic-gnu --enable-accounting $BUILD_OPTIONS
 emmake make
 cp examples/analyzer_decoder examples/analyzer_decoder.bc
 emcc -O3 examples/analyzer_decoder.bc -o examples/decoder.js -s TOTAL_MEMORY=134217728 -s MODULARIZE=1 -s EXPORT_NAME="'DecoderModule'" --post-js "../ins/post.js" --memory-init-file 0
