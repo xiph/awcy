@@ -311,7 +311,12 @@ app.get('/bd_rate',function(req,res) {
       }
     });
   } else if (req.query['method'] == 'report-overlap') {
-    cp.execFile('./bd_rate_report.py',[__dirname+'/runs/'+a,__dirname+'/runs/'+b,'--anchordir',__dirname+'/runs/','--suffix=-daala.out','--overlap'],
+    const parameters = [__dirname+'/runs/'+a,__dirname+'/runs/'+b,'--anchordir',__dirname+'/runs/','--suffix=-daala.out','--overlap'];
+    if (req.query['format'] == 'json') {
+      res.contentType('application/json');
+      parameters.push('--format=json');
+    }
+    cp.execFile('./bd_rate_report.py',parameters,
                 {},
                 function(error,stdout,stderr) {
       if (error) {
