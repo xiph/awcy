@@ -189,15 +189,9 @@ function process_run_queue() {
   });
 }
 
-const cors_options = {
-  setHeaders: function(res, path, stat) {
-    res.append('Access-Control-Allow-Origin','*')
-  }
-}
-
 express.static.mime.define({'text/plain': ['out']});
 app.use(express.static(__dirname + '/www'));
-app.use('/runs',express.static(__dirname + '/runs', cors_options));
+app.use('/runs',express.static(__dirname + '/runs'));
 app.use('/sets.json',express.static(__dirname + '/rd_tool/sets.json'));
 app.use('/error.txt',express.static(__dirname + '/error.txt'));
 app.use('/list.json',express.static(__dirname + '/list.json'));
