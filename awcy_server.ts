@@ -234,16 +234,18 @@ app.get('/machine_usage.json', function(req, res) {
 let last_runs = {};
 function check_for_completed_runs() {
   request(config.rd_server_url+'/run_status.json', function (error, response, body) {
-    let current_runs = {};
-    for (let run of JSON.parse(body)) {
-      current_runs[run.run_id] = run;
-    }
-    for (let run in last_runs) {
-      if (!(run in current_runs)) {
-        ircclient.say(channel,run['info']['nick']+': Finished '+run);
+    if (!error) {
+      let current_runs = {};
+      for (let run of JSON.parse(body)) {
+        current_runs[run.run_id] = run;
       }
+      for (let run in last_runs) {
+        if (!(run in current_runs)) {
+          ircclient.say(channel,run['info']['nick']+': Finished '+run);
+        }
+      }
+      last_runs = current_runs;
     }
-    last_runs = current_runs;
   });
 };
 
