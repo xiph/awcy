@@ -16,14 +16,15 @@
     "@types/fs-extra": "0.0.30",
     "@types/irc": "^0.3.30",
     "@types/node": "^6.0.34",
+    "@types/request": "0.0.31",
     "aws-sdk": "^2.5.1",
     "body-parser": "^1.15.2",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
     "fs-extra": "^0.30.0",
     "irc": "^0.5.0",
-    "typescript": "^2.0.0",
-    "request": "^2.74.0"
+    "request": "^2.74.0",
+    "typescript": "^2.0.3"
   },
   "devDependencies": {},
   "repository": {
