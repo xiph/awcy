@@ -244,9 +244,9 @@ function check_for_completed_runs() {
       for (let run of JSON.parse(body)) {
         current_runs[run.run_id] = run;
       }
-      for (let run in last_runs) {
-        if (!(run in current_runs)) {
-          ircclient.say(channel,run['info']['nick']+': Finished '+run);
+      for (let runid in last_runs) {
+        if (!(runid in current_runs)) {
+          ircclient.say(channel,last_runs[runid]['info']['nick']+': Finished '+run);
         }
       }
       last_runs = current_runs;
