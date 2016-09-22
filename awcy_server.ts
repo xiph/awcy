@@ -223,12 +223,14 @@ app.get('/describeAutoScalingInstances',function(req,res) {
 });
 
 app.get('/run_status.json', function(req, res) {
+  res.contentType('application/json');
   request(config.rd_server_url+'/run_status.json', function (error, response, body) {
     res.send(body);
   });
 });
 
 app.get('/machine_usage.json', function(req, res) {
+  res.contentType('application/json');
   request(config.rd_server_url+'/machine_usage.json', function (error, response, body) {
     res.send(body);
   });
