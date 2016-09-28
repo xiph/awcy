@@ -13,17 +13,25 @@ fs.readdirSync('runs').forEach(function(run_id) {
   try {
     const infoFile = fs.readFileSync('runs/'+run_id+'/info.json').toString();
     info = JSON.parse(infoFile);
+
+    const stat = fs.statSync('runs/'+run_id);
+    let failed = false;
+    try {
+      const total_stat = fs.statSync('runs/'+run_id+'/'+info['task']);
+    } catch(e) {
+      failed = true;
+    }
+
+    const job = {
+      'run_id': run_id,
+      'tasks': fs.readdirSync('runs/'+run_id),
+      'date': stat.mtime,
+      'info': info,
+      'failed': failed
+    }
+    jobs.push(job);
   } catch (e) {};
 
-  const stat = fs.statSync('runs/'+run_id);
-
-  const job = {
-    'run_id': run_id,
-    'tasks': fs.readdirSync('runs/'+run_id),
-    'date': stat.mtime,
-    'info': info
-  }
-  jobs.push(job);
 });
 
 fs.writeFileSync('list.json.new',JSON.stringify(jobs));
