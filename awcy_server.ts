@@ -316,6 +316,10 @@ app.get('/bd_rate',function(req,res) {
 
 app.use('/submit',check_key);
 
+app.use('/submit/check',function(req,res) {
+  res.send('ok');
+});
+
 app.post('/submit/job',function(req,res) {
   if (!req.body.codec) {
     req.body.codec = 'daala';
