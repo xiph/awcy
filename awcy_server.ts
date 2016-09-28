@@ -178,10 +178,6 @@ declare module "aws-sdk" {
   }
 }
 
-function shutdownAmazon() {
-  /* blank for now, should talk to rd_server.py */
-}
-
 function pollAmazon() {
   const autoscaling: any = new AWS.AutoScaling();
   autoscaling.describeAutoScalingInstances({},function(err,data) {
@@ -194,13 +190,6 @@ function pollAmazon() {
   autoscaling.describeAutoScalingGroups({AutoScalingGroupNames: [config.scaling_group]}, function(err,data) {
     autoScalingGroups = data;
   });
-  if ((!run_job_in_progress) && (run_job_queue.length == 0)) {
-    const shutdown_threshold = 1000*60*30.5; // 30.5 minutes
-    if ((Date.now() - last_run_job_completed_time) > shutdown_threshold) {
-      console.log("Shutting down all Amazon instances because idle.");
-      shutdownAmazon();
-    }
-  }
 }
 
 if (config.have_aws) {
