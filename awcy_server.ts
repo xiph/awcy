@@ -135,7 +135,6 @@ function add_to_run_queue(job) {
     console.log(error);
     console.log(body);
   });
-  cp.exec('node generate_list.js');
 }
 
 express.static.mime.define({'text/plain': ['out']});
@@ -362,6 +361,7 @@ app.post('/submit/job',function(req,res) {
   fs.writeFile('runs/'+job.run_id+'/info.json',JSON.stringify(job));
   build_job_queue.push(job);
   process_build_queue();
+  cp.exec('node generate_list.js');
   res.send('ok');
 });
 
