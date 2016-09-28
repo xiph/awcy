@@ -71,7 +71,6 @@ const binaries = {
 let build_job;
 const build_job_queue = [];
 let run_job;
-const run_job_queue = [];
 let run_job_in_progress = false
 let build_job_in_progress = false;
 let build_job_child_process = null;
@@ -154,10 +153,6 @@ app.get('/run_list.json',function(req,res) {
 
 app.get('/build_job_queue.json',function(req,res) {
   res.json(build_job_queue);
-});
-
-app.get('/run_job_queue.json',function(req,res) {
-  res.json(run_job_queue);
 });
 
 app.get('/run_job.json',function(req,res) {
@@ -366,12 +361,6 @@ app.post('/submit/delete',function(req,res) {
 });
 
 app.post('/submit/cancel',function(req,res) {
-  const run = req.body.run_id;
-  run_job_queue.forEach(function(job, index) {
-    if (job.run_id == run) {
-      run_job_queue.splice(index, 1);
-    }
-  });
   res.send('ok');
 });
 
