@@ -75,7 +75,6 @@ const run_job_queue = [];
 let run_job_in_progress = false
 let build_job_in_progress = false;
 let build_job_child_process = null;
-let run_job_child_process = null;
 let last_run_job_completed_time = Date.now();
 
 function process_build_queue() {
@@ -385,12 +384,6 @@ app.post('/submit/cancel',function(req,res) {
     }
   });
   res.send('ok');
-});
-
-app.post('/submit/kill',function(req,res) {
-  run_job_child_process.kill('SIGTERM');
-  run_job_child_process.kill('SIGKILL');
-  res.send(run_job_child_process.pid);
 });
 
 app.post('/submit/restart', function(req,res) {
