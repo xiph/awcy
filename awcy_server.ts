@@ -361,7 +361,9 @@ app.post('/submit/delete',function(req,res) {
 });
 
 app.post('/submit/cancel',function(req,res) {
-  res.send('ok');
+  request(config.rd_server_url+'/cancel?'+querystring.stringify({run_id: job.run_id}), function (error, response, body) {
+    res.send('ok');
+  });
 });
 
 app.post('/submit/restart', function(req,res) {
