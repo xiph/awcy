@@ -223,7 +223,7 @@ function check_for_completed_runs() {
       }
       for (let runid in last_runs) {
         if (!(runid in current_runs)) {
-          ircclient.say(channel,last_runs[runid]['info']['nick']+': Finished '+run);
+          ircclient.say(channel,last_runs[runid]['info']['nick']+': Finished '+runid);
         }
       }
       last_runs = current_runs;
