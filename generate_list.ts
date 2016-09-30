@@ -16,10 +16,17 @@ fs.readdirSync('runs').forEach(function(run_id) {
 
     const stat = fs.statSync('runs/'+run_id);
     let failed = false;
+    let status = 'completed';
     try {
-      const total_stat = fs.statSync('runs/'+run_id+'/'+info['task']);
-    } catch(e) {
-      failed = true;
+      const statusFile = fs.readFileSync('runs/'+run_id+'/status.txt','utf8');
+      status = statusFile;
+    } catch (e) {
+      try {
+        const total_stat = fs.statSync('runs/'+run_id+'/'+info['task']);
+      } catch(e) {
+        failed = true;
+        status = 'failed';
+      }
     }
 
     const job = {
@@ -27,6 +34,7 @@ fs.readdirSync('runs').forEach(function(run_id) {
       'tasks': fs.readdirSync('runs/'+run_id),
       'date': stat.mtime,
       'info': info,
+      'status': status,
       'failed': failed
     }
     jobs.push(job);
