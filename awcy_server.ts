@@ -82,6 +82,7 @@ function process_build_queue() {
     build_job_in_progress = true;
     build_job = build_job_queue.shift();
     console.log('Starting build_job '+build_job.run_id);
+    fs.writeFile('runs/'+build_job.run_id+'/status.txt','building');
     const env = {};
     for (var i in process.env) {
       env[i] = process.env[i];
@@ -117,6 +118,7 @@ function process_build_queue() {
         }
         add_to_run_queue(build_job);
       } else {
+        fs.writeFile('runs/'+build_job.run_id+'/status.txt','buildfailed');
         ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
           ' '+config.base_url+'/runs/'+build_job.run_id+'/output.txt');
       }
@@ -133,6 +135,7 @@ function add_to_run_queue(job) {
     console.log(error);
     console.log(body);
   });
+  fs.writeFile('runs/'+job.run_id+'/status.txt','waiting');
 }
 
 express.static.mime.define({'text/plain': ['out']});
@@ -346,6 +349,7 @@ app.post('/submit/job',function(req,res) {
 
   fs.mkdirSync('runs/'+job.run_id);
   fs.writeFile('runs/'+job.run_id+'/info.json',JSON.stringify(job));
+  fs.writeFile('runs/'+job.run_id+'/status.txt','new');
   build_job_queue.push(job);
   process_build_queue();
   cp.exec('node generate_list.js');
