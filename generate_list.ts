@@ -19,7 +19,7 @@ fs.readdirSync('runs').forEach(function(run_id) {
     let status = 'completed';
     try {
       const statusFile = fs.readFileSync('runs/'+run_id+'/status.txt','utf8');
-      status = statusFile;
+      status = statusFile.trim();
     } catch (e) {
       try {
         const total_stat = fs.statSync('runs/'+run_id+'/'+info['task']);
