@@ -8,54 +8,59 @@ import { JobSelectorComponent } from "./Widgets";
 import { Promise } from "es6-promise";
 import { AnalyzerVideoSelectorComponent, AnalyzerComponent } from "./Widgets";
 
-import { JobListItemComponent } from "./Jobs";
-import { JobLogComponent } from "./Log";
+import { JobComponent } from "./Job";
+import { JobLogComponent } from "./JobLog";
 
-import { AppStore, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex } from "../stores/Stores";
+import { appStore, shallowEquals, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex } from "../stores/Stores";
 declare var google: any;
 declare var tinycolor: any;
 declare var require: any;
 let Select = require('react-select');
 
-export class FullReportComponent extends React.Component<{
-  jobs: Jobs;
-}, {
+
+export class FullReportComponent extends React.Component<void, {
     metrics: string[],
     videos: string[],
     qualities: number[],
     fit: boolean;
     log: boolean;
     stack: boolean;
-    jobsToCompare: Job[];
   }> {
+  onChange: any;
   constructor() {
     super();
     this.state = {
       fit: true,
       log: true,
       stack: false,
-      jobsToCompare: [],
       metrics: ["MSSSIM"],
       videos: [],
       qualities: []
     };
+    this.onChange = () => {
+      this.load();
+    };
   }
   componentWillMount() {
-    this.props.jobs.onChange.attach(name => {
-      this.load();
-    });
+    appStore.jobs.onChange.attach(this.onChange);
     this.load();
   }
+  componentWillUnmount() {
+    appStore.jobs.onChange.detach(this.onChange);
+  }
   load() {
-    Promise.all(this.props.jobs.jobs.map(job => {
+    let jobs = appStore.jobs.getSelectedJobs();
+    Promise.all(jobs.map(job => {
       return job.loadReport();
-    })).then(data => {
-      this.setState({ jobsToCompare: this.props.jobs.jobs } as any);
+    })).catch(() => {
+      this.forceUpdate();
+    }).then(data => {
+      this.forceUpdate();
     });
   }
   getSeries(name: string, metric: string): ScatterPlotSeries[] {
     let series = [];
-    let jobs = this.props.jobs.jobs;
+    let jobs = appStore.jobs.getSelectedJobs();
     let reportFieldIndex = metricNameToReportFieldIndex(metric);
     jobs.forEach(job => {
       let values = [];
@@ -94,8 +99,8 @@ export class FullReportComponent extends React.Component<{
   onStackClick() {
     this.setState({ stack: !this.state.stack } as any);
   }
-  renderVideoReport(video: string, stack: boolean) {
-    let jobs = this.props.jobs.jobs;
+  renderVideoReport(video: string, stack: boolean, showTabs = true) {
+    let jobs = appStore.jobs.getSelectedJobs();
     let metrics = this.state.metrics;
     let qualities = this.state.qualities;
     let headers = metrics.map(name =>
@@ -125,15 +130,21 @@ export class FullReportComponent extends React.Component<{
         </tr>);
       });
     }
-    let tabs = jobs.map((job, i) => {
-      return <Tab eventKey={i} key={job.id} title={job.selectedName}>
-        <div style={{paddingTop: 10}}>
-          <VideoReportComponent name={video} job={job} highlightColumns={metrics} filterQualities={qualities} />
-        </div>
-      </Tab>
-    });
+    let tabs = null;
+    if (showTabs) {
+      tabs = <Tabs animation={false} id="noanim-tab-example">
+        {jobs.map((job, i) => {
+          return <Tab eventKey={i} key={job.id} title={job.selectedName}>
+            <div style={{paddingTop: 10}}>
+              <VideoReportComponent name={video} job={job} highlightColumns={metrics} filterQualities={qualities} />
+            </div>
+          </Tab>
+        })}
+      </Tabs>
+    }
+
     return <div key={video}>
-      <Panel header={video}>
+      <Panel className="videoReport" header={video}>
         <Table condensed bordered={false}>
           <thead>
             <tr>
@@ -144,38 +155,44 @@ export class FullReportComponent extends React.Component<{
             {rows}
           </tbody>
         </Table>
-        <Tabs animation={false} id="noanim-tab-example">
-          {tabs}
-        </Tabs>
-        <AnalyzerVideoSelectorComponent video={video} jobs={jobs}/>
+        {tabs}
       </Panel>
     </div>
+    // <AnalyzerVideoSelectorComponent video={video} jobs={jobs}/>
   }
   render() {
     console.debug("Rendering Full Report");
-    let jobs = this.props.jobs.jobs;
+    let jobs = appStore.jobs.getSelectedJobs();
     if (jobs.length == 0) {
-      return <div>
-        <p>No runs selected.</p>
-      </div>
+      return <Panel>
+        No runs selected.
+      </Panel>
     }
 
-    let failedJobInfos = [];
+    let selectedJobs = [];
     jobs.forEach(job => {
-      if (!job.completed) {
-        failedJobInfos.push(<Panel key={job.id}>
-          <JobListItemComponent store={null} detailed job={job}/>
-          <JobLogComponent job={job} />
-        </Panel>);
-      }
+      selectedJobs.push(<JobComponent key={job.id} job={job}/>);
     });
 
     let tables = [];
+    let brokenJobs = jobs.filter(job => !job.report);
+    if (brokenJobs.length) {
+      let logs = [];
+      jobs.forEach(job => {
+        logs.push(<div key={job.id}>
+          <JobComponent detailed job={job}/>
+          <JobLogComponent job={job} />
+        </div>);
+      });
+      return <Panel>
+        {logs}
+        Jobs [{brokenJobs.map(job => job.id).join(", ")}] don't have valid reports.
+      </Panel>
+    }
+
     let job = jobs[0];
-    let otherJob = jobs[1];
     let metrics = this.state.metrics;
     let qualities = this.state.qualities;
-    let jobsToCompare = this.state.jobsToCompare;
     for (let video in job.report) {
       if (this.state.videos.length && this.state.videos.indexOf(video) < 0) {
         continue;
@@ -185,18 +202,21 @@ export class FullReportComponent extends React.Component<{
       }
       tables.push(this.renderVideoReport(video, this.state.stack));
     }
-    let report = <BDRateReportComponent a={jobsToCompare[0]} b={jobsToCompare[1]}/>
+    let report = <BDRateReportComponent a={jobs[0]} b={jobs[1]}/>
     return <div style={{ width: "980px" }}>
-      <div>
-        <JobSelectorComponent metrics={this.state.metrics} jobs={this.props.jobs.jobs} onChange={this.onJobSelectorChange.bind(this)} />
-      </div>
-      <div style={{ paddingBottom: 8, paddingTop: 4 }}>
+      <Panel>
+        {selectedJobs}
+      </Panel>
+      <Panel>
+        <JobSelectorComponent metrics={this.state.metrics} jobs={jobs} onChange={this.onJobSelectorChange.bind(this)} />
+      </Panel>
+      <div style={{ }}>
         <Button active={this.state.fit} onClick={this.onFitClick.bind(this)}>Fit Charts</Button>{' '}
         <Button active={this.state.log} onClick={this.onLogClick.bind(this)}>Logarithmic</Button>{' '}
         <Button active={this.state.stack} onClick={this.onStackClick.bind(this)}>Enlarge Charts</Button>
       </div>
       <div style={{ paddingTop: 8 }}>
-        {this.renderVideoReport("Total", this.state.stack)}
+        {this.renderVideoReport("Total", this.state.stack, false)}
         {report}
         {tables}
       </div>

@@ -54,7 +54,7 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
     this.loadReport("jobReport", this.props.job);
   }
   render() {
-    console.debug("Rendering Video Report");
+    // console.debug("Rendering Video Report");
     let highlightColumns = this.props.highlightColumns;
     function tableHeaderClassName(name) {
       if (highlightColumns && highlightColumns.indexOf(name) >= 0) {
@@ -136,7 +136,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     this.loadReport({a: report.b, b: report.a});
   }
   render() {
-    console.debug("Rendering BDRateReport");
+    // console.debug("Rendering BDRateReport");
     let a = this.props.a;
     let b = this.props.b;
     let report = this.state.report;
@@ -155,14 +155,14 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     headers = headers.concat(report.metricNames.map(name => <th key={name} className="tableHeader">{name}</th>));
 
     let rows = [];
-    function toRow(video: string, data) {
+    function toRow(video: string, data, big = false) {
       let cols = [<td key={"fileName"} className="longTableValue">{video}</td>];
       cols = cols.concat(report.metricNames.map(name =>
         makeTableCell(name, data[name], true, (n) => n.toFixed(2))
       ));
-      return <tr key={video}>{cols}</tr>
+      return <tr key={video} className={big ? "bigRow" : ""}>{cols}</tr>
     }
-    rows.push(toRow("Average", report.average));
+    rows.push(toRow("Average", report.average, true));
     for (let video in report.metrics) {
       rows.push(toRow(video, report.metrics[video]));
     }

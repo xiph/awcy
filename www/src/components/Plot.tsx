@@ -444,7 +444,7 @@ export class Plot<P extends PlotProps, S extends PlotState> extends React.Compon
   }
 
   lightTheme = {
-    backgroundColor: "#F1F1F1",
+    backgroundColor: "#F4F4F4",
     gridLineColor: "#FFFFFF",
     tickTextColor: "#000000",
     tickLineColor: "#616161"
