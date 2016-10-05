@@ -82,20 +82,15 @@ function process_build_queue() {
     build_job_in_progress = true;
     build_job = build_job_queue.shift();
     console.log('Starting build_job '+build_job.run_id);
-    const env = process.env;
+    const env = {};
+    for (var i in process.env) {
+      env[i] = process.env[i];
+    }
     env['LANG'] = 'en_US.UTF-8';
     env['CODEC'] = build_job.codec;
     env['EXTRA_OPTIONS'] = build_job.extra_options;
     env['BUILD_OPTIONS'] = build_job.build_options;
     env['RUN_ID'] = build_job.run_id;
-    if (build_job.ab_compare) {
-      env['AB_COMPARE'] = '1';
-    }
-    if (build_job.qualities) {
-      env['QUALITIES'] = build_job.qualities;
-    } else {
-      env['QUALITIES'] = '';
-    }
     build_job_child_process = cp.spawn('./create_test_branch.sh',
       [build_job.commit, build_job.run_id, build_job.codec],
       { env: env });
@@ -143,7 +138,10 @@ function process_run_queue() {
   run_job_in_progress = true;
   const job = run_job_queue.shift();
   run_job = job;
-  const env = process.env;
+  const env = {};
+  for (var i in process.env) {
+    env[i] = process.env[i];
+  }
   ircclient.say(channel,run_job.nick+': Starting '+run_job.run_id);
   env['SCALING_GROUP'] = config.scaling_group;
   env['NUM_MACHINES'] = config.num_machines.toString();
@@ -152,6 +150,7 @@ function process_run_queue() {
   env['EXTRA_OPTIONS'] = job.extra_options;
   env['BUILD_OPTIONS'] = job.build_options;
   env['RUN_ID'] = job.run_id;
+  console.log(job.ab_compare);
   if (job.ab_compare) {
     env['AB_COMPARE'] = '1';
   }
@@ -163,6 +162,7 @@ function process_run_queue() {
   } else {
     env['QUALITIES'] = '';
   }
+  console.log(env);
   run_job_child_process = cp.spawn('./run_video_test.sh',
     [job.commit,job.run_id,job.task],
     { env: env });
