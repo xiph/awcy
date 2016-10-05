@@ -9,6 +9,7 @@ To run a local copy, you will need to install node.js and webpack on your comput
 
 ```
 npm install
+npm install --dev
 ```
 
 To build AWCY whenever a file changes run:
