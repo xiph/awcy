@@ -19,6 +19,10 @@
           body {
             font-family: 'Roboto', sans-serif;
           }
+          .list-group-item {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+          }
           button.list-group-item:focus {
             outline: none;
             z-index: 1;
@@ -26,7 +30,7 @@
           .url {
             font-size: 12px;
             font-family: 'Roboto';
-            word-wrap: break-word;
+            word-break: break-all;
             margin-top: 4px;
           }
           .Select {
@@ -41,19 +45,26 @@
             font-size: 11px;
             font-family: 'Roboto Mono', monospace;
             color: black;
-            word-wrap: break-word;
+            word-break: break-all;
           }
           .jobValue {
-            font-size: 12px;
+            font-size: 13px;
             font-family: 'Roboto';
             color: black;
-            word-wrap: break-word;
+            word-break: break-all;
           }
           .tinyJobValue {
             font-size: 10px;
             font-family: 'Roboto';
             color: black;
-            word-wrap: break-word;
+            word-break: break-all;
+            margin-top: 4px;
+          }
+          .tinyGrayJobValue {
+            font-size: 10px;
+            font-family: 'Roboto';
+            color: gray;
+            word-break: break-all;
             margin-top: 4px;
           }
           .tableTitle {
@@ -116,10 +127,16 @@
             font-size: 12px;
             font-family: 'Roboto Mono', monospace;
             text-align: right;
-            background-color: #FF8C8C;
+            background-color: #f3cfcf;
           }
           .log {
-            font-size: 12px;
+            font-size: 10px;
+            font-family: 'Roboto Mono', monospace;
+            height: 256px;
+            overflow: scroll;
+          }
+          .pre {
+            font-size: 10px;
             font-family: 'Roboto Mono', monospace;
           }
           table td, table td * {
@@ -129,19 +146,21 @@
             border-top: none !important;
             border-bottom: none !important;
           }
+
           .sidebar {
             position: fixed;
             padding: 10;
-            width: 400px;
-            top: 40px;
+            width: 440px;
+            top: 50px;
             left: 0;
           }
+
           .content {
             position: fixed;
-            left: 400px;
+            left: 440px;
             right: 0;
             height: 1200px;
-            top: 40px;
+            top: 50px;
           }
 
           .glyphicon-refresh-animate {
@@ -162,8 +181,43 @@
             font-size: 10px;
             color: darkred;
           }
+          .job {
+            line-height: 1em;
+          }
+          .progress-bar {
+            margin-bottom: 4px;
+            font-size: 11px;
+            font-family: 'Roboto';
+          }
+
+          .expander {
+            display: inline-block;
+            height: 12px;
+            padding: 0 5px 5px;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 6px;
+            color: #555;
+            text-decoration: none;
+            vertical-align: middle;
+            background: #ddd;
+            border: 0;
+            border-radius: 1px;
+          }
+          .bigRow td {
+            font-size: 14px;
+            font-weight: bold;
+          }
+          .videoReport .panel-body {
+            background-color: #F4F4F4;
+          }
+          #bar {
+            padding: 10px;
+            background-color: #000000;
+            color: #CCCCCC;
+          }
         </style>
-        <div id="xiphbar">
+        <!--<div id="xiphbar">
           <div>
             <a href="http://www.xiph.org/"><img src="xiph-community.svg" alt="the xiph open source community"></a>
             <ul>
@@ -178,7 +232,8 @@
                 <li><a href="http://www.xspf.org/">XSPF</a></li>
             </ul>
           </div>
-        </div>
+        </div>-->
+        <div id="bar">AreWeCompressedYet?</div>
         <div id="app"></div>
         <!-- Dependencies -->
         <script src="./tinycolor.js"></script>

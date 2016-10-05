@@ -26,8 +26,23 @@ import { AnalyzerComponent } from "../components/Widgets";
 import { Promise } from "es6-promise"
 import { AsyncEvent } from 'ts-events';
 
-let baseUrl = "https://arewecompressedyet.com/";
-// let baseUrl = "https://beta.arewecompressedyet.com/";
+// let baseUrl = "https://arewecompressedyet.com/";
+export let baseUrl = "https://beta.arewecompressedyet.com/";
+var inMockMode = false;
+
+export function shallowEquals(a, b): boolean {
+  if (a === b) return true;
+  let aKeys = Object.keys(a);
+  let bKeys = Object.keys(b);
+  if (aKeys.length != bKeys.length) return false;
+  return aKeys.every(key => {
+    if (!(key in b)) {
+      return false;
+    }
+    if (a[key] !== b[key]) return false;
+    return true;
+  });
+}
 
 function zip<T>(a: string[], b: T[]): { [index: string]: T } {
   let o = {};
@@ -50,15 +65,48 @@ export function postXHR(path: string, o: any): Promise<boolean> {
     xhr.open('POST', path);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.addEventListener('load', function(event) {
+      console.info(data + " " + xhr.response);
       resolve(xhr.status === 200);
     });
     xhr.addEventListener('error', function(event) {
+      console.error(data + " " + xhr.response);
       reject(false);
     });
+    if (inMockMode) return;
     xhr.send(data);
   });
 }
-export function loadXHR(path: string, next: (json: any) => void, type = "json") {
+
+export function loadXHR2<T>(path: string, type = "json"): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let xhr = new XMLHttpRequest();
+    let self = this;
+    xhr.open("GET", path, true);
+    xhr.responseType = "text";
+    xhr.send();
+
+    xhr.addEventListener("load", function () {
+      if (xhr.status != 200) {
+        console.error("Failed to load XHR: " + path);
+        reject();
+        return;
+      }
+      console.info("Loaded XHR: " + path);
+      let response = this.responseText;
+      if (type === "json") {
+        response = response.replace(/NaN/g, "null");
+        try {
+          response = response ? JSON.parse(response) : null;
+        } catch (x) {
+          reject();
+        }
+      }
+      resolve(response);
+    });
+  });
+}
+
+export function loadXHR(path: string, next: (json: any) => void, fail: () => void = null, type = "json") {
   let xhr = new XMLHttpRequest();
   let self = this;
   xhr.open("GET", path, true);
@@ -68,13 +116,18 @@ export function loadXHR(path: string, next: (json: any) => void, type = "json") 
   xhr.addEventListener("load", function () {
     if (xhr.status != 200) {
       console.error("Failed to load XHR: " + path);
+      fail && fail();
       return;
     }
     console.info("Loaded XHR: " + path);
     let response = this.responseText;
     if (type === "json") {
       response = response.replace(/NaN/g, "null");
-      response = response ? JSON.parse(response) : null;
+      try {
+        response = response ? JSON.parse(response) : null;
+      } catch (x) {
+        response = null;
+      }
     }
     next(response);
   });
@@ -104,6 +157,12 @@ export function daysSince(date: Date) {
   return Math.round(Math.abs(diff / oneDay));
 }
 
+export function secondsSince(date: Date) {
+  var oneSecond = 1000;
+  let diff = new Date().getTime() - date.getTime();
+  return Math.round(Math.abs(diff / oneSecond));
+}
+
 export function minutesSince(date: Date) {
   var oneSecond = 1000;
   var oneMinute = 60 * oneSecond;
@@ -119,19 +178,35 @@ export function timeSince(date: Date) {
   let diff = new Date().getTime() - date.getTime();
   var days = Math.round(Math.abs(diff / oneDay));
   var hours = Math.round(Math.abs(diff % oneDay) / oneHour);
-  let s = "";
+  var minutes = Math.round(Math.abs(diff % oneHour) / oneMinute);
+  let s = [];
   if (days > 0) {
-    s += `${days} days, `
+    s.push(`${days} day${days === 1 ? "" : "s"}`);
   }
-  return s + `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  if (hours > 0) {
+    s.push(`${hours} hour${hours === 1 ? "" : "s"}`);
+  }
+  if (minutes > 0) {
+    s.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+  }
+  return s.join(", ") + " ago";
 }
 
 export enum JobStatus {
-  None = 0,
-  Running = 1,
-  Pending = 2,
-  Completed = 4,
-  All = Running | Pending | Completed
+  None          = 0,
+  Unknown       = 1,
+  New           = 2,
+  Failed        = 4,
+  Running       = 8,
+  Building      = 16,
+  Waiting       = 32,
+  Canceled      = 64,
+  Completed     = 128,
+  BuildFailed   = 256,
+  All           = Running | Building | Completed | New | Failed | Waiting | Completed | Canceled | Unknown | BuildFailed,
+  Active        = New | Running | Building | Waiting,
+  NotCompleted  = All & ~Completed,
+  Cancelable    = New | Running | Building | Waiting
 }
 
 export enum ReportField {
@@ -240,39 +315,52 @@ export class Job {
   taskType: string = "";
   runABCompare: boolean = false;
   saveEncodedFiles: boolean = false;
-  status: JobStatus = JobStatus.None;
+  status: JobStatus = JobStatus.Unknown;
   date: Date;
-  completed: boolean;
-  log: string = "";
+
   progress: JobProgress = new JobProgress(0, 0);
   selected: boolean = false;
   selectedName: string = "";
   color: string = "";
   onChange = new AsyncEvent<string>();
 
+  log: string = "";
+  onLogChange = new AsyncEvent<string>();
+
   constructor() {
 
+  }
+
+  logInterval: any;
+
+  startPollingLog() {
+    if (this.logInterval) {
+      clearInterval(this.logInterval);
+    }
+    this.logInterval = setInterval(() => {
+      this.loadLog(true);
+    }, 10000);
   }
 
   loadLog(refresh = false): Promise<string> {
     if (this.log && !refresh) {
       return Promise.resolve(this.log);
     }
-    return new Promise((resolve, reject) => {
-      let path = baseUrl + `runs/${this.id}/output.txt`;
-      loadXHR(path, (text) => {
-        this.log = text;
-        this.onChange.post("updated-log");
-        resolve(text);
-      }, "text");
-    })
+    let path = baseUrl + `runs/${this.id}/output.txt`;
+    return loadXHR2<string>(path, "text").then((log) => {
+      this.log = log;
+      this.onLogChange.post("");
+    }).catch(() => {
+      this.log = "";
+      this.onLogChange.post("");
+    }) as any;
   }
 
   loadFile(path: string): Promise<string> {
     return new Promise((resolve, reject) => {
       loadXHR(path, (text) => {
         resolve(text);
-      }, "text");
+      }, () => reject(), "text");
     });
   }
 
@@ -376,9 +464,10 @@ export class Jobs {
       this.onChange.post("job-removed");
     }
   }
-  cancelAllJobs() {
-    this.jobs = [];
-    this.onChange.post("jobs-deleted");
+  getSelectedJobs(): Job [] {
+    return this.jobs.filter(job => job.selected).sort((a, b) => {
+      return a.selectedName.localeCompare(b.selectedName);
+    });
   }
   getById(id: string) {
     for (let i = 0; i < this.jobs.length; i++) {
@@ -412,18 +501,21 @@ let colorPool = [
   '#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c', '#fdbf6f', '#ff7f00', '#cab2d6', '#6a3d9a', '#b15928'
 ];
 
-function getColorForString(s: string): string {
+export function hashString(s: string) {
   let t = 0;
   for (let i = 0; i < s.length; i++) {
     t += s.charCodeAt(i);
   }
+  return t;
+}
+function getColorForString(s: string): string {
+  let t = hashString(s);
   return colorPool[t % colorPool.length];
 }
 
 let selectedNamePool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 export class AppStore {
   jobs: Jobs;
-  selectedJobs: Jobs;
   onChange = new AsyncEvent<string>();
   aws: any;
   onAWSChange = new AsyncEvent<string>();
@@ -433,8 +525,7 @@ export class AppStore {
   password: string = "";
   onLoggedInStateChanged = new AsyncEvent<string>();
   constructor() {
-    this.jobs = new Jobs();
-    this.selectedJobs = new Jobs();
+    let jobs = this.jobs = new Jobs();
     this.aws = {};
     AppDispatcher.register((action) => {
       if (action instanceof SelectJob) {
@@ -442,20 +533,22 @@ export class AppStore {
         job.selected = true;
         job.selectedName = selectedNamePool.shift();
         job.color = getColorForString(job.id);
-        job.onChange.post("job-changed");
-        this.selectedJobs.addJob(job);
+        job.onChange.post("");
+        jobs.onChange.post("");
       } else if (action instanceof DeselectJob) {
         let job = action.job;
         selectedNamePool.unshift(job.selectedName);
         job.selected = false;
         job.selectedName = "";
         job.color = "";
-        job.onChange.post("job-changed");
-        this.selectedJobs.removeJob(job);
+        job.onChange.post("");
+        jobs.onChange.post("");
       } else if (action instanceof SubmitJob) {
         this.submitJob(action.job);
+        jobs.onChange.post("");
       } else if (action instanceof CancelJob) {
         this.cancelJob(action.job);
+        jobs.onChange.post("");
       } else if (action instanceof AnalyzeFile) {
         this.analyzedFiles.push({job: null, decoderUrl: "http://aomanalyzer.org/bin/decoder.js", videoUrl: "crosswalk_30.ivf"})
         this.onAnalyzedFilesChanged.post("change");
@@ -484,6 +577,8 @@ export class AppStore {
     });
   }
   submitJob(job: Job) {
+    job.status = JobStatus.Unknown;
+    this.jobs.prependJob(job);
     postXHR(baseUrl + "submit/job", {
       key: this.password,
       run_id: job.id,
@@ -497,31 +592,45 @@ export class AppStore {
       ab_compare: job.runABCompare,
       save_encode: job.saveEncodedFiles
     });
-    job.status = JobStatus.Running;
-    this.jobs.prependJob(job);
   }
   cancelJob(job: Job) {
+    job.status = JobStatus.Unknown;
+    job.onChange.post("");
+    this.jobs.onChange.post("");
     postXHR(baseUrl + "submit/cancel", {
       key: this.password,
       run_id: job.id,
     });
-    this.jobs.removeJob(job);
+  }
+
+  lastPoll: Date = new Date();
+
+  poll() {
+    console.info("Polling ...");
+    this.loadJobs().then(() => {
+      this.loadStatus();
+      this.loadAWS();
+      this.lastPoll = new Date();
+    });
+  }
+
+  startPolling() {
+    setInterval(() => {
+      this.poll();
+    }, 60000);
   }
 
   load() {
     this.loadJobs().then(() => {
       this.loadAWS();
-      this.loadSets();
-      this.loadStatus();
-      setInterval(() => {
-        this.loadStatus();
-      }, 10000);
+      Promise.all([this.loadSets(), this.loadStatus()]).then(() => {
+        this.processUrlParameters();
+      });
+      this.startPolling();
     });
-
     if (localStorage["password"]) {
       this.login(localStorage["password"]);
     }
-
   }
   loadAWS() {
     loadXHR(baseUrl + "describeAutoScalingInstances", (json) => {
@@ -552,6 +661,10 @@ export class AppStore {
     }
     return new Promise((resolve, reject) => {
       loadXHR(url, (json) => {
+        if (!json) {
+          reject(null);
+          return;
+        }
         let report = BDRateReport.fromJSON(a, b, json);
         AppStore.bdRateReportCache[url] = report;
         resolve(report);
@@ -583,6 +696,7 @@ export class AppStore {
         job.loadLog(true);
         job.onChange.post("updated status");
       });
+      this.jobs.onChange.post("updated status");
     });
   }
   loadSets(): Promise<boolean> {
@@ -595,24 +709,58 @@ export class AppStore {
   }
 
   loadJobs(): Promise<boolean> {
+    function fromStatus(status: string): JobStatus {
+      switch (status) {
+        case "new":
+          return JobStatus.New;
+        case "building":
+          return JobStatus.Building;
+        case "waiting":
+          return JobStatus.Waiting;
+        case "running":
+          return JobStatus.Running;
+        case "completed":
+          return JobStatus.Completed;
+        case "canceled":
+          return JobStatus.Canceled;
+        case "failed":
+          return JobStatus.Failed;
+        default:
+          return JobStatus.Unknown;
+      }
+    }
     return new Promise((resolve, reject) => {
       loadXHR(baseUrl + "list.json", (json) => {
-        json = json.filter(job => job.info.task === "objective-1-fast" && job.info.codec === "av1");
+        // json = json.filter(job => job.info.task === "objective-1-fast" && job.info.codec === "av1");
         json.sort(function (a, b) {
           return (new Date(b.date) as any) - (new Date(a.date) as any);
         });
-        json = json.slice(0, 100);
+        let changed = false;
+        json = json.slice(0, 256);
         json.forEach(o => {
-          let job = Job.fromJSON(o.info);
-          job.date = new Date(o.date);
-          job.completed = !o.failed;
-          job.status = JobStatus.Completed;
-          this.jobs.addJobInternal(job);
+          let job = this.findJob(o.run_id);
+          if (job) {
+            let newStatus = fromStatus(o.status);
+            if (job.status !== newStatus) {
+              job.status = newStatus;
+              job.onChange.post("");
+              changed = true;
+            }
+          } else {
+            job = Job.fromJSON(o.info);
+            job.date = new Date(o.date);
+            job.status = fromStatus(o.status);
+            this.jobs.addJobInternal(job);
+            changed = true;
+          }
         });
-        this.jobs.onChange.post("job-added");
+        if (changed) {
+          this.jobs.onChange.post("");
+        }
         resolve(true);
-        this.processUrlParameters();
       });
     });
   }
 }
+
+export let appStore = new AppStore();

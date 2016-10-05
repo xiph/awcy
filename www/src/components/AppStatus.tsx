@@ -1,34 +1,24 @@
 import * as React from "react";
-import { ListGroup, ListGroupItem } from "react-bootstrap";
-import { Table, Popover, OverlayTrigger, Navbar, Checkbox, Form, FormGroup, ControlLabel, FormControl, HelpBlock, Modal, Panel, Label, Col, Row, Button, ProgressBar, Badge, ButtonToolbar, DropdownButton, MenuItem } from "react-bootstrap";
-import { Job, Jobs, AppStore, timeSince, daysSince, JobStatus} from "../stores/Stores";
-import { JobListItemComponent } from "./Jobs";
+import { Table, Panel } from "react-bootstrap";
+import { shallowEquals, appStore, Job, Jobs, timeSince, secondsSince, daysSince, JobStatus} from "../stores/Stores";
+import { JobComponent } from "./Job";
+import { JobLogComponent } from "./JobLog";
 
-export class JobLogComponent extends React.Component<{
-  job: Job
-}, {
-    text: string
-  }> {
-  constructor() {
-    super();
-    this.state = { text: "" };
-  }
+export class RefreshComponent extends React.Component<void, void> {
+  timer: any = null
   componentDidMount() {
-    let job = this.props.job;
-    if (job) {
-      job.onChange.attach(() => {
-        this.setState({ text: job.log } as any);
-      });
-    }
+    this.timer = setInterval(() => {
+      this.forceUpdate();
+    });
+  }
+  componentWillUnmount() {
+    clearInterval(this.timer);
   }
   render() {
-    return <pre className="log" style={{ height: "256px", overflow: "scroll" }}>{this.state.text}</pre>;
+    return <Panel>Last updated: {secondsSince(appStore.lastPoll)} seconds ago.</Panel>;
   }
 }
-
-export class AppStatusComponent extends React.Component<{
-  store: AppStore
-}, {
+export class AppStatusComponent extends React.Component<void, {
     aws: any;
   }> {
   constructor() {
@@ -36,15 +26,13 @@ export class AppStatusComponent extends React.Component<{
     this.state = {} as any;
   }
   componentDidMount() {
-    let store = this.props.store;
-    store.onAWSChange.attach(() => {
+    appStore.onAWSChange.attach(() => {
       this.setState({
-        aws: store.aws
+        aws: appStore.aws
       } as any);
     });
   }
   render() {
-    console.debug("Rendering Log");
     let table = null;
     let status = "";
     if (this.state.aws) {
@@ -86,12 +74,10 @@ export class AppStatusComponent extends React.Component<{
     let log = null;
 
     let jobInfos = [];
-    let store = this.props.store;
-
-    store.jobs.jobs.forEach(job => {
-      if (job.status === JobStatus.Running) {
+    appStore.jobs.jobs.forEach(job => {
+      if (job.status & JobStatus.Active) {
         jobInfos.push(<Panel key={job.id}>
-          <JobListItemComponent store={store} detailed job={job}/>
+          <JobComponent detailed job={job}/>
           <JobLogComponent job={job} />
         </Panel>);
       }
@@ -99,7 +85,7 @@ export class AppStatusComponent extends React.Component<{
 
     let jobs = {};
     let totalJobCount = 0;
-    store.jobs.jobs.forEach(job => {
+    appStore.jobs.jobs.forEach(job => {
       if (job.date && daysSince(job.date) > 14) {
         return;
       }
@@ -111,23 +97,15 @@ export class AppStatusComponent extends React.Component<{
     });
     let jobsByAuthor = [];
     for (let author in jobs) {
-      let awards = [];
-      if (author === "codeview") {
-        for (let i = 0; i < jobs[author].length; i++) {
-          let src = ["img/bottle.png", "img/mug.png", "img/beer.png"][Math.random() * 3 | 0];
-          awards.push(<img key={i} src={src} style={{height: 32, padding: 2}}/>);
-        }
-      }
       jobsByAuthor.push(<Panel header={author + " " + jobs[author].length} key={author}>
-        {awards}
         {jobs[author].map(job => {
           let date = job.date ? `${job.date.toLocaleDateString()} ${job.date.toLocaleTimeString()} (${timeSince(job.date)})`: "";
-          return <div className="value" key={job.id}>{job.id}, {date}</div>
+          return <JobComponent key={job.id} detailed job={job}/>
         })}
       </Panel>);
     }
-
     return <div style={{height: "3000px"}}>
+      <RefreshComponent/>
       {jobInfos}
       <Panel header={"AWS Status " + status}>
         {table}

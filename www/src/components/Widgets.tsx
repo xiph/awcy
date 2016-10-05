@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Button, Panel, Form, FormGroup, ControlLabel, FormControl } from "react-bootstrap";
 import { } from "react-bootstrap";
-import { AppStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile } from "../stores/Stores";
+import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile } from "../stores/Stores";
 import { Analyzer } from "../analyzer";
 
 import { BarPlot, BarPlotTable, Data } from "./Plot";
@@ -309,29 +309,20 @@ export class AnalyzerComponent extends React.Component<{
   }
 }
 
-export class ShareComponent extends React.Component<{
-  store: AppStore;
-}, {
-
-}> {
+export class ShareComponent extends React.Component<void, void> {
   constructor() {
     super();
-    this.state = { };
-  }
-  componentWillMount() {
   }
   render() {
     let url = location.protocol + '//' + location.host + location.pathname + "?";
-    url +=  this.props.store.selectedJobs.jobs.map(job => {
+    url += appStore.jobs.jobs.filter(job => job.selected).map(job => {
       return "job=" + encodeURIComponent(job.id);
     }).join("&");
     return <div><div>Sharing URL</div><a className="url" href={url}>{url}</a></div>
   }
 }
 
-export class LoginComponent extends React.Component<{
-  store: AppStore;
-}, {
+export class LoginComponent extends React.Component<void, {
   password: string;
 }> {
   check: Promise<boolean>
@@ -340,7 +331,6 @@ export class LoginComponent extends React.Component<{
     this.state = {
       password: localStorage["password"] || ""
     };
-
   }
   componentWillMount() {
   }
@@ -348,7 +338,7 @@ export class LoginComponent extends React.Component<{
     this.setState({
       password: e.target.value
     } as any);
-    this.check = this.props.store.login(e.target.value);
+    this.check = appStore.login(e.target.value);
     this.check.then(
       (result) => { this.forceUpdate(); },
       () => { this.forceUpdate(); }
@@ -359,16 +349,14 @@ export class LoginComponent extends React.Component<{
     if (password.length === 0) {
       return "error";
     }
-    return this.props.store.isLoggedIn ? "success" : "error";
+    return appStore.isLoggedIn ? "success" : "error";
   }
   render() {
-    return <Form>
-      <FormGroup validationState={this.getValidationState()}>
+    return <FormGroup validationState={this.getValidationState()}>
         <ControlLabel>AWCY API Key</ControlLabel>
         <FormControl type="text" placeholder=""
           value={this.state.password} onChange={this.onInputChange.bind(this)} />
         <FormControl.Feedback/>
       </FormGroup>
-    </Form>
   }
 }
