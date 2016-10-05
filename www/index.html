@@ -1,949 +1,196 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
-<head>
-<title>Are We Compressed Yet?</title>
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-<meta content="utf-8" http-equiv="encoding">
-<meta name=viewport content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" href="favicon.png" />
-<link rel="shortcut icon" href="favicon.ico" />
-<!-- <link rel="stylesheet" type="text/css" href="//icecast.org/assets/css/style.css" media="screen, print"> -->
-<link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
-<link type="text/css" rel="stylesheet" href="awcy.css"></link>
-<link type="text/css" rel="stylesheet" href="bootstrap.css"></link>
-</head>
-<body>
-<div id="xiphbar">
-      <div>
-        <a href="http://www.xiph.org/"><img src="xiph-community.svg" alt="the xiph open source community"></a>
-        <ul>
-            <li><a href="http://www.xiph.org/">Xiph.org</a></li>
-            <li><a href="http://www.opus-codec.org/">Opus</a></li>
-            <li><a href="http://xiph.org/flac/">FLAC</a></li>
-            <li><a href="http://www.icecast.org/">Icecast</a></li>
-            <li><a href="http://www.vorbis.com/">Vorbis</a></li>
-            <li><a href="http://xiph.org/daala/">Daala</a></li>
-            <li><a href="http://www.theora.org/">Theora</a></li>
-            <li><a href="http://www.speex.org/">Speex</a></li>
-            <li><a href="http://www.xspf.org/">XSPF</a></li>
-        </ul>
-      </div>
-</div>
-<header>
-<h1>Are We Compressed Yet?</h1>
-<ul class="nav nav-tabs" role="tablist">
-  <li class="active"><a href="#home" role="tab" data-toggle="tab">Home</a></li>
-  <li><a href="#submit" role="tab" data-toggle="tab">Submit</a></li>
-  <li><a href="#timeline" role="tab" data-toggle="tab">Timeline</a></li>
-  <li><a href="#images" role="tab" data-toggle="tab">Images</a></li>
-  <li><a href="#about" role="tab" data-toggle="tab">Help</a></li>
-</ul>
-</header>
-<noscript>Sorry, this website currently requires <a href="https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript">Javascript</a>.</noscript>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Are We Compressed Yet?</title>
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400|Roboto:500" rel="stylesheet">
 
-<div class="tab-content">
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
 
-<article id="home" class="container-fluid tab-pane active">
-  <div class="row">
-    <div id="runbox" class="col-md-3">
-      <h3>Runs</h3>
-      Video set:
-      <span id="run_filter_task_container"></span>
-      <input type="button" class="btn" value="Reset" onClick="clear_runs()"></input>
-      <div id="runs">
-        <h4>Reference codecs:</h4>
-        <div id="runs_latest">
+        <!-- Optional theme -->
+        <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap-theme.min.css">-->
+        <!--<link rel="stylesheet" href="https://bootswatch.com/sandstone/bootstrap.min.css">-->
+        <link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
+        <link rel="stylesheet" href="react-select.css">
+    </head>
+    <body>
+        <style>
+          body {
+            font-family: 'Roboto', sans-serif;
+          }
+          button.list-group-item:focus {
+            outline: none;
+            z-index: 1;
+          }
+          .url {
+            font-size: 12px;
+            font-family: 'Roboto';
+            word-wrap: break-word;
+            margin-top: 4px;
+          }
+          .Select {
+            font-size: 12px;
+            font-family: 'Roboto Mono', monospace;
+          }
+          .key {
+            font-size: 12px;
+            font-family: 'Roboto Mono', monospace;
+          }
+          .value {
+            font-size: 11px;
+            font-family: 'Roboto Mono', monospace;
+            color: black;
+            word-wrap: break-word;
+          }
+          .jobValue {
+            font-size: 12px;
+            font-family: 'Roboto';
+            color: black;
+            word-wrap: break-word;
+          }
+          .tinyJobValue {
+            font-size: 10px;
+            font-family: 'Roboto';
+            color: black;
+            word-wrap: break-word;
+            margin-top: 4px;
+          }
+          .tableTitle {
+            font-size: 14px;
+            font-family: 'Roboto Mono', monospace;
+            padding-bottom: 4px;
+            padding-top: 4px;
+          }
+          .selectTitle {
+            font-size: 12px;
+            font-family: 'Roboto Mono', monospace;
+            padding-bottom: 8px;
+          }
+          select {
+            font-family: 'Roboto Mono', monospace;
+          }
+          option {
+            font-size: 11px;
+          }
+          .tableHeader {
+            font-size: 12px;
+            font-family: 'Roboto Mono', monospace;
+            text-align: center;
+            width: 100px;
+            vertical-align: top !important;
+          }
+          .highlightedTableHeader {
+            background-color: #F0D3FF;
+            font-size: 11px;
+            font-family: 'Roboto Mono', monospace;
+            vertical-align: top !important;
+            text-align: center;
+          }
+          .tableValue {
+            font-size: 12px;
+            font-family: 'Roboto Mono', monospace;
+            text-align: right;
+          }
+          .longTableValue {
+            font-size: 12px;
+            font-family: 'Roboto', monospace;
+            text-align: right;
+          }
+          .tableValue .checkbox {
+            margin: 0px;
+            text-align: center;
+          }
+          .tableStringValue {
+            font-size: 11px;
+            font-family: 'Roboto Mono', monospace;
+            text-align: left;
+          }
+          .positiveTableValue {
+            font-size: 12px;
+            font-family: 'Roboto Mono', monospace;
+            text-align: right;
+            background-color: #E3FFE3;
+          }
+          .negativeTableValue {
+            font-size: 12px;
+            font-family: 'Roboto Mono', monospace;
+            text-align: right;
+            background-color: #FF8C8C;
+          }
+          .log {
+            font-size: 12px;
+            font-family: 'Roboto Mono', monospace;
+          }
+          table td, table td * {
+            vertical-align: top;
+          }
+          .table th, .table td {
+            border-top: none !important;
+            border-bottom: none !important;
+          }
+          .sidebar {
+            position: fixed;
+            padding: 10;
+            width: 400px;
+            top: 40px;
+            left: 0;
+          }
+          .content {
+            position: fixed;
+            left: 400px;
+            right: 0;
+            height: 1200px;
+            top: 40px;
+          }
+
+          .glyphicon-refresh-animate {
+              -animation: spin .7s infinite linear;
+              -webkit-animation: spin2 .7s infinite linear;
+          }
+
+          @-webkit-keyframes spin2 {
+              from { -webkit-transform: rotate(0deg);}
+              to { -webkit-transform: rotate(360deg);}
+          }
+
+          @keyframes spin {
+              from { transform: scale(1) rotate(0deg);}
+              to { transform: scale(1) rotate(360deg);}
+          }
+          .jobWarning {
+            font-size: 10px;
+            color: darkred;
+          }
+        </style>
+        <div id="xiphbar">
+          <div>
+            <a href="http://www.xiph.org/"><img src="xiph-community.svg" alt="the xiph open source community"></a>
+            <ul>
+                <li><a href="http://www.xiph.org/">Xiph.org</a></li>
+                <li><a href="http://www.opus-codec.org/">Opus</a></li>
+                <li><a href="http://xiph.org/flac/">FLAC</a></li>
+                <li><a href="http://www.icecast.org/">Icecast</a></li>
+                <li><a href="http://www.vorbis.com/">Vorbis</a></li>
+                <li><a href="http://xiph.org/daala/">Daala</a></li>
+                <li><a href="http://www.theora.org/">Theora</a></li>
+                <li><a href="http://www.speex.org/">Speex</a></li>
+                <li><a href="http://www.xspf.org/">XSPF</a></li>
+            </ul>
+          </div>
         </div>
-        <h4>Experimental runs:</h4>
-        <div id="runs_experimental">
-        </div>
-      </div>
-    </div>
-    <div id="graphbox" class="col-md-9">
-      <h3>Graph</h3>
-      Metric:
-      <select id="metric" onChange="run_selection_changed()">
-        <option value="0">PSNR</option>
-        <option value="1">PSNR-HVS</option>
-        <option value="2">SSim</option>
-        <option value="3">FastSSim</option>
-        <option value="4">CIEDE2000</option>
-        <option value="5">PSNR (Cb)</option>
-        <option value="6">PSNR (Cr)</option>
-        <option value="7">Frame-averaged PSNR</option>
-        <option value="8">Frame-averaged PSNR (Cb)</option>
-        <option value="9">Frame-averaged PSNR (Cr)</option>
-        <option value="10" selected>MS-SSIM</option>
-        <option value="11">Encode time</option>
-      </select>
-      Video:
-      <select id="video_name" onChange="run_selection_changed()" style="max-width: 300px">
-        <option value="ntt-short-1/total.out">Total</option>
-      </select>
-      <br />
-      X-Axis:
-      <select id="graph_x_scaler" onChange="run_selection_changed()">
-        <option value="bpp">Bits per pixel</option>
-        <option value="mbps">Megabits per second</option>
-      </select>
-      X-Axis Range:
-      <select id="graph_x_range" onChange="run_selection_changed()">
-        <option value="1.0">Full Range</option>
-        <option value="0.5" selected>Sensible Rates</option>
-      </select>
-      <label><input id="logarithmic" type="checkbox" checked onChange="run_selection_changed()"></input> Logarithmic</label>
-      <div class="graph_box">
-        <div id="hover_delta" style="position: relative;z-index: 1;top: 30px;left: 50px;"></div>
-        <div id="rd_graph">
-          ⟵Select runs on the left to compare.
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="controlbox col-md-12">
-      <h3>BD rate</h3>
-      <select id="bd_rate_range" onChange="run_selection_changed()">
-        <option value="jm">Three ranges (cubic spline)</option>
-        <option value="whole">Entire curve (old method)</option>
-        <!--
-        <option value="usable">All IETF rates (0.005 - 0.2 bpp) (old method)</option>
-        -->
-        <option value="report">Report</option>
-        <option value="report-overlap" selected>Report (Overlap)</option>
-      </select>
-      <label><input id="reverse_bd" type="checkbox" onChange="run_selection_changed()"></input> Reverse</label>
-      <p id="bd_rate_title"></p>
-      <pre id="bd_rate"></pre>
-    </div>
-    <div class="controlbox col-md-6">
-      <h3>Raw Data</h3>
-      <div id="raw_data"></div>
-    </div>
-    <div class="controlbox col-md-6">
-      <h3>Analyzer Links</h3>
-      <div id="analyzer"></div>
-    </div>
-  </div>
-</article>
+        <div id="app"></div>
+        <!-- Dependencies -->
+        <script src="./tinycolor.js"></script>
 
-<article id="submit" class="container tab-pane">
-  <div class="row controlarea">
-    <div class="controlbox col-md-4 loginrequired" >
-      <h3>Submit Job</h3>
-      <form action="submit/job" method="post">
-        <div class="form-group">
-          <label>Run ID</label>
-          <input name="run_id" id="run_id" class="form-control" placeholder="Please enter a unique name without spaces"></input>
-        </div>
-        <div class="form-group">
-          <label>Git Commit Hash</label>
-          <input name="commit" class="form-control" placeholder="e.g. 96146eac8438d1d5412d8fd678cad2ba9ce1b6e8"></input>
-        </div>
-        <div class="form-group">
-          <label>Codec</label>
-          <select name="codec" class="form-control">
-            <option value="daala">Daala</option>
-            <option value="x264">x264</option>
-            <option value="x265">x265</option>
-            <option value="x265-rt">x265 realtime</option>
-            <option value="vp8">VP8</option>
-            <option value="vp9">VP9</option>
-            <option value="vp10">VP10 (High latency CQP)</option>
-            <option value="vp10-rt">VP10 (Low latency CQP)</option>
-            <option value="av1">AV1 (High latency CQP)</option>
-            <option value="av1-rt">AV1 (Low latency CQP)</option>
-            <option value="thor">Thor</option>
-            <option value="thor-rt">Thor realtime</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Extra CLI options</label>
-          <input name="extra_options" class="form-control"></input>
-        </div>
-        <div class="form-group">
-          <label>Extra build options</label>
-          <input name="build_options" class="form-control"></input>
-        </div>
-        <div class="form-group">
-          <label>Custom qualities</label>
-          <input name="qualities" class="form-control"></input>
-        </div>
-        <div class="form-group">
-          <label>Subset</label>
-          <span id="task_container"></span>
-          <select name="custom_videos" id="custom_videos" class="form-control hidden" multiple>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Your IRC nick (for auto-notifications on #daala)</label>
-          <input name="nick" placeholder="e.g. AWCY" class="form-control"></input>
-        </div>
-        <div class="checkbox">
-          <label><input type="checkbox" name="ab_compare">Run AB Compare</label>
-        </div>
-        <div class="checkbox">
-          <label><input type="checkbox" name="save_encode">Save encoded files</label>
-        </div>
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary" style="float:left">Start Job</button>
-        </div>
-        <div class="form-group">
-          <button type="reset" class="btn btn-primary" style="float:right">Reset Form</button>
-        </div>
-      </form>
-    </div>
-    <div class="controlbox col-md-8">
-      <div id="run_job_box">
-      </div>
-      <div id="build_job_box" class="hidden">
-        <h3>Building: <span id="build_job_run_id"></span></h3>
-        <pre id="build_job_log" class="log"></pre>
-      </div>
-    </div>
-    <div class="controlbox col-md-4">
-      <h3>Job Queue</h3>
-      <div id="job_queue"></div>
-      <h3>Build Job Queue</h3>
-      <div id="build_job_queue"></div>
-      <form action="submit/restart" method="post" class="loginrequired" style="float:left">
-        <button type="submit" class="btn btn-danger">Restart Server</button>
-      </form>
-    </div>
-    <div class="controlbox col-md-4">
-      <h3>AWS Machine Info</h3>
-      <div id="machine_status_text"></div>
-      <table id="machineinfo" class="table">
-      </table>
-    </div>
-    <div class="controlbox col-md-4">
-      <h3>Login</h3>
-      <label>Key: <input name="key" id="key"></input></label>
-      <input type="button" value="Login" onClick="set_key_cookie()"></input>
-      <input type="button" value="Logout" onClick="clear_key_cookie()"></input>
-    </div>
-  </div>
-</article>
+        <!--<script src="https://unpkg.com/react@15.3.1/dist/react.min.js"></script>-->
+        <!--<script src="https://unpkg.com/react-dom@15.3.1/dist/react-dom.min.js"></script>-->
 
-<article id="timeline" class="container tab-pane">
-  <div class="row">
-    <br />
-    <p>The graphs below show the qualities obtained over time for the <b>ntt-short-1</b> test file collection, at a compression rate of <b>0.1 bits per pixel</b>.</p>
-    <p><font color="#ff0000">Red</font> = x265 performance point</p>
-    <p><font color="#0000ff">Blue</font> = vp8 performance point</p>
-    <p><font color="#00ff00">Green</font> = x264 performance point</p>
-    <h3><abbr title="Peak Signal-to-Noise Ratio">PSNR</abbr></h3>
-    <div id="psnr_graph" style="height: 200px; width: 800px;"></div>
-    <h3><abbr title="Peak Signal-to-Noise Ratio - Human Visual System">PSNR-HVS</abbr></h3>
-    <div id="psnrhvs_graph" style="height: 200px; width: 800px;"></div>
-    <h3><abbr title="Structural Similarity">SSim</abbr></h3>
-    <div id="ssim_graph" style="height: 200px; width: 800px;"></div>
-    <h3><abbr title="Fast, Multi-Scale Structural Similarity">FastSSim</abbr></h3>
-    <div id="fastssim_graph" style="height: 200px; width: 800px;"></div>
-  </div>
-</article>
+        <script src="https://unpkg.com/react@15.3.1/dist/react.js"></script>
+        <script src="https://unpkg.com/react-dom@15.3.1/dist/react-dom.js"></script>
 
-<article id="images" class="container-fluid tab-pane">
-    <div class="col-md-3 row container" id="ab_left">
-        Video set:
-        <div class='row'>
-          <span id="ab_run_subsets_container"></span>
-          <input class='btn' type="button" value="Refresh" onClick="ab_refresh()"></input>
-        </div>
-        <div id='ab_runs'>
-            <h4>Reference runs:</h4>
-            <div id='ab_runs_reference'> </div>
-            <h4>Experimental runs:</h4>
-            <div id='ab_runs_experimental'> </div>
-        </div>
-    </div>
-    <div class="col-md-9" id='ab_right'>
-        <h4>Bits per pixel</h4>
-        <div id='ab_run_bpps' class='row'> </div>
-        <h4>Image</h4>
-        <div id='ab_run_images'> </div>
-        <div id='ab_image_container'> </div>
-        <div id='ab_image_switcher' class='row ab_image_id'> </div>
-    </div>
-    <br />
-</article>
 
-<article id="about" class="container tab-pane">
-<h2>About</h2>
-AreWeCompressedYet is a continuous-integration system used to test video codecs' compression abilities. It is used for the development of free codecs such as AV1.
-<h2>Viewing run data</h2>
-<ol>
-<li>Choose the home tab.
-<li>Select two runs on the left by clicking them.
-<li>Rate distortion graphs will appear. These plot bitrate on the X axis, and quality on the Y axis.
-<li>Different metrics and videos can be selected from the dropdowns on top of the graph.
-<li>A BD-Rate report, which shows a summary of the graph data, can be accessed underneath the graph. Negative percentages show improvements, positive percentages show regressions.
-</ol>
-<h2>Submission</h2>
-<p>You must have a changeset in an approved Git repository. If you would like your personal Git repository approved, see the contact information below. You will also need an access key.
-<ol>
-<li>If not entered already, type your access key into the Secret Key field and choose Login.
-<li>Type a unique name into the Run ID field. A unique name is already filled out for you, but you can choose something more descriptive if you like.
-<li>Enter a Git hash to run. You can also use any valid Git reference, such as "origin/master" for the latest version.
-<li>All other fields are optional. Here are some useful ones:
-  <ul>
-    <li>The Subset box allows you to choose a custom set of videos to run. In most cases, you should use objective-1-fast.
-    <li>The Codec box allows you to choose a different codec. This is useful for comparing codecs against each other.
-    <li>The Extra Build Options allows you to specify custom options to the configure script. This is how you enable experimental features in AV1, for example:
-      <pre>--enable-experimental --enable-dering</pre>
-  </ul>
-<li>Submit a run. It will be entered into the queue. When it is complete, it will appear in the list of runs.
-</ol>
-<h2>Contact information</h2>
-<p>tdaede@mozilla.com
-<p>IRC: #aomedia or #daala @ irc.freenode.net
-</article>
-<br />
-
-</div>
-
-</body>
-<script src="jquery-2.1.1.js"></script>
-<script src="jquery.flot.js"></script>
-<script src="jquery.flot.axislabels.js"></script>
-<script src="jquery.flot.navigate.js"></script>
-<script src="jquery.flot.crosshair.js"></script>
-<script src="jquery.flot.time.js"></script>
-<script src="URI.js"></script>
-<script src="bootstrap.js"></script>
-<script src="aws-control.js"></script>
-<script src="rdgraph.js"></script>
-<script src="timelines.js"></script>
-<script src="submit.js"></script>
-<script>
-var run_list_by_name = {};
-
-var sets = {};
-var set_request = $.getJSON('/sets.json', function(data) {
-  sets = data;
-});
-var list = {};
-var list_request = $.getJSON('/list.json', function(data) {
-  list = data;
-});
-
-function updateParam(url, param, value) {
-  var re = new RegExp(param+"(.+?)(&|$)","g");
-  return url.replace(re, param+'='+value)
-}
-
-function get_selected_graphs() {
-  var selected_graphs = [];
-  $('.run').each(function() {
-    if ($(this).hasClass('selected')) {
-      selected_graphs.push($(this).find('.run_id').html());
-    }
-  });
-  return selected_graphs;
-}
-
-function get_selected_run_data() {
-  var datas = [];
-  var runs = get_selected_graphs();
-  for (var index in runs) {
-    datas.push(run_list_by_name[runs[index]]);
-  }
-  return datas;
-}
-
-function run_selection_changed() {
-  //clear graph
-  $("#rd_graph").html('');
-
-  //make list of selected graphs
-  var selected_graphs = get_selected_graphs();
-
-  //figure out BD rates
-  var video_name = $("#video_name").val();
-  var filter_task = $('#run_filter_task').val();
-  if (video_name == 'total') {
-    var outfile = filter_task + '/total.out';
-  } else {
-    var outfile = filter_task + '/' + video_name + '.y4m-daala.out';
-  }
-  bd_rate(selected_graphs,outfile);
-
-  raw_data = $('#raw_data');
-  raw_data.html('');
-
-  for (var i in selected_graphs) {
-    var header = $('<h4>').html(selected_graphs[i]);
-    var link = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/'+outfile);
-    link.html('Metric data ');
-    var output_log = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/output.txt');
-    output_log.html('Job log ');
-    var job_options = $('<a>').attr('href','/runs/'+selected_graphs[i]+'/info.json');
-    job_options.html('Job options');
-    var item = $('<p>');
-    item.append(header);
-    item.append(link);
-    item.append(output_log);
-    item.append(job_options);
-    raw_data.append(item);
-  }
-  rdgraph_draw(selected_graphs, outfile, sets[filter_task], video_name);
-  update_url();
-};
-
-function update_url() {
-  var selected_graphs = get_selected_graphs();
-  var filter_task = $('#run_filter_task').val();
-  urldata = { r: selected_graphs, s: filter_task };
-  pageUrl = '?' + $.param(urldata);
-  history.pushState('', 'Are We Compressed Yet?', pageUrl);
-};
-
-function load_job_queue() {
-  $.getJSON('/build_job_queue.json', function(data) {
-    $('#build_job_queue').html('');
-    data.forEach(function(job) {
-      var job_div = $('<div>');
-      job_div.append(job.run_id);
-      var run_meta_tag = $('<div>');
-      run_meta_tag.addClass('run_meta');
-      run_meta_tag.text(job.nick + ' ' + job.codec);
-      job_div.append(run_meta_tag);
-      $('#build_job_queue').append(job_div);
-    });
-  });
-  $.getJSON('/run_job_queue.json', function(data) {
-    $('#job_queue').html('');
-    data.forEach(function(job) {
-      var job_div = $('<div class="cancel">');
-      var job_cancel = $('<button class="cancel">X</button>')
-      job_cancel.on('click',function() {
-        $.post('/submit/cancel', { run_id: job.run_id });
-      })
-      job_div.append(job_cancel);
-      job_div.append(job.run_id);
-      var run_meta_tag = $('<div>');
-      run_meta_tag.addClass('run_meta');
-      run_meta_tag.text(job.nick + ' ' + job.codec);
-      job_div.append(run_meta_tag);
-      $('#job_queue').append(job_div);
-    });
-  });
-}
-function bd_rate(selected_graphs,outfile) {
-  //we need to select at least 2 runs
-  if (selected_graphs.length < 2) return;
-
-  //only pick the 2 most recent runs
-  var req = {};
-  if ($('#reverse_bd').is(':checked')) {
-    req['a'] = selected_graphs[0];
-    req['b'] = selected_graphs[1];
-    } else {
-    req['a'] = selected_graphs[1];
-    req['b'] = selected_graphs[0];
-  }
-
-  //update BD rate title
-  $('#bd_rate_title').text(req['a']+' → '+req['b']);
-
-  //clip range if needed
-  switch( $('#bd_rate_range').val() ) {
-    case 'jm':
-      req['method'] = 'jm';
-      break;
-    case 'report':
-      req['method'] = 'report';
-      break;
-    case 'report-overlap':
-      req['method'] = 'report-overlap';
-      break;
-    case 'whole':
-      req['min_bpp'] = '';
-      req['max_bpp'] = '';
-      break;
-    case 'usable':
-      req['min_bpp'] = 0.005;
-      req['max_bpp'] = 0.2;
-      break;
-  }
-
-  var filter_task = $('#run_filter_task').val();
-  req['set'] = filter_task;
-  req['file'] = outfile;
-
-  /* call bd_rate.m with our settings
-     and shove results in bd_rate <pre> box */
-  $.get('/bd_rate',req,function(data) {
-    $('#bd_rate').text(data);
-  });
-}
-
-function baseName(str)
-{
-   var base = new String(str).substring(str.lastIndexOf('/') + 1);
-    if(base.lastIndexOf(".") != -1)
-        base = base.substring(0, base.lastIndexOf("."));
-   return base;
-}
-
-function load_sets() {
-  var run = get_selected_run_data()[0];
-  if (!run) {
-    load_sets_for_filter();
-    return;
-  }
-  if (run.info.videos) {
-    var videos = run.info.videos;
-    if (!Array.isArray(videos)) {
-      videos = [];
-      videos.push(run.info.videos);
-    }
-    $('#video_name').html('');
-    for (var index in videos) {
-      var video_path = videos[index];
-      var video_basename = baseName(video_path);
-      var file_option = $('<option>');
-      file_option.text(video_basename);
-      file_option.attr('value','data/' + video_basename + '.y4m.out');
-      $('#video_name').append(file_option);
-    }
-  } else {
-    load_sets_for_filter();
-  }
-}
-
-function load_sets_for_filter() {
-  var filter_task = $('#run_filter_task').val();
-  data = sets;
-  $('#video_name').html('');
-  var total_option = $('<option>');
-  total_option.html('Total');
-  total_option.attr('value','total');
-  $('#video_name').append(total_option);
-  for (var i in data[filter_task].sources) {
-    var file_in_set = baseName(data[filter_task].sources[i]);
-    var file_option = $('<option>');
-    file_option.text(file_in_set);
-    file_option.attr('value',file_in_set);
-    $('#video_name').append(file_option);
-  }
-  for (var set in data) {
-    for (var filenum in data[set]) {
-      var file_option = $('<option>');
-      file_option.text(set+'/'+data[set][filenum]);
-      file_option.attr('value',set+'/'+data[set][filenum]);
-      $('#custom_videos').append(file_option);
-    }
-  }
-}
-
-function set_selector() {
-  var ret = $('<select>');
-  var subsets = ['video-1-short','video-hd-1','video-hd-2','video-hd-3','ntt-short-1',
-    'ntt-short-1-64','screenshots','subset1','subset1-monochrome','subset2','subset3','subset4',
-    'vc-360p-1', 'vc-720p-1', 'netflix-4k-1', 'netflix-2k-1', 'twitch-1', 'length-test-1', 'objective-1-fast', 'objective-1-smc', 'eos'];
-  for (var i in subsets) {
-    var set = subsets[i];
-    var option = $('<option>').attr('value',set).html(set);
-    if (set == 'objective-1-fast') option.attr('selected','selected');
-    ret.append(option);
-  }
-  return ret;
-}
-
-function load_runs() {
-  var uri = new URI();
-  urldata = URI.parseQuery(uri.query());
-  var filter_task = $('#run_filter_task').val();
-  data = list;
-  data.sort(function(a,b) {
-    return new Date(b.date) - new Date(a.date);
-  });
-  $('#runs_latest').html('');
-  $('#runs_experimental').html('');
-  run_list_by_name = {};
-  for (var i in data) {
-    var job = data[i];
-    run_list_by_name[job.run_id] = job;
-    if ((job.tasks.indexOf(filter_task) != -1) || (filter_task == 'all')) {
-      create_cell(job, 'graph');
-    }
-  }
-  if (Array.isArray(urldata['r[]'])) {
-    var urlruns = urldata['r[]'];
-  } else {
-    var urlruns = [urldata['r[]']];
-  }
-  urlruns.forEach(function(run_id) {
-    console.log(run_id);
-    $(document.getElementById(run_id)).toggleClass('selected');
-    run_selection_changed();
-  });
-}
-
-function create_cell(job, page) {
-    var run = $('<div>');
-    var run_id_tag = $('<span>');
-    var run_meta_tag = $('<div>');
-
-    if (page === 'images') { run.attr('class', 'ab_run'); }
-    else {
-        run.attr('id',job.run_id);
-        run.attr('class', 'run');
-
-        run.on('click',function() {
-            $(this).toggleClass('selected');
-            var filter_task = $('#run_filter_task').val();
-            if (filter_task == 'all') { load_sets(); }
-            run_selection_changed();
-
-            return false;
-        });
-
-        run_id_tag.addClass('run_id');
-    }
-
-    run_meta_tag.addClass('run_meta');
-    run_id_tag.text(job.run_id);
-    run_meta_tag.text(job.info.nick + ' ' + job.info.codec + ' ' + job.date);
-
-    run.append(run_id_tag);
-    run.append(run_meta_tag);
-
-    var run_hash = $('<div>');
-    run_hash.addClass('run_meta');
-    run_hash.text(job.info.commit);
-
-    run.append(run_hash);
-
-    if (page === 'images') {
-        if (job.info.special) { $('#ab_runs_reference').append(run); }
-        else { $('#ab_runs_experimental').prepend(run); }
-    } else {
-        if (job.info.special) { $('#runs_latest').prepend(run); }
-        else { $('#runs_experimental').append(run); }
-    }
-}
-
-$("a[href='#images'], #ab_run_subsets option").click(ab_refresh);
-
-function ab_clear() {
-    $("#ab_runs_reference").empty();
-    $("#ab_runs_experimental").empty();
-    $("#ab_run_bpps").empty();
-    $("#ab_run_images").empty();
-}
-
-function ab_update_switcher() {
-    $('#ab_image_switcher').empty();
-
-    $('#ab_runs .selected_a')
-        .clone()
-        .appendTo('#ab_image_switcher')
-        .removeClass('selected_a')
-        .addClass('col-md-4 ab_image_switcher')
-        .attr('id', 'ab_image_id_a');
-
-    $('#ab_runs .selected_b')
-        .clone()
-        .appendTo('#ab_image_switcher')
-        .removeClass('selected_b')
-        .addClass('col-md-4 ab_image_switcher')
-        .attr('id', 'ab_image_id_b');
-
-    // Setup the image switcher
-    $('#ab_image_id_a').addClass('selected');
-}
-
-function ab_refresh() {
-    ab_clear();
-
-    update_ab_selection('run_id', 'run_id_a')
-        .then(function() {
-            // Setup the run ids. `:first` is apparently slow because it's a jQuery
-            // extension and it is recommended to filter with it as a performance
-            // optimization as opposed to using it directly.
-            $('#ab_runs .ab_run:nth-child(1)').filter(':first').addClass('selected_a');
-            $('#ab_runs .ab_run:nth-child(2)').filter(':first').addClass('selected_b');
-        }).then(function() { return update_ab_selection('bpp', 'run_id_a');
-        }).then(function() { return update_ab_selection('image', 'run_id_a');
-        }).then(ab_update_switcher)
-          .then(update_ab_image);
-}
-
-$('#ab_image_switcher').on('mouseover', '.ab_image_switcher', function() {
-    $('.ab_image_switcher').removeClass('selected');
-
-    $(this).addClass('selected');
-    update_ab_image();
-});
-
-$("#ab_runs").on('click', '.ab_run', function() {
-    // Select with `a` if it doesn't already have `b` on it.
-    if ( !$(this).hasClass('selected_b') ) {
-        $('.ab_run').removeClass('selected_a');
-        $(this).addClass('selected_a');
-    }
-
-    update_ab_selection('bpp', 'run_id_a')
-        .then(function() { return update_ab_selection('image', 'run_id_a'); })
-        .then(ab_update_switcher)
-        .then(update_ab_image);
-});
-
-// On right click take action.
-$("div").on('contextmenu', '.ab_run', function() {
-    // Select with `b` if it doesn't already have `a` on it.
-    if ( !$(this).hasClass('selected_a') ) {
-        $('.ab_run').removeClass('selected_b');
-        $(this).addClass('selected_b');
-    }
-
-    // Disable the context menu inside this div.
-    update_ab_selection('bpp', 'run_id_b')
-        .then(function() { return update_ab_selection('image', 'run_id_b'); })
-        .then(ab_update_switcher)
-        .then(update_ab_image);
-
-    return false;
-});
-
-$('#ab_run_bpps').on('click', '.ab_run_bpp', function() {
-    $('.ab_run_bpp').removeClass('selected');
-    $(this).addClass('selected');
-
-    update_ab_image();
-});
-
-$('#ab_run_images').on('click', '.ab_run_image', function() {
-    $('.ab_run_image').removeClass('selected');
-    $(this).addClass('selected');
-
-    update_ab_image();
-});
-
-function ab_cur_selection(type) {
-    var ret;
-    if (type == 'run_id_a') { ret = $('.ab_run.selected_a span').text(); }
-    else if (type == 'run_id_b') { ret = $('.ab_run.selected_b span').text(); }
-    else if (type == 'bpp') { ret = $('.ab_run_bpp.selected').text(); }
-    else if (type == 'image') { ret = $('.ab_run_image.selected').text(); }
-    else if (type == 'subset') { ret = $('#ab_run_subsets option:selected').text(); }
-    else if (type == 'image_switcher') { ret = $('.ab_image_switcher.selected span').text(); }
-    else {
-        console.log('type', type, "doesn't match any selection types.");
-    }
-
-    return ret;
-}
-
-// The type of selection to update and who requested the update.
-function update_ab_selection(type, from) {
-    return $.when($.getJSON('ab_paths.json'), $.getJSON('list.json')).then(function(ab_paths_json, list_json) {
-        var file_structure = ab_paths_json[0][0];
-        var runs = list_json[0];
-
-        var selected_subset = ab_cur_selection('subset');
-
-        if (type == 'run_id') {
-            for (var run_index in runs) {
-                var job = runs[run_index];
-                // If `list_json` contains a run `ab_paths_json` doesn't, this will be undefined. Go to the next
-                // run if that occurs.
-                if (typeof file_structure[job.run_id] === 'undefined') { continue; }
-                subsets = file_structure[job.run_id][0];
-
-                // Check if this run has the current subset inside.
-                if (subsets[selected_subset] != null) { create_cell(job, 'images'); }
-            };
-
-            // Extract the experimental run divs so they may be sorted.
-            var exp_runs = $('#ab_runs_experimental div.ab_run');
-
-            exp_runs.sort(function(a, b) {
-                // Grab the date from the meta tag and strip off the user nickname.
-                var date_a = $(a).find('.run_meta:first').text().split(' ')[1];
-                var date_b = $(b).find('.run_meta:first').text().split(' ')[1];
-
-                // Sort in descending order.
-                if (date_a < date_b) { return 1; }
-                else if (date_a > date_b) { return -1; }
-                else { return 0; }
-            });
-
-            // Doesn't require `empty()` before I append but I'm not exactly sure why. The example I saw didn't
-            // need it either so at least it's consistent.
-            $('#ab_runs_experimental').append(exp_runs);
-            return true;
-        }
-
-        var time_stamp = { a: ab_cur_selection('run_id_a'),
-                           b: ab_cur_selection('run_id_b') };
-
-        // `time_stamp` is empty when switching to a subset with no images, this needs to be updated so old data and
-        // and images don't remain for a non-existent subset.
-        if (time_stamp.a === '') {
-            ab_clear();
-            update_ab_image();
-        } else if (type == 'bpp') {
-            $("#ab_run_bpps").empty();
-
-            var bpps = { a: file_structure[time_stamp.a][0][selected_subset][0],
-                         b: file_structure[time_stamp.b][0][selected_subset][0] };
-
-            // Only add the bpp when both runs have the same bpp.
-            for (var bpp_a in bpps.a) {
-                for (var bpp_b in bpps.b) {
-                    if (bpp_a === bpp_b) {
-                        var div = $('<div>');
-                        div.addClass('ab_run ab_run_bpp col-md-1');
-                        div.text(bpp_a.substring(4));
-
-                        $('#ab_run_bpps').append(div);
-                        break;
-                    }
-                }
-            }
-
-            $('.ab_run_bpp').first()
-                            .addClass('selected');
-        } else if (type == 'image') {
-            $("#ab_run_images").empty();
-
-            // Folder names have `bpp_` prepended.
-            var bpp = 'bpp_' + ab_cur_selection('bpp');
-            var images = { a: file_structure[time_stamp.a][0][selected_subset][0][bpp],
-                           b: file_structure[time_stamp.b][0][selected_subset][0][bpp] };
-
-            // Only add the bpp when both runs have the same bpp.
-            for (var index_a in images.a) {
-                var image_a = images.a[index_a];
-
-                for (var index_b in images.b) {
-                    var image_b = images.b[index_b];
-                    if (image_a === image_b) {
-                        var div = $('<div>');
-                        div.addClass('ab_run ab_run_image');
-                        div.text(image_a);
-
-                        $('#ab_run_images').append(div);
-                        break;
-                    }
-                }
-            }
-
-            $('.ab_run_image').first()
-                              .addClass('selected');
-        }
-    });
-}
-
-function update_ab_image() {
-    var bpp = ab_cur_selection('bpp');
-    var subset = ab_cur_selection('subset');
-    var run_id = ab_cur_selection('image_switcher');
-    var image = ab_cur_selection('image');
-
-    var new_img_path = 'runs/' + run_id + '/' + subset + '/bpp_' + bpp + '/' + image;
-
-    $('#ab_image_container').empty()
-                            .append("<img id='ab_image' src='" + new_img_path + "' class='img-responsive'>");
-}
-
-function clear_runs() {
-  $('#runs > div').removeClass('selected');
-}
-
-function refresh_login_required() {
-  if ((document.cookie == 'key=') || (document.cookie == '')) {
-    $('.loginrequired').addClass('hidden');
-  } else {
-    $('.loginrequired').removeClass('hidden');
-  }
-}
-
-function set_key_cookie() {
-  var key = $('#key').val();
-  document.cookie = 'key='+key;
-  refresh_login_required();
-}
-
-function clear_key_cookie() {
-  document.cookie = 'key=';
-  refresh_login_required();
-}
-
-function load_job_log() {
-  $.getJSON('run_status.json', function(run_status) {
-    $('#run_job_box').html('');
-    for (run_number in run_status) {
-      var run = run_status[run_number];
-      var header = $('<h3><a href="runs/'+run.run_id+'/output.txt">'+run.run_id+'</a></h3>');
-      var progress = $('<div class="progress"></div>');
-      var progress_bar = $('<div id="job_progress" class="progress-bar" role="progressbar" style="min-width: 5em; width: 0%;"></div>');
-      var percentage = 100 * run.completed / run.total + '%';
-      progress_bar.width(percentage);
-      progress_bar.text(run.completed + ' / ' + run.total);
-      $('#run_job_box').append(header);
-      progress.append(progress_bar);
-      $('#run_job_box').append(progress);
-    }
-  });
-  $.getJSON('build_job.json', function(build_job) {
-    $('#build_job_box').removeClass('hidden');
-    $('#build_job_run_id').text(build_job.run_id);
-    $.get('runs/'+build_job.run_id+'/output.txt', function(data) {
-      $('#build_job_log').text(data);
-    });
-  }).error(function() {
-    $('#build_job_box').addClass('hidden');
-  });
-}
-
-function auto_refresh() {
-  load_aws();
-  load_job_queue();
-  load_job_log();
-  window.setTimeout(auto_refresh,5000);
-}
-
-$(function() {
-  if (location.origin == "https://beta.arewecompressedyet.com") {
-    $('header').css('background-color','#F00');
-  }
-});
-
-$.when(set_request, list_request).done(function() {
-  // populate widgets
-  var task_selector = set_selector();
-  task_selector.attr('id','task');
-  task_selector.attr('name','task');
-  task_selector.addClass('form-control');
-  $('#task_container').append(task_selector);
-  var ab_run_subsets_selector = set_selector();
-  ab_run_subsets_selector.attr('id','ab_run_subsets');
-  ab_run_subsets_selector.attr('name','ab_run_subsets');
-  ab_run_subsets_selector.children("option[value='subset1']").attr('selected', 'selected');
-  $('#ab_run_subsets_container').append(ab_run_subsets_selector);
-  var run_filter_task_selector = set_selector();
-  run_filter_task_selector.attr('id','run_filter_task');
-  run_filter_task_selector.attr('onChange','load_runs();load_sets();');
-  $('#run_filter_task_container').append(run_filter_task_selector);
-  refresh_login_required();
-  var uri = new URI();
-  urldata = URI.parseQuery(uri.query());
-  if ('s' in urldata) {
-    $('#run_filter_task').val(urldata['s']);
-  }
-  load_sets();
-  load_runs();
-  var currentState = history.state;
-  var date = new Date();
-  $('#run_id').val(date.toISOString().replace(/:/g,'-'));
-  load_job_queue();
-  load_timelines();
-  auto_refresh();
-});
-</script>
+        <!-- Main -->
+        <script src="./dist/bundle.js"></script>
+    </body>
 </html>
