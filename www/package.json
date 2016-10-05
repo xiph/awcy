@@ -17,6 +17,7 @@
     "@types/react-bootstrap": "0.0.32",
     "@types/react-dom": "^0.14.16",
     "@types/es6-promise": "0.0.31",
+    "@types/d3-scale": "^1.0.4",
     "ts-loader": "^0.8.2",
     "typescript": "^2.1.0-dev.20160903",
     "webpack": "^1.13.2",
