@@ -555,6 +555,12 @@ export class AppStore {
       }
     });
   }
+  logout() {
+    delete localStorage["password"];
+    this.password = "";
+    this.isLoggedIn = false;
+    this.onLoggedInStateChanged.post("changed");
+  }
   login(password: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.password = password;

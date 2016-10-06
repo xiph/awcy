@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Panel, Form, FormGroup, ControlLabel, FormControl } from "react-bootstrap";
+import { Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar } from "react-bootstrap";
 import { } from "react-bootstrap";
 import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile } from "../stores/Stores";
 import { Analyzer } from "../analyzer";
@@ -338,25 +338,44 @@ export class LoginComponent extends React.Component<void, {
     this.setState({
       password: e.target.value
     } as any);
-    this.check = appStore.login(e.target.value);
-    this.check.then(
+  }
+  getValidationState(): "success" | "warning" | "error" {
+    let password = this.state.password;
+    if (password === "") {
+      return "error";
+    }
+    return "success";
+  }
+  onLogin() {
+    appStore.login(this.state.password).then(
       (result) => { this.forceUpdate(); },
       () => { this.forceUpdate(); }
     );
   }
-  getValidationState(): "success" | "warning" | "error" {
-    let password = this.state.password;
-    if (password.length === 0) {
-      return "error";
-    }
-    return appStore.isLoggedIn ? "success" : "error";
+  onLogout() {
+    appStore.logout();
+    this.forceUpdate();
   }
   render() {
-    return <FormGroup validationState={this.getValidationState()}>
+    let login = <div>
+      <FormGroup validationState={this.getValidationState()}>
         <ControlLabel>AWCY API Key</ControlLabel>
         <FormControl type="text" placeholder=""
           value={this.state.password} onChange={this.onInputChange.bind(this)} />
-        <FormControl.Feedback/>
       </FormGroup>
+      <FormGroup>
+        <ButtonToolbar>
+          <Button bsSize="small" onClick={this.onLogin.bind(this)}>Login</Button>
+        </ButtonToolbar>
+      </FormGroup>
+    </div>
+    let logout = <div>
+      <FormGroup>
+        <ButtonToolbar>
+          <Button bsSize="small" onClick={this.onLogout.bind(this)}>Logout</Button>
+        </ButtonToolbar>
+      </FormGroup>
+    </div>
+    return appStore.isLoggedIn ? logout : login;
   }
 }
