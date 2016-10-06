@@ -136,6 +136,7 @@ function add_to_run_queue(job) {
     console.log(body);
   });
   fs.writeFile('runs/'+job.run_id+'/status.txt','waiting');
+  cp.exec('node generate_list.js');
 }
 
 express.static.mime.define({'text/plain': ['out']});
