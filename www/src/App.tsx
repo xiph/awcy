@@ -53,14 +53,14 @@ export class App extends React.Component<void, void> {
           <JobsComponent showFilters jobStatusFilter={JobStatus.Completed} jobs={appStore.jobs} listHeight={height - 200} />
         </div>
       </Tab>,
-      <Tab eventKey={2} key="jobs" title="Active Jobs">
+      <Tab eventKey={2} key="jobs" title="Active Runs">
         <div style={{ padding: 10 }}>
           <JobsComponent showCommands jobStatusFilter={JobStatus.Active} jobs={appStore.jobs} listHeight={height - 200} />
         </div>
       </Tab>,
-      <Tab eventKey={3} key="all-jobs" title="All Jobs">
+      <Tab eventKey={3} key="all-jobs" title="All Runs">
         <div style={{ padding: 10 }}>
-          <JobsComponent showCommands jobStatusFilter={JobStatus.All} jobs={appStore.jobs} listHeight={height - 200} />
+          <JobsComponent jobStatusFilter={JobStatus.All} jobs={appStore.jobs} listHeight={height - 200} />
         </div>
       </Tab>,
       <Tab eventKey={4} key="share" title="Share">
