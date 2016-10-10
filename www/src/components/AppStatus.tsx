@@ -95,23 +95,11 @@ export class AppStatusComponent extends React.Component<void, {
       jobs[job.nick].push(job);
       totalJobCount++;
     });
-    let jobsByAuthor = [];
-    for (let author in jobs) {
-      jobsByAuthor.push(<Panel header={author + " " + jobs[author].length} key={author}>
-        {jobs[author].map(job => {
-          let date = job.date ? `${job.date.toLocaleDateString()} ${job.date.toLocaleTimeString()} (${timeSince(job.date)})`: "";
-          return <JobComponent key={job.id} detailed job={job}/>
-        })}
-      </Panel>);
-    }
     return <div style={{height: "3000px"}}>
       <RefreshComponent/>
       {jobInfos}
       <Panel header={"AWS Status " + status}>
         {table}
-      </Panel>
-      <Panel header={totalJobCount + " Jobs (last 14 days)"}>
-        {jobsByAuthor}
       </Panel>
     </div>
   }
