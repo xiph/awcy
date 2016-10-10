@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --config config/webpack.config.js",
+    "build-release": "RELEASE=1 webpack --config config/webpack.config.js",
     "build-watch": "webpack --watch --config config/webpack.config.js"
   },
   "keywords": [],

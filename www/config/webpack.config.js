@@ -1,6 +1,8 @@
 var WebpackNotifierPlugin = require('webpack-notifier');
 var webpack = require('webpack');
 
+var RELEASE = JSON.parse(process.env.RELEASE || '0');
+
 module.exports = {
   entry: "./src/index.tsx",
   output: {
@@ -27,7 +29,7 @@ module.exports = {
           { test: /\.js$/, loader: "source-map-loader" }
       ]
   },
-  plugins: [
+  plugins: RELEASE ? [
     // Set up the notifier plugin - you can remove this (or set alwaysNotify false) if desired
     // new WebpackNotifierPlugin({ alwaysNotify: true }),
     // new webpack.DefinePlugin({
@@ -35,12 +37,12 @@ module.exports = {
     //     'NODE_ENV': JSON.stringify('production')
     //     }
     // }),
-    // new webpack.optimize.UglifyJsPlugin({
-    //   compress:{
-    //     warnings: true
-    //   }
-    // })
-  ],
+    new webpack.optimize.UglifyJsPlugin({
+      compress:{
+        warnings: true
+      }
+    })
+  ] : [],
   // When importing a module whose path matches one of the following, just
   // assume a corresponding global variable exists and use that instead.
   // This is important because it allows us to avoid bundling all of our
