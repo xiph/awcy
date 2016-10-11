@@ -57,8 +57,11 @@ export function postXHR(path: string, o: any): Promise<boolean> {
     let xhr = new XMLHttpRequest();
     let pairs = [];
     for(let name in o) {
-      if (o[name]) {
-        pairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(o[name]));
+      let value = o[name];
+      if (typeof value === "boolean") {
+        pairs.push(encodeURIComponent(name) + '=' + value);
+      } else if (value) {
+        pairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(value));
       }
     }
     let data = pairs.join('&').replace(/%20/g, '+');
