@@ -134,7 +134,7 @@ export class JobComponent extends React.Component<JobProps, {
       details.push(keyValue("Status", JobStatus[job.status]));
     }
     let award = null;
-    if (job.nick === "codeview") {
+    if (false) {
       let src = ["img/bottle.png", "img/mug.png", "img/beer.png"][hashString(job.commit) % 3];
       award = <div style={{paddingRight: "10px", display: "flex", justifyContent: "center"}}><img src={src} style={{height: 32, padding: 2}}/></div>
     }
