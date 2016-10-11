@@ -367,6 +367,7 @@ app.post('/submit/delete',function(req,res) {
 
 app.post('/submit/cancel',function(req,res) {
   const run_id = req.body.run_id;
+  console.log('Cancelling '+run_id);
   request(config.rd_server_url+'/cancel?'+querystring.stringify({run_id: run_id}), function (error, response, body) {
     res.send('ok');
   });
