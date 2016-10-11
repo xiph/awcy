@@ -11,15 +11,15 @@ export class SubmitJobFormComponent extends React.Component<{
   onCancel: () => void;
 }, {
     job: Job;
-    set: string;
-    codec: string;
+    set: Option;
+    codec: Option;
   }> {
   constructor() {
     super();
     this.state = {
       job: null,
-      set: "objective-1-fast",
-      codec: "av1"
+      set: {label: "objective-1-fast", value: "objective-1-fast"},
+      codec: {label: Job.codecs["av1"], value: "av1"}
     } as any;
   }
   componentWillMount() {
@@ -54,10 +54,10 @@ export class SubmitJobFormComponent extends React.Component<{
         }
         break;
       case "codec":
-        if (this.state.codec) return "success";
+        if (this.state.codec.value) return "success";
         break;
       case "set":
-        if (this.state.set) return "success";
+        if (this.state.set.value) return "success";
         break;
       case "nick":
         if (job.nick) return "success";
@@ -89,8 +89,8 @@ export class SubmitJobFormComponent extends React.Component<{
   onCreate() {
     let job = this.state.job;
     job.date = new Date();
-    job.task = this.state.set;
-    job.codec = this.state.codec;
+    job.task = this.state.set.value;
+    job.codec = this.state.codec.value;
     this.props.onCreate(job);
   }
   onCancel() {
