@@ -370,6 +370,8 @@ app.post('/submit/cancel',function(req,res) {
   request(config.rd_server_url+'/cancel?'+querystring.stringify({run_id: run_id}), function (error, response, body) {
     res.send('ok');
   });
+  fs.writeFile('runs/'+run_id+'/status.txt','cancelled');
+  cp.exec('node generate_list.js');
 });
 
 app.post('/submit/restart', function(req,res) {
