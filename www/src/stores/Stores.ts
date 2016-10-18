@@ -642,7 +642,7 @@ export class AppStore {
         this.login(localStorage["password"]);
       }
     } catch (e) {
-      console.log('Exception reading secret key from localstorage:',e);
+      console.log('Exception reading secret key from localstorage:', e);
     }
   }
   loadAWS() {

@@ -228,11 +228,12 @@ export class LoginComponent extends React.Component<void, {
   check: Promise<boolean>
   constructor() {
     super();
-    try() {
-      let password = localStorage["password"] || "";
-    } catch(e) {
+    let password = "";
+    try {
+      password = localStorage["password"] || "";
+    } catch (e) {
       console.log("Couldn't read secret key from localstorage:",e);
-      let password = "";
+      password = "";
     }
     this.state = {
       password: password
