@@ -4,7 +4,7 @@ import { Jumbotron, Grid, Popover, OverlayTrigger, Navbar, Checkbox, Form, FormG
 
 import { BDRatePlot, sortArray, ScatterPlotSeries, PlotAxis } from "./Plot";
 import { VideoReportComponent, BDRateReportComponent } from "./Report";
-import { JobSelectorComponent } from "./Widgets";
+import { JobSelectorComponent } from "./JobSelector";
 import { Promise } from "es6-promise";
 import { AnalyzerVideoSelectorComponent, AnalyzerComponent } from "./Widgets";
 
@@ -19,9 +19,8 @@ let Select = require('react-select');
 
 
 export class FullReportComponent extends React.Component<void, {
-    metrics: string[],
-    videos: string[],
-    qualities: number[],
+    metric: string,
+    video: string,
     fit: boolean;
     log: boolean;
     stack: boolean;
@@ -33,9 +32,8 @@ export class FullReportComponent extends React.Component<void, {
       fit: true,
       log: true,
       stack: false,
-      metrics: ["MSSSIM"],
-      videos: [],
-      qualities: []
+      metric: "MSSSIM",
+      video: "Total"
     };
     this.onChange = () => {
       this.load();
@@ -87,8 +85,8 @@ export class FullReportComponent extends React.Component<void, {
     });
     return series;
   }
-  onJobSelectorChange(metrics: string[], videos: string[], qualities: number[]) {
-    this.setState({ metrics, videos, qualities } as any);
+  onJobSelectorChange(metric: string, video: string) {
+    this.setState({ metric, video } as any);
   }
   onFitClick() {
     this.setState({ fit: !this.state.fit } as any);
@@ -99,44 +97,24 @@ export class FullReportComponent extends React.Component<void, {
   onStackClick() {
     this.setState({ stack: !this.state.stack } as any);
   }
-  renderVideoReport(video: string, stack: boolean, showTabs = true) {
+  renderVideoReport(video: string, metric: string, showTabs = true) {
     let jobs = appStore.jobs.getSelectedJobs();
-    let metrics = this.state.metrics;
-    let qualities = this.state.qualities;
-    let headers = metrics.map(name =>
-      <th key={name} className="tableHeader">{name}</th>
-    );
+    let headers = <th key={this.state.metric} className="tableHeader">{metric}</th>
     let rows, cols;
-    if (!stack) {
-      let plotWidth = (940 / metrics.length) | 0;
-      let plotHeight = 200;
-      cols = metrics.map(metric =>
-        <td key={metric} style={{ padding: 0 }}>
-          <BDRatePlot width={plotWidth} height={plotHeight} series={this.getSeries(video, metric)} />
-        </td>
-      );
-      rows = [<tr key={video}>{cols}</tr>];
-    } else {
-      let plotWidth = 940;
-      let plotHeight = 400;
-      headers = [<th key={name} className="tableHeader"></th>];
-      rows = [];
-      metrics.forEach(metric => {
-        rows.push(<tr key={metric + "-Header"}><td className="tableHeader">{metric}</td></tr>);
-        rows.push(<tr key={metric}>
-          <td style={{ padding: 0 }}>
-            <BDRatePlot width={plotWidth} height={plotHeight} series={this.getSeries(video, metric)} />
-          </td>
-        </tr>);
-      });
-    }
+    let plotWidth = 940;
+    let plotHeight = 400;
+    rows = [
+      <td style={{ padding: 0 }}>
+        <BDRatePlot width={plotWidth} height={plotHeight} series={this.getSeries(video, metric)} />
+      </td>
+    ];
     let tabs = null;
     if (showTabs) {
       tabs = <Tabs animation={false} id="noanim-tab-example">
         {jobs.map((job, i) => {
           return <Tab eventKey={i} key={job.id} title={job.selectedName}>
             <div style={{paddingTop: 10}}>
-              <VideoReportComponent name={video} job={job} highlightColumns={metrics} filterQualities={qualities} />
+              <VideoReportComponent name={video} job={job} highlightColumns={[metric]} filterQualities={[]} />
             </div>
           </Tab>
         })}
@@ -191,34 +169,21 @@ export class FullReportComponent extends React.Component<void, {
     }
 
     let job = jobs[0];
-    let metrics = this.state.metrics;
-    let qualities = this.state.qualities;
-    for (let video in job.report) {
-      if (this.state.videos.length && this.state.videos.indexOf(video) < 0) {
-        continue;
-      }
-      if (video === "Total") {
-        continue;
-      }
-      tables.push(this.renderVideoReport(video, this.state.stack));
-    }
-    let report = <BDRateReportComponent a={jobs[0]} b={jobs[1]}/>
+    let metrics = [this.state.metric];
     return <div style={{ width: "980px" }}>
       <Panel>
         {selectedJobs}
       </Panel>
       <Panel>
-        <JobSelectorComponent metrics={this.state.metrics} jobs={jobs} onChange={this.onJobSelectorChange.bind(this)} />
+        <JobSelectorComponent metric={this.state.metric} video={this.state.video} jobs={jobs} onChange={this.onJobSelectorChange.bind(this)} />
       </Panel>
       <div style={{ }}>
         <Button active={this.state.fit} onClick={this.onFitClick.bind(this)}>Fit Charts</Button>{' '}
         <Button active={this.state.log} onClick={this.onLogClick.bind(this)}>Logarithmic</Button>{' '}
-        <Button active={this.state.stack} onClick={this.onStackClick.bind(this)}>Enlarge Charts</Button>
       </div>
       <div style={{ paddingTop: 8 }}>
-        {this.renderVideoReport("Total", this.state.stack, false)}
-        {report}
-        {tables}
+        {this.renderVideoReport(this.state.video, this.state.metric)}
+        <BDRateReportComponent a={jobs[0]} b={jobs[1]}/>
       </div>
     </div>;
   }
