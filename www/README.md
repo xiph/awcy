@@ -18,6 +18,12 @@ To build AWCY whenever a file changes run:
 npm run build-watch
 ```
 
+To build a release build of AWCY, run:
+
+```
+npm run build-release
+```
+
 To start a dev web server run:
 
 ```
