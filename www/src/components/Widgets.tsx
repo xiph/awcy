@@ -11,8 +11,8 @@ let Select = require('react-select');
 
 interface JobSelectorProps {
   jobs: Job [];
-  metrics: string [];
-  onChange?: (metrics?: string [], videos?: string [], qualities?: number[]) => void;
+  metric: string;
+  onChange?: (metric?: string, video?: string, qualitie?: number) => void;
 }
 
 export interface Option {
@@ -21,112 +21,12 @@ export interface Option {
   disabled?: boolean;
 }
 
-function arraysEqual<T>(a: T [], b: T []): boolean {
+export function arraysEqual<T>(a: T [], b: T []): boolean {
   if (a == b) return true;
   if (a.length != b.length) return false;
   for (let i = 0; i < a.length; i++)
-    if (a[i] != b[i]) return true;
-  return false
-}
-
-export class JobSelectorComponent extends React.Component<JobSelectorProps, {
-  availableJobs: Job [];
-  jobs: Option [];
-  videos: Option [];
-  metrics: Option [];
-  qualities: Option [];
-}> {
-  constructor() {
-    super();
-    this.state = {
-      availableJobs: [],
-      jobs: [],
-      metrics: [],
-      videos: [],
-      qualities: []
-    };
-  }
-  componentWillReceiveProps(nextProps: JobSelectorProps, nextContext: any) {
-    if (!arraysEqual(this.state.availableJobs, nextProps.jobs)) {
-      this.resetJobs(nextProps.jobs.slice(0));
-    }
-  }
-  resetJobs(availableJobs: Job []) {
-    let jobs = availableJobs.map(job => {
-      return { value: job.id, label: job.id };
-    });
-    this.setState({availableJobs, jobs} as any);
-  }
-  componentWillMount() {
-    this.resetJobs(this.props.jobs.slice(0));
-    let metrics = this.props.metrics.map(metric => {
-      return { value: metric, label: metric };
-    });
-    this.setState({metrics} as any);
-  }
-  getJob(id: string): Job {
-    return this.props.jobs.find(job => job.id === id);
-  }
-  onChange() {
-    if (!this.props.onChange) {
-      return;
-    }
-    this.props.onChange(
-      this.state.metrics.map(option => option.value),
-      this.state.videos.map(option => option.value),
-      this.state.qualities.map(option => Number(option.value))
-    );
-  }
-  onChangeMetrics(metrics) {
-    this.setState({metrics} as any, () => {
-      this.onChange();
-    });
-  }
-  onChangeVideos(videos) {
-    this.setState({videos} as any, () => {
-      this.onChange();
-    });
-  }
-  onChangeQualities(qualities) {
-    this.setState({qualities} as any, () => {
-      this.onChange();
-    });
-  }
-  render() {
-    console.debug("Rendering Job Selector");
-    let allJobs = [];
-    let allVideos = [];
-    let metrics = metricNames.map(name => {
-      return { value: name, label: name };
-    });
-    let jobs = this.props.jobs;
-    let videos = Object.keys(jobs[0].report).map(name => {
-      return { value: name, label: name };
-    });
-    let qualities = jobs[0].report["Total"].map(row => {
-      return { value: row[0], label: row[0] };
-    });
-    return <div>
-      <div className="row">
-        <div className="col-xs-12">
-          <div className="row">
-            <div className="col-xs-4">
-              <div className="selectTitle">Metrics</div>
-              <Select multi value={this.state.metrics} options={metrics} onChange={this.onChangeMetrics.bind(this)}/>
-            </div>
-            <div className="col-xs-4">
-              <div className="selectTitle">Videos</div>
-              <Select multi value={this.state.videos} options={videos} onChange={this.onChangeVideos.bind(this)}/>
-            </div>
-            <div className="col-xs-4">
-              <div className="selectTitle">Qualities</div>
-              <Select multi value={this.state.qualities} options={qualities} onChange={this.onChangeQualities.bind(this)}/>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  }
+    if (a[i] != b[i]) return false;
+  return true;
 }
 
 interface AnalyzerProps {
