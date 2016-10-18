@@ -221,6 +221,7 @@ app.get('/machine_usage.json', function(req, res) {
   });
 });
 
+// polling rd_server to update list and issue IRC notifications
 let last_runs = {};
 function check_for_completed_runs() {
   request(config.rd_server_url+'/run_status.json', function (error, response, body) {
@@ -229,11 +230,14 @@ function check_for_completed_runs() {
       for (let run of JSON.parse(body)) {
         current_runs[run.run_id] = run;
       }
+      var list_updated = false;
       for (let runid in last_runs) {
         if (!(runid in current_runs)) {
+          list_updated = true;
           ircclient.say(channel,last_runs[runid]['info']['nick']+': Finished '+runid);
         }
       }
+      if (list_updated) generate_list();
       last_runs = current_runs;
     }
   });
