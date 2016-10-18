@@ -187,12 +187,12 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
 
     // Markdown
     text += "\n\nMarkdown Version\n\n";
-    summaryRows.splice(1, 0, summaryHeaders.map(() => "---"));
+    summaryRows.splice(1, 0, summaryHeaders.map(() => "---:"));
     padTable(summaryRows);
     text += summaryRows.map(row => `| ${row.join(" | ")} |`).join("\n");
 
     text += "\n\n";
-    rows.splice(1, 0, rowHeaders.map(() => "---"));
+    rows.splice(1, 0, rowHeaders.map(() => "---:"));
     padTable(rows);
     text += rows.map(row => `| ${row.join(" | ")} |`).join("\n");
     copyToClipboard(text);
