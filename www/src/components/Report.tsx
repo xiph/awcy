@@ -6,7 +6,6 @@ import { BDRateReport, Report, AppStore, Jobs, Job, JobStatus, loadXHR, ReportFi
 declare var require: any;
 
 let Select = require('react-select');
-let copyToClipboard = require('copy-to-clipboard');
 
 function formatNumber(n) {
   return n.toLocaleString(); // .replace(/\.00$/, '');
@@ -106,11 +105,12 @@ interface BDRateReportProps {
 
 export class BDRateReportComponent extends React.Component<BDRateReportProps, {
   report: BDRateReport;
+  textReport: string;
   reversed: boolean;
 }> {
   constructor() {
     super();
-    this.state = { report: null, reversed: false } as any;
+    this.state = { report: null, textReport: null, reversed: false } as any;
   }
   componentWillReceiveProps(nextProps: BDRateReportProps, nextContext: any) {
     if (this.props.a !== nextProps.a || this.props.b !== nextProps.b) {
@@ -123,7 +123,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     if (!a || !b) {
       return;
     }
-    this.setState({report: null} as any);
+    this.setState({report: null, textReport: null} as any);
     AppStore.loadBDRateReport(a, b, a.task).then((report) => {
       this.setState({report} as any);
     });
@@ -136,7 +136,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     this.setState({reversed: !this.state.reversed} as any);
     this.loadReport({a: report.b, b: report.a});
   }
-  onCopyToClipboardClick() {
+  onTextReportClick() {
     function padTable(rows: any [][]) {
       let numCols = rows[0].length;
       let maxColWidths = new Uint32Array(numCols);
@@ -167,14 +167,14 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     let report = this.state.report;
     let summaryHeaders = ["PSNR", "PSNR Cb", "PSNR Cr", "PSNR HVS", "SSIM", "MS SSIM", "CIEDE 2000"];
     let summaryRows = [summaryHeaders];
-    summaryRows.push(summaryHeaders.map(name => report.average[name].toFixed(2)));
+    summaryRows.push(summaryHeaders.map(name => report.average[name].toFixed(4)));
     padTable(summaryRows);
 
     let text = report.a.id + " -> " + report.b.id + "\n\n";
     text += summaryRows.map(row => row.join(" | ")).join("\n");
 
     function toRow(video: string, data) {
-      return [video].concat(report.metricNames.map(name => data[name].toFixed(2)));
+      return [video].concat(report.metricNames.map(name => data[name].toFixed(4)));
     }
     let rowHeaders = ["Video"].concat(report.metricNames);
     let rows = [rowHeaders];
@@ -195,7 +195,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     rows.splice(1, 0, rowHeaders.map(() => "---:"));
     padTable(rows);
     text += rows.map(row => `| ${row.join(" | ")} |`).join("\n");
-    copyToClipboard(text);
+    this.setState({textReport: text} as any);
   }
   render() {
     // console.debug("Rendering BDRateReport");
@@ -228,11 +228,13 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     for (let video in report.metrics) {
       rows.push(toRow(video, report.metrics[video]));
     }
+    let textReport = this.state.textReport ? <pre>{this.state.textReport}</pre> : null;
     return <Panel header={`BD Rate Report ${report.a.selectedName + " " + report.a.id} → ${report.b.selectedName + " " + report.b.id}`}>
       <div style={{ paddingBottom: 8, paddingTop: 4 }}>
         <Button active={this.state.reversed} onClick={this.onReverseClick.bind(this)} >Reverse</Button>{' '}
-        <Button active={this.state.reversed} onClick={this.onCopyToClipboardClick.bind(this)} >Copy to Clipboard</Button>
+        <Button onClick={this.onTextReportClick.bind(this)} >Get Text Report</Button>
       </div>
+      {textReport}
       <Table striped bordered condensed hover style={{width: "100%"}}>
         <thead>
           <tr>
