@@ -53,6 +53,10 @@ function check_key(req,res,next) {
   }
 };
 
+function generate_list() {
+  cp.exec('node generate_list.js');
+}
+
 const binaries = {
   'daala':['examples/encoder_example'],
   'x264': ['x264'],
@@ -136,7 +140,7 @@ function add_to_run_queue(job) {
     console.log(body);
   });
   fs.writeFile('runs/'+job.run_id+'/status.txt','waiting');
-  cp.exec('node generate_list.js');
+  generate_list();
 }
 
 express.static.mime.define({'text/plain': ['out']});
@@ -353,7 +357,7 @@ app.post('/submit/job',function(req,res) {
   fs.writeFile('runs/'+job.run_id+'/status.txt','new');
   build_job_queue.push(job);
   process_build_queue();
-  cp.exec('node generate_list.js');
+  generate_list();
   res.send('ok');
 });
 
@@ -372,7 +376,7 @@ app.post('/submit/cancel',function(req,res) {
     res.send('ok');
   });
   fs.writeFile('runs/'+run_id+'/status.txt','cancelled');
-  cp.exec('node generate_list.js');
+  generate_list();
 });
 
 app.post('/submit/restart', function(req,res) {
