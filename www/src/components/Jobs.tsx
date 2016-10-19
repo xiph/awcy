@@ -125,6 +125,7 @@ export class JobsComponent extends React.Component<JobsProps, {
     let commands = this.props.showCommands ? <div style={{ width: "100%", paddingBottom: "10px" }}>
         <Button bsSize="small" bsStyle="success" disabled={!appStore.isLoggedIn} onClick={this.onSubmitNewJobClick.bind(this)}>Submit New Job</Button>
       </div> : null;
+    let selectedJobs = this.props.jobs.getSelectedJobs();
     return <div>
       {commands}
       {filters}
@@ -150,7 +151,8 @@ export class JobsComponent extends React.Component<JobsProps, {
             }
             return true;
           }).map((job: Job) => {
-            return <JobComponent detailed={this.props.detailed} key={job.id} job={job} onCancel={this.onCancelJob.bind(this)}></JobComponent>
+            let disabled = selectedJobs.length && selectedJobs[0].task != job.task;
+            return <JobComponent disabled={disabled} detailed={this.props.detailed} key={job.id} job={job} onCancel={this.onCancelJob.bind(this)}></JobComponent>
           })}
         </ListGroup>
       </div>
