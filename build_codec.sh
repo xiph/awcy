@@ -35,11 +35,16 @@ case $CODEC in
     ;;
   av1 | av1-rt)
     pushd $CODEC
+    echo -- Starting x86_64 Build --
     ./configure --enable-av1 --disable-unit-tests --disable-docs $BUILD_OPTIONS
     make
     mkdir -p x86_64
     mv aomenc aomdec x86_64/
+    echo -- Finished x86_64 Build --
+    echo -- Starting Analyzer Build --
     ../build_av1_analyzer.sh || true
+    echo -- Finished Analyzer Build --
+    echo Note: Analyzer errors will not prevent the run from completing.
     mv x86_64/* ./
     popd
     ;;
