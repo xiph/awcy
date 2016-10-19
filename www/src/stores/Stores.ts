@@ -25,6 +25,7 @@ export class AnalyzeFile extends Action {
 import { AnalyzerComponent } from "../components/Widgets";
 import { Promise } from "es6-promise"
 import { AsyncEvent } from 'ts-events';
+declare var tinycolor: any;
 
 // let baseUrl = "https://arewecompressedyet.com/";
 export let baseUrl = "https://beta.arewecompressedyet.com/";
@@ -299,6 +300,13 @@ export function metricNameToReportFieldIndex(name: string) {
   return 3 + metricNames.indexOf(name);
 }
 
+function parseBoolean(v) {
+  if (typeof v === "string") {
+    return v == "on" || v == "true";
+  }
+  return !!v;
+}
+
 export class JobProgress {
   constructor(
     public value: number,
@@ -402,11 +410,15 @@ export class Job {
     return fileExists(baseUrl + `runs/${this.id}/${this.task}/total.out`);
   }
 
+  isComparableWith(other: Job) {
+    return this.task == other.task && this.qualities == other.qualities;
+  }
+
   static fromJSON(json: any) {
     let job = new Job();
     job.id = json.run_id;
     job.nick = json.nick;
-    job.qualities = json.qualities;
+    job.qualities = json.qualities || "";
     job.buildOptions = json.build_options;
     job.codec = json.codec;
     job.commit = json.commit;
@@ -414,6 +426,8 @@ export class Job {
     job.task = json.task;
     job.taskType = json.task_type;
     job.status = json.status;
+    job.saveEncodedFiles = parseBoolean(json.save_encode);
+    job.runABCompare = parseBoolean(json.ab_compare);
     return job;
   }
 
@@ -516,6 +530,15 @@ function getColorForString(s: string): string {
   return colorPool[t % colorPool.length];
 }
 
+let randomColorPool = []
+export function getRandomColorForString(s: string): string {
+  let t = hashString(s);
+  if (!randomColorPool[t]) {
+    randomColorPool[t] = tinycolor.random().toString();
+  }
+  return randomColorPool[t];
+}
+
 let selectedNamePool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 export class AppStore {
   jobs: Jobs;
@@ -534,7 +557,7 @@ export class AppStore {
       if (action instanceof SelectJob) {
         let job = action.job;
         let selectedJobs = jobs.getSelectedJobs();
-        if (selectedJobs.length && selectedJobs[0].task != job.task) {
+        if (selectedJobs.length && !selectedJobs[0].isComparableWith(job)) {
           console.error(`Cannot select ${job.id} because it doesn't match other selected jobs.`);
           return;
         }

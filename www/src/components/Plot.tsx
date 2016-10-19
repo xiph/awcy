@@ -742,7 +742,7 @@ export class ScatterPlot<P extends ScatterPlotProps, S extends ScatterPlotState>
     let r = this.ratio;
     let series = this.state.series;
 
-    let p = 4 * r;
+    let p = 2 * r;
     let w = 12 * r;
     let h = 12 * r;
 

@@ -11,7 +11,7 @@ import { AnalyzerVideoSelectorComponent, AnalyzerComponent } from "./Widgets";
 import { JobComponent } from "./Job";
 import { JobLogComponent } from "./JobLog";
 
-import { appStore, shallowEquals, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex } from "../stores/Stores";
+import { getRandomColorForString, appStore, shallowEquals, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex } from "../stores/Stores";
 declare var google: any;
 declare var tinycolor: any;
 declare var require: any;
@@ -60,28 +60,39 @@ export class FullReportComponent extends React.Component<void, {
     let series = [];
     let jobs = appStore.jobs.getSelectedJobs();
     let reportFieldIndex = metricNameToReportFieldIndex(metric);
-    jobs.forEach(job => {
+    let fit = this.state.fit;
+    let log = this.state.log;
+    function addSeries(job, name, seriesName, color) {
       let values = [];
       job.report[name].forEach(row => {
         let bitRate = (row[ReportField.Size] * 8) / row[ReportField.Pixels];
         let quality = row[reportFieldIndex];
         values.push([bitRate, quality]);
-      })
+      });
       sortArray(values, 0);
       series.push({
-        name: job.selectedName,
+        name: seriesName,
         values: values,
-        color: job.color,
+        color: color(job, name),
         xAxis: {
-          min: this.state.fit ? undefined : 0.001,
-          max: this.state.fit ? undefined : 1,
-          log: this.state.log
+          min: fit ? undefined : 0.001,
+          max: fit ? undefined : 1,
+          log: log
         },
         yAxis: {
-          min: this.state.fit ? undefined : 0,
-          max: this.state.fit ? undefined : 50
+          min: fit ? undefined : 0,
+          max: fit ? undefined : 50
         }
       });
+    }
+    jobs.forEach(job => {
+      if (name == "All") {
+        for (let name in job.report) {
+          addSeries(job, name, job.selectedName + " " + name, (job, name) => getRandomColorForString(name));
+        }
+      } else {
+        addSeries(job, name, job.selectedName, (job, name) => job.color);
+      }
     });
     return series;
   }
@@ -102,7 +113,7 @@ export class FullReportComponent extends React.Component<void, {
     let headers = <th key={this.state.metric} className="tableHeader">{metric}</th>
     let rows, cols;
     let plotWidth = 940;
-    let plotHeight = 400;
+    let plotHeight = 500;
     rows = [
       <td style={{ padding: 0 }}>
         <BDRatePlot width={plotWidth} height={plotHeight} series={this.getSeries(video, metric)} />

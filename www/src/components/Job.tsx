@@ -119,7 +119,7 @@ export class JobComponent extends React.Component<JobProps, {
       backgroundColor = "#fff4f4";
     }
     function keyValue(key, value) {
-      return <div key={key}><span className="tinyJobValue">{key}: </span><span className="tinyGrayJobValue">{value}</span></div>
+      return <div key={key}><span className="tinyJobValue">{key}: </span><span className="tinyGrayJobValue">{String(value)}</span></div>
     }
 
     let details = [];
