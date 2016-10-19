@@ -299,6 +299,13 @@ export function metricNameToReportFieldIndex(name: string) {
   return 3 + metricNames.indexOf(name);
 }
 
+function parseBoolean(v) {
+  if (typeof v === "string") {
+    return v == "on" || v == "true";
+  }
+  return !!v;
+}
+
 export class JobProgress {
   constructor(
     public value: number,
@@ -418,6 +425,8 @@ export class Job {
     job.task = json.task;
     job.taskType = json.task_type;
     job.status = json.status;
+    job.saveEncodedFiles = parseBoolean(json.save_encode);
+    job.runABCompare = parseBoolean(json.ab_compare);
     return job;
   }
 
