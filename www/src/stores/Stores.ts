@@ -533,6 +533,11 @@ export class AppStore {
     AppDispatcher.register((action) => {
       if (action instanceof SelectJob) {
         let job = action.job;
+        let selectedJobs = jobs.getSelectedJobs();
+        if (selectedJobs.length && selectedJobs[0].task != job.task) {
+          console.error(`Cannot select ${job.id} because it doesn't match other selected jobs.`);
+          return;
+        }
         job.selected = true;
         job.selectedName = selectedNamePool.shift();
         job.color = getColorForString(job.id);

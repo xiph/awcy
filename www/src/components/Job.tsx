@@ -4,12 +4,13 @@ import { hashString, appStore, AppDispatcher, SelectJob, DeselectJob, CancelJob,
 
 interface JobProps {
   job: Job;
+  disabled?: boolean;
   detailed?: boolean;
   onCancel?: (job: Job) => void;
 }
 
 export class JobComponent extends React.Component<JobProps, {
-    job: Job,
+    job: Job;
     showCancelModal: boolean;
     hasReport: undefined | boolean;
     hasAnalyzer: undefined | boolean;
@@ -87,7 +88,7 @@ export class JobComponent extends React.Component<JobProps, {
         cancel = <Button bsSize="small" bsStyle="danger" disabled={!appStore.isLoggedIn} onClick={this.onCancelClick.bind(this)}>Cancel</Button>;
       }
     }
-    select = <Button bsSize="small" onClick={this.onToggleSelectionClick.bind(this)}>{job.selected ? "Deselect " + job.selectedName : "Select"}</Button>
+    select = <Button disabled={this.props.disabled} bsSize="small" onClick={this.onToggleSelectionClick.bind(this)}>{job.selected ? "Deselect " + job.selectedName : "Select"}</Button>
     let jobStatus = null;
     if (job.status !== JobStatus.Completed) {
       jobStatus = <div className="jobWarning">Job {JobStatus[job.status]}.</div>
