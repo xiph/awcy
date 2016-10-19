@@ -37,6 +37,7 @@ export class JobSelectorComponent extends React.Component<JobSelectorProps, {
     let videos = Object.keys(jobs[0].report).map(name => {
       return { value: name, label: name };
     });
+    videos.unshift({ value: "All", label: "All" });
     this.setState({videos} as any);
   }
   componentWillMount() {

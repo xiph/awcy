@@ -25,6 +25,7 @@ export class AnalyzeFile extends Action {
 import { AnalyzerComponent } from "../components/Widgets";
 import { Promise } from "es6-promise"
 import { AsyncEvent } from 'ts-events';
+declare var tinycolor: any;
 
 // let baseUrl = "https://arewecompressedyet.com/";
 export let baseUrl = "https://beta.arewecompressedyet.com/";
@@ -527,6 +528,15 @@ export function hashString(s: string) {
 function getColorForString(s: string): string {
   let t = hashString(s);
   return colorPool[t % colorPool.length];
+}
+
+let randomColorPool = []
+export function getRandomColorForString(s: string): string {
+  let t = hashString(s);
+  if (!randomColorPool[t]) {
+    randomColorPool[t] = tinycolor.random().toString();
+  }
+  return randomColorPool[t];
 }
 
 let selectedNamePool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
