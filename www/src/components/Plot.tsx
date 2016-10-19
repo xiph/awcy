@@ -405,8 +405,8 @@ export class Rectangle {
 }
 
 interface PlotProps {
-  width: number;
-  height: number;
+  width: number | string;
+  height: number | string;
 }
 
 interface PlotState {}
@@ -477,7 +477,23 @@ export class Plot<P extends PlotProps, S extends PlotState> extends React.Compon
     h && this.drawDeviceLine(new Point(0, dp.y), new Point(this.device.w, dp.y));
     v && this.drawDeviceLine(new Point(dp.x, 0), new Point(dp.x, this.device.h));
   }
-  resetDeviceAndViewport(w: number, h: number) {
+  resetDeviceAndViewport(width: number | string, height: number | string) {
+    let w = 0;
+    let h = 0;
+    function parseNumber(v: number | string, parentV: number) {
+      if (typeof v === "number") {
+        return v;
+      } else if (typeof v === "string") {
+        if (v[v.length - 1] === "%") {
+          let p = Number(v.substr(0, v.length - 1));
+          return (p / 100) * parentV | 0;
+        }
+        return parseInt(v, 10);
+      }
+    }
+    w = parseNumber(width, this.canvas.parentElement.offsetWidth);
+    h = parseNumber(height, this.canvas.parentElement.offsetHeight);
+    console.log(this.canvas.parentElement.offsetWidth);
     this.device = new Rectangle(0, 0, w * this.ratio, h * this.ratio);
     this.canvas.width = this.device.w;
     this.canvas.height = this.device.h;

@@ -112,11 +112,10 @@ export class FullReportComponent extends React.Component<void, {
     let jobs = appStore.jobs.getSelectedJobs();
     let headers = <th key={this.state.metric} className="tableHeader">{metric}</th>
     let rows, cols;
-    let plotWidth = 940;
     let plotHeight = 500;
     rows = [
-      <td style={{ padding: 0 }}>
-        <BDRatePlot width={plotWidth} height={plotHeight} series={this.getSeries(video, metric)} />
+      <td style={{ padding: 0, width: "100%" }}>
+        <BDRatePlot width={"100%"} height={plotHeight} series={this.getSeries(video, metric)} />
       </td>
     ];
     let tabs = null;
@@ -134,7 +133,7 @@ export class FullReportComponent extends React.Component<void, {
 
     return <div key={video}>
       <Panel className="videoReport" header={video}>
-        <Table condensed bordered={false}>
+        <Table condensed bordered={false} style={{width: "100%"}}>
           <thead>
             <tr>
               {headers}
@@ -181,7 +180,7 @@ export class FullReportComponent extends React.Component<void, {
 
     let job = jobs[0];
     let metrics = [this.state.metric];
-    return <div style={{ width: "980px" }}>
+    return <div>
       <Panel>
         {selectedJobs}
       </Panel>
