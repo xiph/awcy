@@ -402,11 +402,15 @@ export class Job {
     return fileExists(baseUrl + `runs/${this.id}/${this.task}/total.out`);
   }
 
+  isComparableWith(other: Job) {
+    return this.task == other.task && this.qualities == other.qualities;
+  }
+
   static fromJSON(json: any) {
     let job = new Job();
     job.id = json.run_id;
     job.nick = json.nick;
-    job.qualities = json.qualities;
+    job.qualities = json.qualities || "";
     job.buildOptions = json.build_options;
     job.codec = json.codec;
     job.commit = json.commit;
@@ -534,7 +538,7 @@ export class AppStore {
       if (action instanceof SelectJob) {
         let job = action.job;
         let selectedJobs = jobs.getSelectedJobs();
-        if (selectedJobs.length && selectedJobs[0].task != job.task) {
+        if (selectedJobs.length && !selectedJobs[0].isComparableWith(job)) {
           console.error(`Cannot select ${job.id} because it doesn't match other selected jobs.`);
           return;
         }
