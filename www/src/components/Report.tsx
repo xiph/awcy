@@ -186,6 +186,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     text += rows.map(row => row.join(" | ")).join("\n");
 
     // Markdown
+    /*
     text += "\n\nMarkdown Version\n\n";
     summaryRows.splice(1, 0, summaryHeaders.map(() => "---:"));
     padTable(summaryRows);
@@ -196,6 +197,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     padTable(rows);
     text += rows.map(row => `| ${row.join(" | ")} |`).join("\n");
     this.setState({textReport: text} as any);
+    */
   }
   render() {
     // console.debug("Rendering BDRateReport");
