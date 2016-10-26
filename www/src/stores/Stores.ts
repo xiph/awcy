@@ -453,6 +453,14 @@ export class Jobs {
   jobs: Job[] = [];
   onChange = new AsyncEvent<string>();
   constructor() {
+    this.onChange.attach(this, this.updateURL);
+  }
+  updateURL() {
+    let url = location.protocol + '//' + location.host + location.pathname + "?";
+    url += this.jobs.filter(job => job.selected).map(job => {
+      return "job=" + encodeURIComponent(job.id);
+    }).join("&");
+    window.history.replaceState(null,null,url);
   }
   addJobInternal(job: Job) {
     if (this.jobs.indexOf(job) >= 0) {
