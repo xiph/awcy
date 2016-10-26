@@ -27,8 +27,7 @@ import { Promise } from "es6-promise"
 import { AsyncEvent } from 'ts-events';
 declare var tinycolor: any;
 
-// let baseUrl = "https://arewecompressedyet.com/";
-export let baseUrl = "https://beta.arewecompressedyet.com/";
+export let baseUrl = window.location.origin+'/';
 var inMockMode = false;
 
 export function shallowEquals(a, b): boolean {
