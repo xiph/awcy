@@ -87,12 +87,14 @@ export class JobsComponent extends React.Component<JobsProps, {
       if (uniqueAuthors.indexOf(job.nick) < 0) {
         uniqueAuthors.push(job.nick);
       }
-      let flags = job.buildOptions.trim().split(" ");
-      flags.forEach(flag => {
-        if (flag && uniqueBuildsFlags.indexOf(flag) < 0) {
-          uniqueBuildsFlags.push(flag);
-        }
-      })
+      if (job.buildOptions) {
+        let flags = job.buildOptions.trim().split(" ");
+        flags.forEach(flag => {
+          if (flag && uniqueBuildsFlags.indexOf(flag) < 0) {
+            uniqueBuildsFlags.push(flag);
+          }
+        })
+      }
     });
     configOptions = uniqueBuildsFlags.map(option => {
       return { value: option, label: option };
