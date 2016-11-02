@@ -494,7 +494,7 @@ export class Jobs {
     }
   }
   getSelectedJobs(status = JobStatus.All): Job [] {
-    return this.jobs.filter(job => (job.selected && job.status == status).sort((a, b) => {
+    return this.jobs.filter(job => (job.selected && (job.status & status))).sort((a, b) => {
       return a.selectedName.localeCompare(b.selectedName);
     });
   }
