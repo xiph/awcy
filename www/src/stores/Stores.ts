@@ -44,10 +44,11 @@ export function shallowEquals(a, b): boolean {
   });
 }
 
-function zip<T>(a: string[], b: T[]): { [index: string]: T } {
+function zip<T>(a: string[], b: T[], ignoreNull = true): { [index: string]: T } {
   let o = {};
   for (let i = 0; i < a.length; i++) {
-    o[a[i]] = b[i];
+    let hasNull = a[i] === null || b[i] === null;
+    if (!hasNull || !ignoreNull) o[a[i]] = b[i];
   }
   return o;
 }
@@ -370,7 +371,7 @@ export class Job {
     return new Promise((resolve, reject) => {
       loadXHR(path, (text) => {
         resolve(text);
-      }, () => reject(), "text");
+      }, () => resolve(null), "text");
     });
   }
 
@@ -396,7 +397,11 @@ export class Job {
       return baseUrl + `runs/${this.id}/${this.task}/${name}-daala.out`;
     }));
     return this.loadFiles(paths).then(textArray => {
-      let data = textArray.map(text => text.split("\n").filter(line => !!line).map(line => line.trim().split(" ").map(value => Number(value))));
+      function parse(text) {
+        if (text === null) return null;
+        return text.split("\n").filter(line => !!line).map(line => line.trim().split(" ").map(value => Number(value)))
+      }
+      let data = textArray.map(parse);
       return this.report = zip(names, data);
     });
   }
