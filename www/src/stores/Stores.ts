@@ -594,7 +594,7 @@ export class AppStore {
         jobs.onChange.post("");
       } else if (action instanceof AnalyzeFile) {
         this.analyzedFiles.push({job: null, decoderUrl: "http://aomanalyzer.org/bin/decoder.js", videoUrl: "crosswalk_30.ivf"})
-        this.onAnalyzedFilesChange.post("change");
+        this.onAnalyzedFilesChanged.post("change");
       }
     });
   }
