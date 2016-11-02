@@ -3,8 +3,6 @@
 import fs = require('fs-extra');
 import path = require('path');
 
-const jobs = [];
-
 const run_to_update = process.argv[2];
 
 function create_list_entry(run_id) {
@@ -54,11 +52,12 @@ if (run_to_update) {
     }
   }
   if(!found_job) {
-    jobs.push(new_job);
+    list.push(new_job);
   }
   fs.writeFileSync('list.json.new',JSON.stringify(list));
   fs.renameSync('list.json.new','list.json');
 } else {
+  const jobs = [];
   // full update
   fs.readdirSync('runs').forEach(function(run_id) {
     try {
