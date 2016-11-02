@@ -5,48 +5,71 @@ import path = require('path');
 
 const jobs = [];
 
-fs.readdirSync('runs').forEach(function(run_id) {
-  if (erases_old_images(run_id)) return;
+const run_to_update = process.argv[2];
 
+function create_list_entry(run_id) {
   // TODO: define a typescript interface for info.json
   let info: any = {};
+
+  const infoFile = fs.readFileSync('runs/'+run_id+'/info.json').toString();
+  info = JSON.parse(infoFile);
+
+  const stat = fs.statSync('runs/'+run_id);
+  let failed = false;
+  let status = 'completed';
   try {
-    const infoFile = fs.readFileSync('runs/'+run_id+'/info.json').toString();
-    info = JSON.parse(infoFile);
-
-    const stat = fs.statSync('runs/'+run_id);
-    let failed = false;
-    let status = 'completed';
+    const statusFile = fs.readFileSync('runs/'+run_id+'/status.txt','utf8');
+    status = statusFile.trim();
+  } catch (e) {
     try {
-      const statusFile = fs.readFileSync('runs/'+run_id+'/status.txt','utf8');
-      status = statusFile.trim();
-    } catch (e) {
-      try {
-        const total_stat = fs.statSync('runs/'+run_id+'/'+info['task']);
-      } catch(e) {
-        failed = true;
-        status = 'failed';
-      }
+      const total_stat = fs.statSync('runs/'+run_id+'/'+info['task']);
+    } catch(e) {
+      failed = true;
+      status = 'failed';
     }
+  }
 
-    const job = {
-      'run_id': run_id,
-      'tasks': fs.readdirSync('runs/'+run_id),
-      'date': stat.mtime,
-      'info': info,
-      'status': status,
-      'failed': failed
+  const job = {
+    'run_id': run_id,
+    'tasks': fs.readdirSync('runs/'+run_id),
+    'date': stat.mtime,
+    'info': info,
+    'status': status,
+    'failed': failed
+  }
+
+  return job;
+}
+
+if (run_to_update) {
+  // incremental update
+  console.log('Performing incremental update on',run_to_update);
+  const list = JSON.parse(fs.readFileSync('list.json').toString());
+  const new_job = create_list_entry(run_to_update);
+  for (var job_num in list) {
+    if (list[job_num].run_id == new_job.run_id) {
+      list[job_num] = new_job;
     }
-    jobs.push(job);
-  } catch (e) {};
+  }
+  fs.writeFileSync('list.json.new',JSON.stringify(list));
+  fs.renameSync('list.json.new','list.json');
+} else {
+  // full update
+  fs.readdirSync('runs').forEach(function(run_id) {
+    try {
+      if (erases_old_images(run_id)) return;
+      const job = create_list_entry(run_id);
+      jobs.push(job);
+    } catch (e) {};
+  });
 
-});
+  fs.writeFileSync('list.json.new',JSON.stringify(jobs));
+  fs.renameSync('list.json.new','list.json');
 
-fs.writeFileSync('list.json.new',JSON.stringify(jobs));
-fs.renameSync('list.json.new','list.json');
+  const file_structure = read_ab_image_paths('runs');
+  fs.writeFile('ab_paths.json', JSON.stringify(file_structure, null, 4));
 
-const file_structure = read_ab_image_paths('runs');
-fs.writeFile('ab_paths.json', JSON.stringify(file_structure, null, 4));
+}
 
 // The structure is that each folder contains an array of files.
 // Any folder found will be a new object with a new array inside it.
