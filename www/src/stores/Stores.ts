@@ -23,7 +23,7 @@ export class AnalyzeFile extends Action {
 
 
 import { AnalyzerComponent } from "../components/Widgets";
-import { Promise } from "es6-promise"
+import { Promise } from "es6-promise";
 import { AsyncEvent } from 'ts-events';
 declare var tinycolor: any;
 
