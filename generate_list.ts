@@ -46,10 +46,15 @@ if (run_to_update) {
   console.log('Performing incremental update on',run_to_update);
   const list = JSON.parse(fs.readFileSync('list.json').toString());
   const new_job = create_list_entry(run_to_update);
+  var found_job = false;
   for (var job_num in list) {
     if (list[job_num].run_id == new_job.run_id) {
       list[job_num] = new_job;
+      found_job = true;
     }
+  }
+  if(!found_job) {
+    jobs.push(new_job);
   }
   fs.writeFileSync('list.json.new',JSON.stringify(list));
   fs.renameSync('list.json.new','list.json');
