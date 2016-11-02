@@ -47,7 +47,7 @@ export class FullReportComponent extends React.Component<void, {
     appStore.jobs.onChange.detach(this.onChange);
   }
   load() {
-    let jobs = appStore.jobs.getSelectedJobs();
+    let jobs = appStore.jobs.getSelectedJobs(JobStatus.Completed);
     Promise.all(jobs.map(job => {
       return job.loadReport();
     })).catch(() => {
@@ -58,7 +58,7 @@ export class FullReportComponent extends React.Component<void, {
   }
   getSeries(name: string, metric: string): ScatterPlotSeries[] {
     let series = [];
-    let jobs = appStore.jobs.getSelectedJobs();
+    let jobs = appStore.jobs.getSelectedJobs(JobStatus.Completed);
     let reportFieldIndex = metricNameToReportFieldIndex(metric);
     let fit = this.state.fit;
     let log = this.state.log;
@@ -109,7 +109,7 @@ export class FullReportComponent extends React.Component<void, {
     this.setState({ stack: !this.state.stack } as any);
   }
   renderVideoReport(video: string, metric: string, showTabs = true) {
-    let jobs = appStore.jobs.getSelectedJobs();
+    let jobs = appStore.jobs.getSelectedJobs(JobStatus.Completed);
     let headers = <th key={this.state.metric} className="tableHeader">{metric}</th>
     let rows, cols;
     let plotHeight = 500;
@@ -150,7 +150,7 @@ export class FullReportComponent extends React.Component<void, {
   }
   render() {
     console.debug("Rendering Full Report");
-    let jobs = appStore.jobs.getSelectedJobs();
+    let jobs = appStore.jobs.getSelectedJobs(JobStatus.Completed);
     if (jobs.length == 0) {
       return <Panel>
         No runs selected.

@@ -493,8 +493,8 @@ export class Jobs {
       this.onChange.post("job-removed");
     }
   }
-  getSelectedJobs(): Job [] {
-    return this.jobs.filter(job => job.selected).sort((a, b) => {
+  getSelectedJobs(status = JobStatus.All): Job [] {
+    return this.jobs.filter(job => (job.selected && job.status == status).sort((a, b) => {
       return a.selectedName.localeCompare(b.selectedName);
     });
   }
@@ -594,7 +594,7 @@ export class AppStore {
         jobs.onChange.post("");
       } else if (action instanceof AnalyzeFile) {
         this.analyzedFiles.push({job: null, decoderUrl: "http://aomanalyzer.org/bin/decoder.js", videoUrl: "crosswalk_30.ivf"})
-        this.onAnalyzedFilesChanged.post("change");
+        this.onAnalyzedFilesChange.post("change");
       }
     });
   }
