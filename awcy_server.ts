@@ -55,7 +55,7 @@ function check_key(req,res,next) {
 
 function generate_list(run_id) {
   if (run_id) {
-    cp.exec('node',['generate_list.js',run_id]);
+    cp.execFile('node',['generate_list.js',run_id]);
   } else {
     cp.exec('node generate_list.js');
   }
