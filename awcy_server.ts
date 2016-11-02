@@ -53,8 +53,12 @@ function check_key(req,res,next) {
   }
 };
 
-function generate_list() {
-  cp.exec('node generate_list.js');
+function generate_list(run_id) {
+  if (run_id) {
+    cp.exec('node',['generate_list.js',run_id]);
+  } else {
+    cp.exec('node generate_list.js');
+  }
 }
 
 const binaries = {
@@ -140,7 +144,7 @@ function add_to_run_queue(job) {
     console.log(body);
   });
   fs.writeFile('runs/'+job.run_id+'/status.txt','waiting');
-  generate_list();
+  generate_list(job.run_id);
 }
 
 express.static.mime.define({'text/plain': ['out']});
@@ -237,7 +241,7 @@ function check_for_completed_runs() {
           ircclient.say(channel,last_runs[runid]['info']['nick']+': Finished '+runid);
         }
       }
-      if (list_updated) generate_list();
+      if (list_updated) generate_list(null);
       last_runs = current_runs;
     }
   });
@@ -361,7 +365,7 @@ app.post('/submit/job',function(req,res) {
   fs.writeFile('runs/'+job.run_id+'/status.txt','new');
   build_job_queue.push(job);
   process_build_queue();
-  generate_list();
+  generate_list(job.run_id);
   res.send('ok');
 });
 
@@ -380,7 +384,7 @@ app.post('/submit/cancel',function(req,res) {
     res.send('ok');
   });
   fs.writeFile('runs/'+run_id+'/status.txt','cancelled');
-  generate_list();
+  generate_list(run_id);
 });
 
 app.post('/submit/restart', function(req,res) {
