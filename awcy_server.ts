@@ -71,7 +71,8 @@ const binaries = {
   'vp10-rt': ['vpxenc','vpxdec'],
   'av1': ['aomenc','aomdec'],
   'av1-rt': ['aomenc','aomdec'],
-  'thor': ['build/Thorenc','build/Thordec']
+  'thor': ['build/Thorenc','build/Thordec'],
+  'thor-rt': ['build/Thorend','build/Thordec']
 };
 
 /* The build queue. Only one job can be built at a time. */
