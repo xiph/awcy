@@ -738,18 +738,21 @@ export class AppStore {
     });
   }
   loadStatus() {
-    loadXHR(baseUrl + "run_status.json", (json) => {
-      if (!json) return;
-      json.forEach(o => {
-        let job = this.findJob(o.run_id);
-        if (!job) return;
-        job.status = JobStatus.Running;
-        job.progress.value = o.completed;
-        job.progress.total = o.total;
-        job.loadLog(true);
-        job.onChange.post("updated status");
+    return new Promise((resolve, reject) => {
+      loadXHR(baseUrl + "run_status.json", (json) => {
+        if (!json) return;
+        json.forEach(o => {
+          let job = this.findJob(o.run_id);
+          if (!job) return;
+          job.status = JobStatus.Running;
+          job.progress.value = o.completed;
+          job.progress.total = o.total;
+          job.loadLog(true);
+          job.onChange.post("updated status");
+        });
+        this.jobs.onChange.post("updated status");
+        resolve(true);
       });
-      this.jobs.onChange.post("updated status");
     });
   }
   loadSets(): Promise<boolean> {
