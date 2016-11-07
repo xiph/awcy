@@ -28,6 +28,12 @@ export class SubmitJobFormComponent extends React.Component<{
     this.setState({ job } as any);
   }
   getValidationState(name?: string): "success" | "warning" | "error" {
+    function checkCli(cli: string) {
+      if (cli == "") return true;
+      return cli.split(" ").every(arg => {
+        return arg.indexOf("--") == 0;
+      });
+    }
     let job = this.state.job;
     switch (name) {
       case "all":
@@ -74,6 +80,10 @@ export class SubmitJobFormComponent extends React.Component<{
           }
         }
         break;
+      case "extra":
+        return checkCli(job.extraOptions) ? "success" : "warning";
+      case "build":
+        return checkCli(job.buildOptions) ? "success" : "warning";
     }
     return "error";
   }
