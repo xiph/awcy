@@ -157,14 +157,16 @@ export class SubmitJobFormComponent extends React.Component<{
         <Select placeholder="Set" value={this.state.set} options={setOptions} onChange={this.onChangeSet.bind(this)} />
       </FormGroup>
 
-      <FormGroup>
+      <FormGroup validationState={this.getValidationState("extra")}>
         <FormControl type="text" placeholder="Extra CLI Options"
           value={job.extraOptions} onChange={this.onInputChange.bind(this, "extraOptions")} />
+        <FormControl.Feedback />
       </FormGroup>
 
-      <FormGroup>
+      <FormGroup validationState={this.getValidationState("build")}>
         <FormControl type="text" placeholder="Extra Build Options"
           value={job.buildOptions} onChange={this.onInputChange.bind(this, "buildOptions")} />
+        <FormControl.Feedback />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("nick")}>
