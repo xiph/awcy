@@ -460,11 +460,14 @@ export class Jobs {
     this.onChange.attach(this, this.updateURL);
   }
   updateURL() {
-    let url = location.protocol + '//' + location.host + location.pathname + "?";
-    url += this.jobs.filter(job => job.selected).map(job => {
+    let baseurl = location.protocol + '//' + location.host + location.pathname + "?";
+    let url = baseurl + this.jobs.filter(job => job.selected).map(job => {
       return "job=" + encodeURIComponent(job.id);
     }).join("&");
-    window.history.replaceState(null,null,url);
+    if (baseurl != url) {
+      // only update history if jobs are selected (avoids setting history at page load)
+      window.history.replaceState(null,null,url);
+    }
   }
   addJobInternal(job: Job) {
     if (this.jobs.indexOf(job) >= 0) {
