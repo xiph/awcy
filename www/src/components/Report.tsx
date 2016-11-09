@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Checkbox, Panel, Table } from "react-bootstrap";
+import { Glyphicon, Checkbox, Panel, Table } from "react-bootstrap";
 import { Col, Row, Button } from "react-bootstrap";
 import { BDRateReport, Report, AppStore, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex} from "../stores/Stores";
 
@@ -66,6 +66,12 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
       <th key={name} className={tableHeaderClassName(name)}>{name}</th>
     );
 
+    let hasIvfs = this.props.name !== "Total";
+    if (hasIvfs) {
+      headers.unshift(<th className="tableToolHeader" key={"link-0"}></th>);
+      headers.unshift(<th className="tableToolHeader" key={"link-1"}></th>);
+    }
+
     let rows = [];
     let name = this.props.name;
     let jobVideoReport = this.state.jobReport ? this.state.jobReport[name] : null;
@@ -80,8 +86,16 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
       let cols = row.map((v, i) => {
         return <td key={i} className="tableValue">{formatNumber(v)}</td>
       });
-      rows.push(<tr key={row[0]}>{cols}</tr>);
+      let quality = row[0];
+      if (hasIvfs) {
+        let ivfUrl = this.props.job.ivfUrl(this.props.name, quality);
+        cols.unshift(<td key="link-0" className="tableValue"><a href={ivfUrl} alt="Download"><Glyphicon glyph="download-alt" /></a></td>)
+        let analyzerUrl = this.props.job.analyzerIvfUrl(this.props.name, quality);
+        cols.unshift(<td key="link-1" className="tableValue"><a href={analyzerUrl} alt="Analyze"><Glyphicon glyph="play" /></a></td>)
+      }
+      rows.push(<tr key={quality}>{cols}</tr>);
     });
+    let reportUrl = hasIvfs ? this.props.job.reportUrl(this.props.name) : this.props.job.totalReportUrl();
     let table = <div>
       <Table striped bordered condensed hover style={{width: "100%"}}>
         <thead>
@@ -93,6 +107,7 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
           {rows}
         </tbody>
       </Table>
+      <h5>Raw Data:</h5><a href={reportUrl}>{reportUrl}</a>
     </div>
     return table;
   }

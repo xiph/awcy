@@ -28,6 +28,7 @@ import { AsyncEvent } from 'ts-events';
 declare var tinycolor: any;
 
 export let baseUrl = window.location.origin+'/';
+export let analyzerBaseUrl = "http://aomanalyzer.org" + '/';
 var inMockMode = false;
 
 export function shallowEquals(a, b): boolean {
@@ -380,7 +381,24 @@ export class Job {
   }
 
 
-  report: Report = null
+  report: Report = null;
+
+  totalReportUrl(): string {
+    return baseUrl + `runs/${this.id}/${this.task}/total.out`;
+  }
+
+  reportUrl(name: string): string {
+    return baseUrl + `runs/${this.id}/${this.task}/${name}-daala.out`
+  }
+
+  ivfUrl(name: string, quality: number) {
+    return baseUrl + `runs/${this.id}/${this.task}/${name}-${quality}.ivf`;
+  }
+
+  analyzerIvfUrl(name: string, quality: number) {
+    return analyzerBaseUrl + `?file=${this.ivfUrl(name, quality)}`;
+  }
+
   loadReport(): Promise<{ [name: string]: any }> {
     if (this.report) {
       return Promise.resolve(this.report);
@@ -388,13 +406,13 @@ export class Job {
 
     // Total Report
     let names = ["Total"];
-    let paths = [baseUrl + `runs/${this.id}/${this.task}/total.out`];
+    let paths = [this.totalReportUrl()];
 
     // File Report
     names = names.concat(Job.sets[this.task].sources);
     paths = paths.concat(Job.sets[this.task].sources.map(name => {
       // TODO: Fix -daala suffix.
-      return baseUrl + `runs/${this.id}/${this.task}/${name}-daala.out`;
+      return this.reportUrl(name);
     }));
     return this.loadFiles(paths).then(textArray => {
       function parse(text) {
@@ -411,7 +429,7 @@ export class Job {
   }
 
   hasReport(): Promise<boolean> {
-    return fileExists(baseUrl + `runs/${this.id}/${this.task}/total.out`);
+    return fileExists(this.totalReportUrl());
   }
 
   isComparableWith(other: Job) {
