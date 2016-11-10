@@ -2,6 +2,7 @@ import { Promise } from "es6-promise"
 declare let DecoderModule: any;
 
 export module Analyzer {
+
   export enum PredictionMode {
     DC_PRED = 0,   // Average of above and left pixels
     V_PRED = 1,   // Vertical
@@ -301,6 +302,7 @@ export module Analyzer {
         });
         xhr.addEventListener("load", function () {
           if (xhr.status != 200) {
+            reject();
             return;
           }
           resolve(new Uint8Array(this.response));
@@ -325,6 +327,9 @@ export module Analyzer {
           };
           resolve(new Analyzer(DecoderModule(Module)));
         }
+        s.onerror = function() {
+          reject();
+        };
         s.setAttribute('src', url);
         document.body.appendChild(s);
       });

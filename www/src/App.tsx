@@ -15,7 +15,8 @@ import { DebugComponent } from "./components/Debug"
 
 import { appStore, AppStore, Job, JobStatus, SelectJob, AppDispatcher } from "./stores/Stores"
 
-import { AnalyzerComponent, ShareComponent, LoginComponent } from "./components/Widgets"
+import { ShareComponent, LoginComponent } from "./components/Widgets"
+import { AnalyzerComponent } from "./components/Analyzer"
 
 export class App extends React.Component<void, void> {
   constructor() {
