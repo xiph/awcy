@@ -71,8 +71,8 @@ const binaries = {
   'vp10-rt': ['vpxenc','vpxdec'],
   'av1': ['aomenc','aomdec'],
   'av1-rt': ['aomenc','aomdec'],
-  'thor': ['build/Thorenc','build/Thordec'],
-  'thor-rt': ['build/Thorenc','build/Thordec']
+  'thor': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt'],
+  'thor-rt': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt']
 };
 
 /* The build queue. Only one job can be built at a time. */
@@ -115,9 +115,15 @@ function process_build_queue() {
     });
     build_job_child_process.on('close', function(error) {
       if (error == 0) {
-        for (const binary of binaries[build_job.codec]) {
-          fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
-          fs.copySync(build_job.codec+'/'+binary,'runs/'+build_job.run_id+'/x86_64/'+binary);
+        try {
+          for (const binary of binaries[build_job.codec]) {
+            fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
+            fs.copySync(build_job.codec+'/'+binary,'runs/'+build_job.run_id+'/x86_64/'+binary);
+          }
+        } catch (e) {
+          console.log(e);
+          fs.appendFile('runs/'+build_job.run_id+'/output.txt',e);
+          error = 1;
         }
         try {
           fs.mkdirSync('runs/'+build_job.run_id+'/js');
@@ -125,11 +131,13 @@ function process_build_queue() {
         } catch (e) {
           /* no analyzer */
         }
-        add_to_run_queue(build_job);
-      } else {
+      }
+      if (error) {
         fs.writeFile('runs/'+build_job.run_id+'/status.txt','buildfailed');
         ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
-          ' '+config.base_url+'/runs/'+build_job.run_id+'/output.txt');
+                      ' '+config.base_url+'/runs/'+build_job.run_id+'/output.txt');
+      } else {
+        add_to_run_queue(build_job);
       }
       build_job_in_progress = false;
       build_job = undefined;
