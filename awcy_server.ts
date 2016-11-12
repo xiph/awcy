@@ -136,6 +136,7 @@ function process_build_queue() {
         fs.writeFile('runs/'+build_job.run_id+'/status.txt','buildfailed');
         ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
                       ' '+config.base_url+'/runs/'+build_job.run_id+'/output.txt');
+        generate_list(build_job.run_id);
       } else {
         add_to_run_queue(build_job);
       }
