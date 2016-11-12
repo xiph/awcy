@@ -281,8 +281,7 @@ export class BDRateReport {
     videos.forEach((video) => {
       report.metrics[video] = toMap(json.metric_data[video], names)
     });
-    // TODO AWCY returns an extra column.
-    report.metricNames = names.slice(0, 10);
+    report.metricNames = names;
     return report;
   }
 }
@@ -290,7 +289,7 @@ export class BDRateReport {
 export let metricNames = [
   "PSNR Y", "PSNR HVS", "SSIM", "FAST SSIM", "CIEDE 2000",
   "PSNR Cb", "PSNR Cr", "APSNR Y", "APSNR Cb", "APSNR Cr",
-  "MSSSIM", "Time"
+  "MS SSIM", "Time"
 ];
 
 export let reportFieldNames = [
