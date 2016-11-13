@@ -62,7 +62,7 @@ function generate_list(run_id) {
 }
 
 const binaries = {
-  'daala':['examples/encoder_example'],
+  'daala':['examples/encoder_example','examples/dump_video'],
   'x264': ['x264'],
   'x265': ['build/linux/x265'],
   'vp8': ['vpxenc','vpxdec'],
