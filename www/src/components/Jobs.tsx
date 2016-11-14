@@ -125,6 +125,7 @@ export class JobsComponent extends React.Component<JobsProps, {
     let jobs = this.props.jobs.jobs;
     let filters = this.props.showFilters ? this.makeFilters() : null;
     let commands = this.props.showCommands ? <div style={{ width: "100%", paddingBottom: "10px" }}>
+        {appStore.isLoggedIn ? null : <div className="warning">You must be logged in to submit jobs.</div>}
         <Button bsSize="small" bsStyle="success" disabled={!appStore.isLoggedIn} onClick={this.onSubmitNewJobClick.bind(this)}>Submit New Job</Button>
       </div> : null;
     let selectedJobs = this.props.jobs.getSelectedJobs();
