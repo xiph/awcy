@@ -124,7 +124,7 @@ export class JobsComponent extends React.Component<JobsProps, {
   makeJobList() {
     let jobs = this.props.jobs.jobs;
     let filters = this.props.showFilters ? this.makeFilters() : null;
-    let commands = this.props.showCommands ? <div style={{ width: "100%", paddingBottom: "10px" }}>
+    let commands = (this.props.showCommands && !this.state.showSubmitJobForm) ? <div style={{ width: "100%", paddingBottom: "10px" }}>
         {appStore.isLoggedIn ? null : <div className="warning">You must be logged in to submit jobs.</div>}
         <Button bsSize="small" bsStyle="success" disabled={!appStore.isLoggedIn} onClick={this.onSubmitNewJobClick.bind(this)}>Submit New Job</Button>
       </div> : null;
@@ -171,10 +171,9 @@ export class JobsComponent extends React.Component<JobsProps, {
   }
   render() {
     console.debug("Rendering Job List");
-    if (this.state.showSubmitJobForm) {
-      return <SubmitJobFormComponent onCreate={this.onSubmitJob.bind(this)} onCancel={this.hideSubmitJobForm.bind(this)} />
-    } else {
-      return this.makeJobList();
-    }
+    return <div>
+      { this.state.showSubmitJobForm ? <SubmitJobFormComponent onCreate={this.onSubmitJob.bind(this)} onCancel={this.hideSubmitJobForm.bind(this)} /> : null }
+      { this.makeJobList() }
+    </div>
   }
 }
