@@ -154,7 +154,6 @@ if info_data:
             for m in range(0,len(met_index)):
                 category[m] = mean([metric_data[x][m] for x in sets[task]['categories'][category_name]])
             categories[category_name] = category
-        print(categories)
 
 if args.format == 'text':
     if q_not_found:
@@ -202,4 +201,4 @@ elif args.format == 'json':
     output['metric_data'] = metric_data
     output['average'] = avg
     output['categories'] = categories
-    print(json.dumps(output))
+    print(json.dumps(output,indent=2))
