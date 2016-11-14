@@ -141,9 +141,21 @@ else:
         metric_data[video] = bdrate(args.run[0]+'/'+video,args.run[1]+'/'+video,args.anchor+'/'+video)
 
 filename_len = 40
+
 avg = {}
 for m in range(0,len(met_index)):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
+
+categories = {}
+if info_data:
+    if 'categories' in sets[task]:
+        for category_name in sets[task]['categories']:
+            category = {}
+            for m in range(0,len(met_index)):
+                category[m] = mean([metric_data[x][m] for x in sets[task]['categories'][category_name]])
+            categories[category_name] = category
+        print(categories)
+
 if args.format == 'text':
     if q_not_found:
         print("Warning: Quantizers 20 and 55 not found in results, using maximum overlap")
@@ -157,6 +169,13 @@ if args.format == 'text':
     for name in met_name:
         print("%9s " % name, end='')
     print('')
+    print('------------------------------------------------------------------------------------------')
+    for category_name in sorted(categories):
+        metric = categories[category_name]
+        print (('%'+str(filename_len)+"s ") % category_name[0:filename_len],end='')
+        for met in met_name:
+            print("%9.2f " % metric[met_index[met]],end='')
+        print('')
     print('------------------------------------------------------------------------------------------')
     for video in sorted(metric_data):
         metric = metric_data[video]
