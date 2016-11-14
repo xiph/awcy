@@ -432,7 +432,7 @@ export class Job {
   }
 
   isComparableWith(other: Job) {
-    return this.task == other.task && this.qualities == other.qualities;
+    return this.task == other.task;
   }
 
   static fromJSON(json: any) {
