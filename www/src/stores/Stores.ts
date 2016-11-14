@@ -243,6 +243,11 @@ export type BDRateReportJSON = {
     [name: string]: {
       [index: string]: number
     }
+  },
+  categories: {
+    [name: string]: {
+      [index: string]: number
+    }
   }
 };
 
@@ -252,6 +257,11 @@ export class BDRateReport {
   average: { [name: string]: number }
   metrics: {
     [video: string]: {
+      [name: string]: number
+    }
+  };
+  categories: {
+    [category: string]: {
       [name: string]: number
     }
   };
@@ -280,6 +290,15 @@ export class BDRateReport {
     videos.sort();
     videos.forEach((video) => {
       report.metrics[video] = toMap(json.metric_data[video], names)
+    });
+    report.categories = { };
+    let categories = [];
+    for (let k in json.categories) {
+      categories.push(k);
+    }
+    categories.sort();
+    categories.forEach((category) => {
+      report.categories[category] = toMap(json.categories[category], names)
     });
     report.metricNames = names;
     return report;

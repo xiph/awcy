@@ -242,6 +242,9 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       return <tr key={video} className={big ? "bigRow" : ""}>{cols}</tr>
     }
     rows.push(toRow("Average", report.average, true));
+    for (let category in report.categories) {
+      rows.push(toRow(category, report.categories[category],true));
+    }
     for (let video in report.metrics) {
       rows.push(toRow(video, report.metrics[video]));
     }
