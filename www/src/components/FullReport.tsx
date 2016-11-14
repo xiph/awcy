@@ -32,7 +32,7 @@ export class FullReportComponent extends React.Component<void, {
       fit: true,
       log: true,
       stack: false,
-      metric: "MSSSIM",
+      metric: "MS SSIM",
       video: "Total"
     };
     this.onChange = () => {
