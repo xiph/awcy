@@ -477,17 +477,7 @@ export class Jobs {
   jobs: Job[] = [];
   onChange = new AsyncEvent<string>();
   constructor() {
-    this.onChange.attach(this, this.updateURL);
-  }
-  updateURL() {
-    let baseurl = location.protocol + '//' + location.host + location.pathname + "?";
-    let url = baseurl + this.jobs.filter(job => job.selected).map(job => {
-      return "job=" + encodeURIComponent(job.id);
-    }).join("&");
-    if (baseurl != url) {
-      // only update history if jobs are selected (avoids setting history at page load)
-      window.history.replaceState(null,null,url);
-    }
+
   }
   addJobInternal(job: Job) {
     if (this.jobs.indexOf(job) >= 0) {
@@ -697,6 +687,8 @@ export class AppStore {
       this.loadAWS();
       Promise.all([this.loadSets(), this.loadStatus()]).then(() => {
         this.processUrlParameters();
+        this.updateURL();
+        this.jobs.onChange.attach(this.updateURL.bind(this));
       });
       this.startPolling();
     });
@@ -708,6 +700,15 @@ export class AppStore {
       console.log('Exception reading secret key from localstorage:', e);
     }
   }
+
+  updateURL() {
+    let baseurl = location.protocol + '//' + location.host + location.pathname + "?";
+    let url = baseurl + this.jobs.getSelectedJobs().map(job => {
+      return "job=" + encodeURIComponent(job.id);
+    }).join("&");
+    window.history.replaceState(null, null, url);
+  }
+
   loadAWS() {
     loadXHR(baseUrl + "describeAutoScalingInstances", (json) => {
       if (!json) return;
