@@ -201,4 +201,5 @@ elif args.format == 'json':
     output['metric_names'] = met_name
     output['metric_data'] = metric_data
     output['average'] = avg
+    output['categories'] = categories
     print(json.dumps(output))
