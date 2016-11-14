@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Checkbox, Form, FormGroup, ControlLabel, FormControl, Button, ButtonToolbar} from "react-bootstrap";
-import { appStore, AppDispatcher, Action, Jobs, Job, JobStatus, JobProgress, timeSince, minutesSince } from "../stores/Stores";
+import { formatDate, appStore, AppDispatcher, Action, Jobs, Job, JobStatus, JobProgress, timeSince, minutesSince } from "../stores/Stores";
 import { Option } from "./Widgets"
 
 declare var require: any;
@@ -9,6 +9,7 @@ let Select = require('react-select');
 export class SubmitJobFormComponent extends React.Component<{
   onCreate: (job: Job) => void;
   onCancel: () => void;
+  template?: Job;
 }, {
     job: Job;
     set: Option;
@@ -16,14 +17,32 @@ export class SubmitJobFormComponent extends React.Component<{
   }> {
   constructor() {
     super();
-    this.state = {
-      job: null,
-      set: {label: "objective-1-fast", value: "objective-1-fast"},
-      codec: {label: Job.codecs["av1"], value: "av1"}
-    } as any;
   }
   componentWillMount() {
     let job = new Job();
+    if (this.props.template) {
+      let template = this.props.template;
+      job.codec = template.codec;
+      job.commit = template.commit;
+      job.buildOptions = template.buildOptions;
+      job.extraOptions = template.extraOptions;
+      job.nick = template.nick;
+      job.qualities = template.qualities;
+      job.id = template.id;
+      if (job.id.indexOf("@") > 0) {
+        job.id = job.id.substr(0, job.id.indexOf("@"));
+      }
+      job.task = template.task;
+      job.taskType = template.taskType;
+    }
+    let task = job.task ? job.task : "objective-1-fast";
+    let codec = job.codec ? job.codec : "av1";
+    job.id += "@" + formatDate(new Date());
+    this.state = {
+      job: null,
+      set: {label: task, value: task},
+      codec: {label: Job.codecs[codec], value: codec}
+    } as any;
     job.saveEncodedFiles = true;
     this.setState({ job } as any);
   }
@@ -149,24 +168,22 @@ export class SubmitJobFormComponent extends React.Component<{
 
       <FormGroup validationState={this.getValidationState("codec")}>
         <ControlLabel>Codec</ControlLabel>
-        <Select placeholder="Codec" value={this.state.codec} options={codecOptions} onChange={this.onChangeCodec.bind(this)} />
+        <Select clearable={false} placeholder="Codec" value={this.state.codec} options={codecOptions} onChange={this.onChangeCodec.bind(this)} />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("set")}>
         <ControlLabel>Set</ControlLabel>
-        <Select placeholder="Set" value={this.state.set} options={setOptions} onChange={this.onChangeSet.bind(this)} />
+        <Select clearable={false} placeholder="Set" value={this.state.set} options={setOptions} onChange={this.onChangeSet.bind(this)} />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("extra")}>
         <FormControl type="text" placeholder="Extra CLI Options"
           value={job.extraOptions} onChange={this.onInputChange.bind(this, "extraOptions")} />
-        <FormControl.Feedback />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("build")}>
         <FormControl type="text" placeholder="Extra Build Options"
           value={job.buildOptions} onChange={this.onInputChange.bind(this, "buildOptions")} />
-        <FormControl.Feedback />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("nick")}>

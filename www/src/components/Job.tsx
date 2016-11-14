@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Modal, Panel, Button, ProgressBar, ButtonToolbar, DropdownButton } from "react-bootstrap";
 import { hashString, appStore, AppDispatcher, SelectJob, DeselectJob, CancelJob, SubmitJob, Jobs, Job, JobStatus, JobProgress, timeSince, minutesSince } from "../stores/Stores";
+import { SubmitJobFormComponent } from "./SubmitJobForm";
 
 interface JobProps {
   job: Job;
@@ -12,6 +13,7 @@ interface JobProps {
 export class JobComponent extends React.Component<JobProps, {
     job: Job;
     showCancelModal: boolean;
+    showSubmitJobForm: boolean;
     hasReport: undefined | boolean;
     hasAnalyzer: undefined | boolean;
     detailed: boolean;
@@ -23,6 +25,7 @@ export class JobComponent extends React.Component<JobProps, {
     this.state = {
       job: props.job,
       showCancelModal: false,
+      showSubmitJobForm: false,
       hasReport: undefined,
       hasAnalyzer: undefined,
       detailed: props.detailed
@@ -64,6 +67,16 @@ export class JobComponent extends React.Component<JobProps, {
   }
   toggleDetail() {
     this.setState({detailed: !this.state.detailed} as any);
+  }
+  hideSubmitJobForm() {
+    this.setState({ showSubmitJobForm: false } as any);
+  }
+  onSubmitJob(job: Job) {
+    this.hideSubmitJobForm();
+    AppDispatcher.dispatch(new SubmitJob(job));
+  }
+  onRerunClick() {
+    this.setState({ showSubmitJobForm: true } as any);
   }
   render() {
     let job = this.props.job;
@@ -163,12 +176,14 @@ export class JobComponent extends React.Component<JobProps, {
             {job.nick} <span className="tinyGrayJobValue">submitted {date}</span>
           </div>
           {details}
+          { this.state.detailed ? <div className="jobButtons" ><Button bsSize="xsmall" onClick={this.onRerunClick.bind(this)}>Rerun</Button></div> : null }
         </div>
         <div>
           {cancel}{' '}
           {select}
         </div>
       </div>
+      { this.state.showSubmitJobForm ? <SubmitJobFormComponent template={job} onCreate={this.onSubmitJob.bind(this)} onCancel={this.hideSubmitJobForm.bind(this)} /> : null }
     </div>
   }
 }

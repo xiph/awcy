@@ -31,6 +31,9 @@ export let baseUrl = window.location.origin+'/';
 export let analyzerBaseUrl = "http://aomanalyzer.org" + '/';
 var inMockMode = false;
 
+export function formatDate(date) {
+  return date.toISOString();
+}
 export function shallowEquals(a, b): boolean {
   if (a === b) return true;
   let aKeys = Object.keys(a);
