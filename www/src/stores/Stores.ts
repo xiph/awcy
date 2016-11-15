@@ -393,12 +393,16 @@ export class Job {
     return baseUrl + `runs/${this.id}/${this.task}/${name}-daala.out`
   }
 
+  decocerUrl(): string {
+    return baseUrl + `runs/${this.id}/js/decoder.js`;
+  }
+
   ivfUrl(name: string, quality: number) {
     return baseUrl + `runs/${this.id}/${this.task}/${name}-${quality}.ivf`;
   }
 
   analyzerIvfUrl(name: string, quality: number) {
-    return analyzerBaseUrl + `?file=${this.ivfUrl(name, quality)}`;
+    return analyzerBaseUrl + `?decoder=${this.decocerUrl()}&file=${this.ivfUrl(name, quality)}`;
   }
 
   loadReport(): Promise<{ [name: string]: any }> {
@@ -427,7 +431,7 @@ export class Job {
   }
 
   hasAnalyzer(): Promise<boolean> {
-    return fileExists(baseUrl + `runs/${this.id}/js/decoder.js`);
+    return fileExists(this.decocerUrl());
   }
 
   hasReport(): Promise<boolean> {
