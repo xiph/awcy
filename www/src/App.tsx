@@ -35,13 +35,6 @@ export class App extends React.Component<void, void> {
   }
 
   render() {
-    let analyzerTabs = appStore.analyzedFiles.map((o, i) => {
-      return <Tab eventKey={5 + i} key={o.decoderUrl + o.videoUrl + i} title={"Analyzer: " + o.videoUrl}>
-        <div style={{ padding: 10, height: window.innerHeight, overflow: "scroll" }}>
-          <AnalyzerComponent decoderUrl={o.decoderUrl} videoUrl={o.videoUrl}/>
-        </div>
-      </Tab>
-    });
     console.debug("Rendering App");
 
     let height = window.innerHeight;
