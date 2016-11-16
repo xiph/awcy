@@ -2,6 +2,7 @@ import { Promise } from "es6-promise"
 declare let DecoderModule: any;
 
 export module Analyzer {
+
   export enum PredictionMode {
     DC_PRED = 0,   // Average of above and left pixels
     V_PRED = 1,   // Vertical
@@ -17,8 +18,27 @@ export module Analyzer {
     NEARMV = 11,
     ZEROMV = 12,
     NEWMV = 13,
-    LAST = 13
+    LAST = 14
   }
+
+  /**
+   * Maps BlockSize enum to [w, h] log2 pairs.
+   */
+  export const BlockSizeDimensions = [
+    [2, 2],
+    [2, 3],
+    [3, 2],
+    [3, 3],
+    [3, 4],
+    [4, 3],
+    [4, 4],
+    [4, 5],
+    [5, 4],
+    [5, 5],
+    [5, 6],
+    [6, 5],
+    [6, 6]
+  ];
 
   export enum BlockSize {
     BLOCK_4X4 = 0,
@@ -34,7 +54,11 @@ export module Analyzer {
     BLOCK_32X64 = 10,
     BLOCK_64X32 = 11,
     BLOCK_64X64 = 12,
-    LAST = 12
+    LAST = 13
+  }
+
+  export function blockSizeArea(size: BlockSize): number {
+    return (1 << BlockSizeDimensions[size][0]) * (1 << BlockSizeDimensions[size][1]);
   }
 
   export interface Enum {
@@ -129,6 +153,13 @@ export module Analyzer {
     counts: Uint32Array;
     constructor(length: number) {
       this.counts = new Uint32Array(length);
+    }
+    public getTotalCount() {
+      let s = 0;
+      for (let i = 0; i < this.counts.length; i++) {
+        s += this.counts[i];
+      }
+      return s;
     }
   }
 
@@ -270,7 +301,7 @@ export module Analyzer {
       return new GridSize(cols, rows);
     }
     getPredictionModeHistogram(): Histogram<PredictionMode> {
-      let metrics = new Histogram<PredictionMode>(PredictionMode.LAST + 1);
+      let metrics = new Histogram<PredictionMode>(PredictionMode.LAST);
       let {cols, rows} = this.getMIGridSize();
       for (let c = 0; c < cols; c++) {
         for (let r = 0; r < rows; r++) {
@@ -280,7 +311,7 @@ export module Analyzer {
       return metrics;
     }
     getBlockSizeHistogram(): Histogram<BlockSize> {
-      let metrics = new Histogram<PredictionMode>(BlockSize.LAST + 1);
+      let metrics = new Histogram<PredictionMode>(BlockSize.LAST);
       let {cols, rows} = this.getMIGridSize();
       for (let c = 0; c < cols; c++) {
         for (let r = 0; r < rows; r++) {
@@ -301,6 +332,7 @@ export module Analyzer {
         });
         xhr.addEventListener("load", function () {
           if (xhr.status != 200) {
+            reject();
             return;
           }
           resolve(new Uint8Array(this.response));
@@ -325,6 +357,9 @@ export module Analyzer {
           };
           resolve(new Analyzer(DecoderModule(Module)));
         }
+        s.onerror = function() {
+          reject();
+        };
         s.setAttribute('src', url);
         document.body.appendChild(s);
       });

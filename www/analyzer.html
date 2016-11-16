@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Analyzer</title>
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400|Roboto:500" rel="stylesheet">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
+        <link rel="stylesheet" href="react-select.css">
+    </head>
+    <body>
+        <style>
+          body {
+            font-family: 'Roboto', sans-serif;
+          }
+
+
+          .glyphicon-refresh-animate {
+              -animation: spin .7s infinite linear;
+              -webkit-animation: spin2 .7s infinite linear;
+          }
+
+          @-webkit-keyframes spin2 {
+              from { -webkit-transform: rotate(0deg);}
+              to { -webkit-transform: rotate(360deg);}
+          }
+
+          @keyframes spin {
+              from { transform: scale(1) rotate(0deg);}
+              to { transform: scale(1) rotate(360deg);}
+          }
+
+          .d3Tooltip {
+            font: 10px sans-serif;
+          }
+        </style>
+        <div id="analyzer-app"></div>
+        <!-- Dependencies -->
+        <script src="lib/d3.v4.min.js"></script>
+        <script src="lib/react.min.js"></script>
+        <script src="lib/react-dom.min.js"></script>
+        <!-- Main -->
+        <script src="./dist/analyzer.bundle.js"></script>
+    </body>
+</html>

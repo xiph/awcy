@@ -2,6 +2,7 @@ import * as React from "react";
 import { Glyphicon, Checkbox, Panel, Table } from "react-bootstrap";
 import { Col, Row, Button } from "react-bootstrap";
 import { BDRateReport, Report, AppStore, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex} from "../stores/Stores";
+import { AnalyzerComponent } from "./Analyzer"
 
 declare var require: any;
 
@@ -70,6 +71,7 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
     if (hasIvfs) {
       headers.unshift(<th className="tableToolHeader" key={"link-0"}></th>);
       headers.unshift(<th className="tableToolHeader" key={"link-1"}></th>);
+      headers.unshift(<th className="tableToolHeader" key={"link-2"}></th>);
     }
 
     let rows = [];
@@ -89,9 +91,11 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
       let quality = row[0];
       if (hasIvfs) {
         let ivfUrl = this.props.job.ivfUrl(this.props.name, quality);
-        cols.unshift(<td key="link-0" className="tableValue"><a href={ivfUrl} alt="Download"><Glyphicon glyph="download-alt" /></a></td>)
+        cols.unshift(<td key="link-0" className="tableValue"><a href={ivfUrl} alt="Download"><Glyphicon glyph="download-alt" /></a></td>);
         let analyzerUrl = this.props.job.analyzerIvfUrl(this.props.name, quality);
-        cols.unshift(<td key="link-1" className="tableValue"><a target="_blank" href={analyzerUrl} alt="Analyze"><Glyphicon glyph="play" /></a></td>)
+        cols.unshift(<td key="link-1" className="tableValue"><a target="_blank" href={analyzerUrl} alt="Analyze"><Glyphicon glyph="film" /></a></td>);
+        let analyzerReportUrl = this.props.job.analyzerReportIvfUrl(this.props.name, quality);
+        cols.unshift(<td key="link-2" className="tableValue"><a target="_blank" href={analyzerReportUrl} alt="Analyze"><Glyphicon glyph="list-alt" /></a></td>);
       }
       rows.push(<tr key={quality}>{cols}</tr>);
     });
