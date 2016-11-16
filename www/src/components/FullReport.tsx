@@ -6,7 +6,7 @@ import { BDRatePlot, sortArray, ScatterPlotSeries, PlotAxis } from "./Plot";
 import { VideoReportComponent, BDRateReportComponent } from "./Report";
 import { JobSelectorComponent } from "./JobSelector";
 import { Promise } from "es6-promise";
-import { AnalyzerVideoSelectorComponent, AnalyzerComponent } from "./Widgets";
+import { AnalyzerVideoSelectorComponent } from "./Widgets";
 
 import { JobComponent } from "./Job";
 import { JobLogComponent } from "./JobLog";
@@ -146,7 +146,6 @@ export class FullReportComponent extends React.Component<void, {
         {tabs}
       </Panel>
     </div>
-    // <AnalyzerVideoSelectorComponent video={video} jobs={jobs}/>
   }
   render() {
     console.debug("Rendering Full Report");

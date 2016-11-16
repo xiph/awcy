@@ -4,9 +4,13 @@ var webpack = require('webpack');
 var RELEASE = JSON.parse(process.env.RELEASE || '0');
 
 module.exports = {
-  entry: "./src/index.tsx",
+  entry: {
+    index: "./src/index.tsx",
+    analyzer: "./src/analyzerEntry.tsx"
+  },
   output: {
-      filename: "./dist/bundle.js",
+    path: "./dist/",
+    filename: "[name].bundle.js"
   },
 
   // Enable sourcemaps for debugging webpack's output.

@@ -21,13 +21,12 @@ export class AnalyzeFile extends Action {
   constructor(public decoderUrl: string, public fileUrl: string) { super(); }
 }
 
-
-import { AnalyzerComponent } from "../components/Widgets";
 import { Promise } from "es6-promise";
 import { AsyncEvent } from 'ts-events';
 declare var tinycolor: any;
 
-export let baseUrl = window.location.origin+'/';
+export let baseUrl = window.location.origin + '/';
+export let analyzerReportBaseUrl = baseUrl + "/analyzer.html";
 export let analyzerBaseUrl = "http://aomanalyzer.org" + '/';
 var inMockMode = false;
 
@@ -424,6 +423,10 @@ export class Job {
     return analyzerBaseUrl + `?decoder=${this.decocerUrl()}&file=${this.ivfUrl(name, quality)}`;
   }
 
+  analyzerReportIvfUrl(name: string, quality: number) {
+    return analyzerReportBaseUrl + `?decoder=${this.decocerUrl()}&file=${this.ivfUrl(name, quality)}`;
+  }
+
   loadReport(): Promise<{ [name: string]: any }> {
     if (this.report) {
       return Promise.resolve(this.report);
@@ -544,7 +547,7 @@ export class Jobs {
   }
 }
 
-function forEachUrlParameter(callback: (key: string, value: string) => void) {
+export function forEachUrlParameter(callback: (key: string, value: string) => void) {
   let url = window.location.search.substring(1);
   url = url.replace(/\/$/, ""); // Replace / at the end that gets inserted by browsers.
   let params = {};
@@ -554,7 +557,7 @@ function forEachUrlParameter(callback: (key: string, value: string) => void) {
   });
 }
 
-function getUrlParameters(): any {
+export function getUrlParameters(): any {
   let params = {};
   forEachUrlParameter((key, value) => {
     params[key] = value;
