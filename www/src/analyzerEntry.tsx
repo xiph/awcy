@@ -6,9 +6,10 @@ import { forEachUrlParameter, getUrlParameters } from "./stores/Stores";
 
 let parameters = getUrlParameters();
 let decoder = parameters.decoder;
+let frames = parameters.frames === undefined ? -1 : +parameters.frames;
 let file = parameters.file;
 
 ReactDOM.render(
-  <AnalyzerComponent decoderUrl={decoder} videoUrl={file}/>,
+  <AnalyzerComponent frames={frames} decoderUrl={decoder} videoUrl={file}/>,
   document.getElementById("analyzer-app")
 );

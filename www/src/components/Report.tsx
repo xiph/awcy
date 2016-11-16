@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Glyphicon, Checkbox, Panel, Table } from "react-bootstrap";
-import { Col, Row, Button } from "react-bootstrap";
+import { Col, Row, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { BDRateReport, Report, AppStore, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex} from "../stores/Stores";
 import { AnalyzerComponent } from "./Analyzer"
 
@@ -55,6 +55,10 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
     this.loadReport("jobReport", this.props.job);
   }
   render() {
+    const reportTooltip = <Tooltip id="tooltip">Report</Tooltip>
+    const analyzeTooltip = <Tooltip id="tooltip">Analyze</Tooltip>
+    const downloadTooltip = <Tooltip id="tooltip">Download</Tooltip>
+
     // console.debug("Rendering Video Report");
     let highlightColumns = this.props.highlightColumns;
     function tableHeaderClassName(name) {
@@ -91,11 +95,25 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
       let quality = row[0];
       if (hasIvfs) {
         let ivfUrl = this.props.job.ivfUrl(this.props.name, quality);
-        cols.unshift(<td key="link-0" className="tableValue"><a href={ivfUrl} alt="Download"><Glyphicon glyph="download-alt" /></a></td>);
+        cols.unshift(<td key="link-0" className="tableValue">
+          <OverlayTrigger placement="top" overlay={downloadTooltip}>
+            <a href={ivfUrl} alt="Download"><Glyphicon glyph="download-alt" /></a>
+          </OverlayTrigger>
+        </td>);
+
         let analyzerUrl = this.props.job.analyzerIvfUrl(this.props.name, quality);
-        cols.unshift(<td key="link-1" className="tableValue"><a target="_blank" href={analyzerUrl} alt="Analyze"><Glyphicon glyph="film" /></a></td>);
+        cols.unshift(<td key="link-1" className="tableValue">
+          <OverlayTrigger placement="top" overlay={analyzeTooltip}>
+            <a target="_blank" href={analyzerUrl} alt="Analyze"><Glyphicon glyph="film" /></a>
+          </OverlayTrigger>
+        </td>);
+
         let analyzerReportUrl = this.props.job.analyzerReportIvfUrl(this.props.name, quality);
-        cols.unshift(<td key="link-2" className="tableValue"><a target="_blank" href={analyzerReportUrl} alt="Analyze"><Glyphicon glyph="list-alt" /></a></td>);
+        cols.unshift(<td key="link-2" className="tableValue">
+          <OverlayTrigger placement="top" overlay={reportTooltip}>
+            <a target="_blank" href={analyzerReportUrl} alt="Report"><Glyphicon glyph="list-alt" /></a>
+          </OverlayTrigger>
+        </td>);
       }
       rows.push(<tr key={quality}>{cols}</tr>);
     });

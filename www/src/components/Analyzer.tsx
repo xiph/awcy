@@ -13,6 +13,7 @@ const DEFAULT_MARGIN = { top: 10, right: 10, bottom: 20, left: 40 };
 export class AnalyzerComponent extends React.Component<{
   decoderUrl: string;
   videoUrl: string;
+  frames: number;
 }, {
     analyzer: Analyzer.Analyzer;
     analyzerFailedToLoad: boolean | null
@@ -39,7 +40,7 @@ export class AnalyzerComponent extends React.Component<{
       Analyzer.Analyzer.downloadFile(videoPath).then((bytes) => {
         analyzer.openFileBytes(bytes);
         this.setState({ analyzer, analyzerFailedToLoad: false } as any);
-        this.decode();
+        this.decode(this.props.frames);
       }).catch(() => {
         this.setState({ analyzerFailedToLoad: true } as any);
       });
@@ -47,9 +48,9 @@ export class AnalyzerComponent extends React.Component<{
       this.setState({ analyzerFailedToLoad: true } as any);
     });
   }
-  decode() {
+  decode(frames: number) {
     let analyzer = this.state.analyzer;
-    this.decodeFrames(60, () => {
+    this.decodeFrames(frames, () => {
       this.renderBitsChart();
       this.renderSymbolsChart();
       this.renderBlockSizes(this.blockSizeSvg, analyzer.frames.map(x => x.blockSizeHistogram));
@@ -62,15 +63,11 @@ export class AnalyzerComponent extends React.Component<{
     let interval = setInterval(() => {
       analyzer.readFrame().then((frame) => {
         this.forceUpdate();
-        if (!frame) {
-          clearInterval(interval);
-          this.setState({ decoding: false } as any);
-          return;
-        }
-        if (analyzer.frames.length >= count) {
+        if (!frame || (count > 0 && analyzer.frames.length >= count)) {
           clearInterval(interval);
           this.setState({ decoding: false } as any);
           next();
+          return;
         }
       });
     }, 16);
@@ -93,7 +90,7 @@ export class AnalyzerComponent extends React.Component<{
     var stack = d3.stack();
 
     x.domain(data.map((d, i) => i));
-    x.domain(d3.range(60));
+    x.domain(d3.range(data.length));
     y.domain(yDomain).nice();
     z.domain(names.length);
 
@@ -138,12 +135,18 @@ export class AnalyzerComponent extends React.Component<{
       // .attr("dy", "0.35em")
       // .attr("text-anchor", "start")
       // .attr("fill", "#000")
-      // .text("Population");
+      // .text("");
+
+    let tickValues = d3.range(data.length);
+    if (tickValues.length > 60) {
+      tickValues = tickValues.map(x => 4 * x);
+      tickValues = tickValues.filter(x => x < data.length);
+    }
 
     g.append("g")
       .attr("class", "axis axis--x")
       .attr("transform", "translate(0, " + height + ")")
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x).tickValues(tickValues));
 
     var legend = g.selectAll(".legend")
       .data(names)
