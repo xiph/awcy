@@ -59,6 +59,10 @@ export class AnalyzerComponent extends React.Component<{
   }
   decodeFrames(count: number, next: any) {
     let analyzer = this.state.analyzer;
+    if (count == 0) {
+      next();
+      return;
+    }
     this.setState({ decoding: true } as any);
     let interval = setInterval(() => {
       analyzer.readFrame().then((frame) => {
@@ -72,7 +76,7 @@ export class AnalyzerComponent extends React.Component<{
       });
     }, 16);
   }
-  renderChart(element: SVGElement, names: string[], data: any[], yDomain = [0, 1]) {
+  renderChart(element: SVGElement, tooltipKind: "percent" | "value", names: string[], data: any[], yDomain = [0, 1]) {
     let legendWidth = 128;
     var svg = d3.select(element),
       margin = DEFAULT_MARGIN,
@@ -115,16 +119,22 @@ export class AnalyzerComponent extends React.Component<{
       .attr("height", function (d) {
         return y(d[0]) - y(d[1]);
       })
-      .attr("width", x.bandwidth());
-    // .on("mouseover", function() { tooltip.style("display", null); })
-    //     .on("mouseout", function() { tooltip.style("display", "none"); })
-    //     .on("mousemove", function(d) {
-    //       var xPosition = d3.mouse(this)[0] + 25;
-    //       var yPosition = d3.mouse(this)[1] - 25;
-    //       tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
-    //       let text = d.key + ": " + ((d[1] - d[0]) * 100).toFixed(2) + "%";
-    //       tooltip.select("text").text(text);
-    //     });
+      .attr("width", x.bandwidth())
+      .on("mouseover", function() { tooltip.style("display", null); })
+      .on("mouseout", function() { tooltip.style("display", "none"); })
+      .on("mousemove", function(d) {
+        var xPosition = d3.mouse(this)[0] + 25;
+        var yPosition = d3.mouse(this)[1] - 25;
+        tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
+        // let text = d.key + ": " + ((d[1] - d[0]) * 100).toFixed(2) + "%";
+        let text = "";
+        if (tooltipKind == "percent") {
+          text = ((d[1] - d[0]) * 100).toFixed(2) + "%";
+        } else {
+          text = ((d[1] - d[0])).toFixed(2);
+        }
+        tooltip.select("text").text(text);
+      });
 
     g.append("g")
       .attr("class", "axis axis--y")
@@ -168,6 +178,24 @@ export class AnalyzerComponent extends React.Component<{
       .attr("dy", ".35em")
       .attr("text-anchor", "start")
       .text(function (d) { return d; });
+
+    // Prep the tooltip bits, initial display is hidden
+    var tooltip = svg.append("g")
+      .attr("class", "d3Tooltip")
+      .style("display", "none");
+
+    // tooltip.append("rect")
+    //   .attr("width", 30)
+    //   .attr("height", 20)
+    //   .attr("fill", "white")
+    //   .style("opacity", 0.5);
+
+    tooltip.append("text")
+      .attr("x", 15)
+      .attr("dy", "1.2em")
+      .style("text-anchor", "middle")
+      .attr("font-size", "12px")
+      .attr("font-weight", "bold");
   }
   renderBlockSizes<T>(element: SVGElement, histograms: Analyzer.Histogram<T>[]) {
     let names = [];
@@ -186,7 +214,7 @@ export class AnalyzerComponent extends React.Component<{
       });
       rows.push(row);
     });
-    this.renderChart(element, names, rows);
+    this.renderChart(element, "percent", names, rows);
     return;
   }
   renderPredictionModes<T>(element: SVGElement, histograms: Analyzer.Histogram<T>[]) {
@@ -206,7 +234,7 @@ export class AnalyzerComponent extends React.Component<{
       });
       rows.push(row);
     });
-    this.renderChart(element, names, rows);
+    this.renderChart(element, "percent", names, rows);
     return;
   }
   renderBitsChart() {
@@ -229,7 +257,7 @@ export class AnalyzerComponent extends React.Component<{
       max = Math.max(max, total);
       data.push(row);
     });
-    this.renderChart(this.bitsSvg, ["Bits"], data, [0, max]);
+    this.renderChart(this.bitsSvg, "value", ["Bits"], data, [0, max]);
   }
   renderSymbolsChart() {
     console.debug("Rendering Chart");
@@ -257,7 +285,7 @@ export class AnalyzerComponent extends React.Component<{
       data.push(row);
     });
 
-    this.renderChart(this.symbolsSvg, names, data);
+    this.renderChart(this.symbolsSvg, "percent", names, data);
   }
   render() {
     console.debug("Rendering Analyzer");
