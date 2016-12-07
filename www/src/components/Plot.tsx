@@ -53,12 +53,12 @@ export class Size {
 }
 
 function segmentIntersection(a0: Point, a1: Point, b0: Point, b1: Point) {
-  var ua = 0, ub = 0, deonminator = (b1.y - b0.y) * (a1.x - a0.x) - (b1.x - b0.x) * (a1.y - a0.y);
-  if (deonminator == 0) {
+  var ua = 0, ub = 0, denominator = (b1.y - b0.y) * (a1.x - a0.x) - (b1.x - b0.x) * (a1.y - a0.y);
+  if (denominator == 0) {
     return null;
   }
-  ua = ((b1.x - b0.x) * (a0.y - b0.y) - (b1.y - b0.y) * (a0.x - b0.x)) / deonminator;
-  ub = ((a1.x - a0.x) * (a0.y - b0.y) - (a1.y - a0.y) * (a0.x - b0.x)) / deonminator;
+  ua = ((b1.x - b0.x) * (a0.y - b0.y) - (b1.y - b0.y) * (a0.x - b0.x)) / denominator;
+  ub = ((a1.x - a0.x) * (a0.y - b0.y) - (a1.y - a0.y) * (a0.x - b0.x)) / denominator;
   return {
     intersection: new Point(a0.x + ua * (a1.x - a0.x), a0.y + ua * (a1.y - a0.y)),
     intersectsSegmentA: ua >= 0 && ua <= 1,
