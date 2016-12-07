@@ -47,7 +47,7 @@ export class FullReportComponent extends React.Component<void, {
     appStore.jobs.onChange.detach(this.onChange);
   }
   load() {
-    let jobs = appStore.jobs.getSelectedJobs(JobStatus.Completed);
+    let jobs = appStore.jobs.getSelectedJobs();
     Promise.all(jobs.map(job => {
       return job.loadReport();
     })).catch(() => {
@@ -58,7 +58,7 @@ export class FullReportComponent extends React.Component<void, {
   }
   getSeries(name: string, metric: string): ScatterPlotSeries[] {
     let series = [];
-    let jobs = appStore.jobs.getSelectedJobs(JobStatus.Completed);
+    let jobs = appStore.jobs.getSelectedJobs();
     let reportFieldIndex = metricNameToReportFieldIndex(metric);
     let fit = this.state.fit;
     let log = this.state.log;
