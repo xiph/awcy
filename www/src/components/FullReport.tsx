@@ -109,7 +109,7 @@ export class FullReportComponent extends React.Component<void, {
     this.setState({ stack: !this.state.stack } as any);
   }
   renderVideoReport(video: string, metric: string, showTabs = true) {
-    let jobs = appStore.jobs.getSelectedJobs(JobStatus.Completed);
+    let jobs = appStore.jobs.getSelectedJobs();
     let headers = <th key={this.state.metric} className="tableHeader">{metric}</th>
     let rows, cols;
     let plotHeight = 500;
@@ -149,7 +149,7 @@ export class FullReportComponent extends React.Component<void, {
   }
   render() {
     console.debug("Rendering Full Report");
-    let jobs = appStore.jobs.getSelectedJobs(JobStatus.Completed);
+    let jobs = appStore.jobs.getSelectedJobs();
     if (jobs.length == 0) {
       return <Panel>
         No runs selected.
