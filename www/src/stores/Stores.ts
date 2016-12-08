@@ -842,7 +842,7 @@ export class AppStore {
           return (new Date(b.date) as any) - (new Date(a.date) as any);
         });
         let changed = false;
-        json = json.slice(0, 256);
+        json = json.slice(0, 1024);
         json.forEach(o => {
           let job = this.findJob(o.run_id);
           if (job) {
