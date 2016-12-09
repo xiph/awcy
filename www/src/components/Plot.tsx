@@ -407,6 +407,7 @@ export class Rectangle {
 interface PlotProps {
   width: number | string;
   height: number | string;
+  yFormat: string;
 }
 
 interface PlotState {}
@@ -431,7 +432,7 @@ export class Plot<P extends PlotProps, S extends PlotState> extends React.Compon
   textSize = 7;
   textPadding = 4;
 
-  tickBarW = 20;
+  tickBarW = 30;
   tickBarH = 20;
   margins = new Margins(10, 10, this.tickBarH, this.tickBarW);
 
@@ -635,7 +636,7 @@ export class Plot<P extends PlotProps, S extends PlotState> extends React.Compon
     });
 
     ticks = this.yScale.ticks(this.yTicks);
-    tickFormat = this.yScale.tickFormat(this.yTicks, ".2");
+    tickFormat = this.yScale.tickFormat(this.yTicks, this.props.yFormat);
 
     ticks.forEach((tick, i) => {
       a.setElements(xDomain[0], tick);
