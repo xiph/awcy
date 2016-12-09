@@ -113,9 +113,10 @@ export class FullReportComponent extends React.Component<void, {
     let headers = <th key={this.state.metric} className="tableHeader">{metric}</th>
     let rows, cols;
     let plotHeight = 500;
+    let yFormat = metric == "Encoding Time" ? "d" : ".2";
     rows = [
       <td style={{ padding: 0, width: "100%" }}>
-        <BDRatePlot width={"100%"} height={plotHeight} series={this.getSeries(video, metric)} />
+        <BDRatePlot width={"100%"} height={plotHeight} series={this.getSeries(video, metric)} yFormat={yFormat} />
       </td>
     ];
     let tabs = null;
