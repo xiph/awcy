@@ -14,7 +14,9 @@ function formatNumber(n) {
 function makeTableCell(key: any, v: number, color: boolean = false, formatter = formatNumber) {
   let className = "tableValue";
   if (color) {
-    if (v > 0) {
+    if (Math.abs(v) < 0.005) {
+      className = "zeroTableValue";
+    } else if (v > 0) {
       className = "positiveTableValue";
     } else if (v < 0) {
       className = "negativeTableValue";
