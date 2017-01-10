@@ -32,6 +32,8 @@ interface VideoReportProps {
   filterQualities?: number [];
 }
 
+let displayedBDRateMetrics = ['PSNR', 'PSNR HVS', 'SSIM', 'CIEDE 2000', 'PSNR Cb', 'PSNR Cr', 'APSNR', 'APSNR Cb', 'APSNR Cr', 'MS SSIM', 'VMAF'];
+
 export class VideoReportComponent extends React.Component<VideoReportProps, {
   jobReport: Report;
 }> {
@@ -235,12 +237,12 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       </Panel>
     }
     let headers = [<th key="video" className="tableHeader">Video</th>];
-    headers = headers.concat(report.metricNames.map(name => <th key={name} className="tableHeader">{name}</th>));
+    headers = headers.concat(displayedBDRateMetrics.map(name => <th key={name} className="tableHeader">{name}</th>));
 
     let rows = [];
     function toRow(video: string, data, big = false) {
       let cols = [<td key={"fileName"} className="longTableValue">{video}</td>];
-      cols = cols.concat(report.metricNames.map(name =>
+      cols = cols.concat(displayedBDRateMetrics.map(name =>
         makeTableCell(name, data[name], true, (n) => {
           return typeof n === "number" ? n.toFixed(2) : n;
         })
