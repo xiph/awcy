@@ -90,7 +90,7 @@ export class FullReportComponent extends React.Component<void, {
         for (let name in job.report) {
           addSeries(job, name, job.selectedName + " " + name, (job, name) => getRandomColorForString(name));
         }
-      } else {
+      } else if (name in job.report) {
         addSeries(job, name, job.selectedName, (job, name) => job.color);
       }
     });
