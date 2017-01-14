@@ -197,9 +197,15 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     text += summaryRows.map(row => row.join(" | ")).join("\n");
 
     function toRow(video: string, data) {
-      return [video].concat(report.metricNames.map(name => data[name].toFixed(4)));
+      return [video].concat(displayedBDRateMetrics.map(name => {
+        if (name in data) {
+          return data[name].toFixed(4);
+        } else {
+          return "    ";
+        }
+      }));
     }
-    let rowHeaders = ["Video"].concat(report.metricNames);
+    let rowHeaders = ["Video"].concat(displayedBDRateMetrics);
     let rows = [rowHeaders];
     for (let video in report.metrics) {
       rows.push(toRow(video, report.metrics[video]));
