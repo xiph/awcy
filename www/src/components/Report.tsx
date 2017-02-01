@@ -262,12 +262,17 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     for (let video in report.metrics) {
       rows.push(toRow(video, report.metrics[video]));
     }
+    let errors = [];
+    for (let error of report.error_strings) {
+      errors.push(<p className="bg-warning">{error}</p>);
+    }
     let textReport = this.state.textReport ? <pre>{this.state.textReport}</pre> : null;
     return <Panel header={`BD Rate Report ${report.a.selectedName + " " + report.a.id} → ${report.b.selectedName + " " + report.b.id}`}>
       <div style={{ paddingBottom: 8, paddingTop: 4 }}>
         <Button active={this.state.reversed} onClick={this.onReverseClick.bind(this)} >Reverse</Button>{' '}
         <Button onClick={this.onTextReportClick.bind(this)} >Get Text Report</Button>
       </div>
+      {errors}
       {textReport}
       <Table striped bordered condensed hover style={{width: "100%"}}>
         <thead>

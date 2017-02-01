@@ -268,6 +268,7 @@ export class BDRateReport {
     }
   };
   metricNames: string [];
+  error_strings: string [];
   static fromJSON(a: Job, b: Job, json: BDRateReportJSON): BDRateReport {
     function toMap(data: { [index: string]: number }, names: string[]) {
       return zip(names, names.map((name, i) => data[i]))
@@ -303,6 +304,7 @@ export class BDRateReport {
       report.categories[category] = toMap(json.categories[category], names)
     });
     report.metricNames = names;
+    report.error_strings = json.error_strings;
     return report;
   }
 }

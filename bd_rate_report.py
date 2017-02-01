@@ -23,6 +23,8 @@ met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4, 
 
 q_not_found = False
 
+error_strings = []
+
 def bdrate(file1, file2, anchorfile):
     if anchorfile:
         anchor = flipud(loadtxt(anchorfile));
@@ -113,6 +115,7 @@ try:
     task = info_data[0]['task']
 except FileNotFoundError:
     # no info.json, using bare directories
+    print('Couldn\'t open', args.run[0])
     info_data = None
 
 if info_data:
@@ -155,9 +158,12 @@ if info_data:
                 category[m] = mean([metric_data[x][m] for x in sets[task]['categories'][category_name]])
             categories[category_name] = category
 
+if q_not_found:
+    error_strings.append("Warning: Quantizers 20 and 55 not found in results, using maximum overlap")
+
 if args.format == 'text':
-    if q_not_found:
-        print("Warning: Quantizers 20 and 55 not found in results, using maximum overlap")
+    for error in error_strings:
+        print(error)
     print("%10s: %9.2f%% %9.2f%% %9.2f%%" % ('PSNR YCbCr', avg[0], avg[5], avg[6]))
     print("%10s: %9.2f%%" % ('PSNRHVS', avg[1]))
     print("%10s: %9.2f%%" % ('SSIM', avg[2]))
@@ -201,4 +207,5 @@ elif args.format == 'json':
     output['metric_data'] = metric_data
     output['average'] = avg
     output['categories'] = categories
+    output['error_strings'] = error_strings
     print(json.dumps(output,indent=2))
