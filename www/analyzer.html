@@ -5,14 +5,13 @@
   <meta charset="UTF-8" />
   <title>Analyzer</title>
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400|Roboto:500" rel="stylesheet">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
-  <link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
-  <link rel="stylesheet" href="react-select.css">
+  <link rel="stylesheet" href="https://bootswatch.com/cyborg/bootstrap.min.css">
 </head>
 <body>
   <style>
     body {
       font-family: 'Roboto', sans-serif;
+      background-color: #222222;
     }
 
     .glyphicon-refresh-animate {
@@ -71,14 +70,12 @@
       text-decoration: underline;
       padding: 2px;
       font-weight: bold;
-      color: blueviolet;
       cursor: pointer;
     }
 
     .toast {
       font-size: 12px;
-      /*font-family: 'Roboto Mono', monospace;*/
-      position: absolute;
+      position: fixed;
       left: 0;
       top: 0;
       right: 0;
@@ -88,10 +85,48 @@
       background-color: rgba(0, 0, 0, 0.5);
       color: white;
       overflow: hidden;
-      text-align: center;
+      text-align: left;
+      padding-left: 10px;
       vertical-align: middle;
       line-height: 40px;       /* the same as your div height */
       pointer-events: none;
+    }
+
+    .toolbox {
+      font-size: 12px;
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      z-index: 20;
+      opacity: 1;
+      height: 128px;
+      background-color: rgba(20, 20, 20, 0.8);
+      padding-left: 10px;
+      vertical-align: middle;
+      color: white;
+    }
+
+    .sidePanel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 20;
+      opacity: 1;
+      width: 256px;
+      height: 256px;
+      background-color: rgba(20, 20, 20, 0.8);
+      padding-left: 10px;
+      vertical-align: middle;
+      color: white;
+      padding: 10px;
+      font-size: 11px;
+    }
+
+    .panel {
+      padding: 10px;
+      background-color: rgba(20, 20, 20, 0.8);
+      color: white;
     }
 
   </style>

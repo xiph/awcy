@@ -7,7 +7,6 @@ import { Promise } from "es6-promise";
 
 import { BarPlot, BarPlotTable, Data } from "./Plot";
 declare var d3;
-declare var dragscroll;
 declare var Mousetrap;
 
 const DEFAULT_MARGIN = { top: 10, right: 10, bottom: 20, left: 40 };
@@ -98,6 +97,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     showSkip: boolean;
     showMode: boolean;
     showTransformType: boolean;
+    showTools: boolean;
   }> {
   public static defaultProps: AnalyzerViewProps = {
     frames: [],
@@ -265,6 +265,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       showDecodedImage: true,
       showMotionVectors: false,
       showReferenceFrames: false,
+      showTools: true
     } as any;
     this.ratio = ratio;
     this.frameCanvas = document.createElement("canvas");
@@ -283,9 +284,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.compositionCanvas.width = w;
     this.compositionCanvas.height = h;
 
-    this.container.style.width = w + "px";
-		this.container.style.height = h + "px";
-
     this.displayCanvas.style.width = (w * scale) + "px";
 		this.displayCanvas.style.height = (h * scale) + "px";
     this.displayCanvas.width = w * scale * this.ratio;
@@ -297,8 +295,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.overlayCanvas.width = w * scale * this.ratio;
 		this.overlayCanvas.height = h * scale * this.ratio;
     this.overlayContext = this.overlayCanvas.getContext("2d");
-
-    dragscroll.reset();
   }
   showToast(message: string, duration = 1000) {
     console.log(message);
@@ -345,20 +341,18 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let dst = src.clone().multiplyScalar(scale * this.ratio);
 
     this.drawLayers(frame, ctx, src, dst);
-
   }
   drawLayers(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     ctx.save();
-    ctx.globalAlpha = 1;
-    this.state.showTransformGrid && this.drawGrid(frame, "transform", "yellow", ctx, src, dst);
-    this.state.showBlockGrid && this.drawGrid(frame, "block", "white", ctx, src, dst);
     ctx.globalAlpha = 0.5;
     this.state.showSkip && this.drawSkip(frame, ctx, src, dst);
     this.state.showMode && this.drawMode(frame, ctx, src, dst);
     this.state.showTransformType && this.drawTransformType(frame, ctx, src, dst);
     this.state.showMotionVectors && this.drawMotionVectors(frame, ctx, src, dst);
     this.state.showReferenceFrames && this.drawReferenceFrames(frame, ctx, src, dst);
-
+    ctx.globalAlpha = 1;
+    this.state.showTransformGrid && this.drawGrid(frame, "transform", "yellow", ctx, src, dst);
+    this.state.showBlockGrid && this.drawGrid(frame, "block", "white", ctx, src, dst);
     ctx.restore();
 
   }
@@ -454,7 +448,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     Mousetrap.bind(['r'], () => {
       this.resetLayersAndActiveFrame();
     });
-
+    Mousetrap.bind(['tab'], (e) => {
+      this.toggleTools();
+      e.preventDefault();
+    });
     let self = this;
     function toggle(name, event) {
       self.toggleLayer(name);
@@ -494,6 +491,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.setState({activeGroup, activeFrame} as any);
     this.showActiveFrameToast(activeGroup, activeFrame);
   }
+  toggleTools() {
+    this.setState({showTools: !this.state.showTools} as any);
+  }
   resetLayersAndActiveFrame() {
     let o: any = {};
     for (let name in this.options) {
@@ -526,16 +526,27 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.mousePosition = getMousePosition(this.overlayCanvas, event);
     this.updateBlockInfo();
   }
-  /**
-   * Get the coordinates of the parent MI block if this block is
-   * not an 8x8 block.
-   */
+  getBlockSize(frame: AnalyzerFrame, c: number, r: number) {
+    let blockSize = frame.json["blockSize"];
+    if (!blockSize) {
+      return undefined;
+    }
+    if (r >= blockSize.length || r < 0) {
+      return undefined;
+    }
+    if (c >= blockSize[r].length || c < 0) {
+      return undefined;
+    }
+    return blockSize[r][c];
+  }
   getParentMIPosition(frame: AnalyzerFrame, v: Vector): Vector {
     let p = this.getMIPosition(frame, v);
     let c = p.x;
     let r = p.y;
-    let blockSize = frame.json["blockSize"];
-    let size = blockSize[r][c];
+    let size = this.getBlockSize(frame, c, r);
+    if (size === undefined) {
+      return null;
+    }
     c = c & ~(((1 << BLOCK_SIZES[size][0]) - 1) >> MI_SIZE_LOG2);
     r = r & ~(((1 << BLOCK_SIZES[size][1]) - 1) >> MI_SIZE_LOG2);
     return new Vector(c, r);
@@ -558,14 +569,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         return <a className={i == this.state.activeGroup && j == this.state.activeFrame ? "activeFrameLink" : "frameLink"} onClick={this.setActiveGroupAndFrame.bind(this, i, j)}>{j}</a>
       });
       let groupName = this.props.groupNames ? this.props.groupNames[i] : String(i);
-      return <div className="frameContainer">{groupName} ({i}): {frameLinks}</div>
+      return <div className="frameContainer">{groupName} ({i + 1}): {frameLinks}</div>
     });
 
     let layerButtons = [];
     for (let name in this.options) {
       let option = this.options[name];
       layerButtons.push(
-        <Button bsStyle={this.state[name] ? "primary" : "default"} bsSize="xsmall" onClick={this.toggleLayer.bind(this, name)}>{name} ({option.key})</Button>
+        <Button bsStyle={this.state[name] ? "primary" : "default"} bsSize="small" onClick={this.toggleLayer.bind(this, name)}>{option.description}: {option.key}</Button>
       );
     }
 
@@ -592,41 +603,39 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       let b = v[1] >= 0 ? ((map && map[v[1]] !== undefined) ? map[v[1]] : v[1]) : "N/A";
       return `${a}, ${b}`;
     }
-    // let reference = frame.json["referenceFrame"];
     if (frame) {
       let json = frame.json;
       let p = this.getParentMIPosition(frame, this.mousePosition);
-      blockInfo = <div>
-        <div>Block: {p.x} x {p.y}</div>
-        <div>Block Size: {getProperty(p, json, "blockSize")}</div>
-        <div>Transform Size: {getProperty(p, json, "transformSize")}</div>
-        <div>Transform Type: {getProperty(p, json, "transformType")}</div>
-        <div>Mode: {getProperty(p, json, "mode")}</div>
-        <div>Skip: {getProperty(p, json, "skip")}</div>
-        <div>Motion Vectors: {getMotionVector(p, json)}</div>
-        <div>Reference Frame: {getReferenceFrame(p, json)}</div>
-      </div>
+      if (p) {
+        blockInfo = <div className="sidePanel">
+          <div>Block: {p.x} x {p.y}</div>
+          <div>Block Size: {getProperty(p, json, "blockSize")}</div>
+          <div>Transform Size: {getProperty(p, json, "transformSize")}</div>
+          <div>Transform Type: {getProperty(p, json, "transformType")}</div>
+          <div>Mode: {getProperty(p, json, "mode")}</div>
+          <div>Skip: {getProperty(p, json, "skip")}</div>
+          <div>Motion Vectors: {getMotionVector(p, json)}</div>
+          <div>Reference Frame: {getReferenceFrame(p, json)}</div>
+        </div>
+      }
     }
 
     console.log("Render");
-    return <div>
-      <div className="toast" ref={(self: any) => this.toast = self}>
-        Toast
-      </div>
-      <div ref={(self: any) => this.container = self} className="dragscroll" style={{position: "relative", overflow: "hidden", width: "128px", height: "128px"}}>
-        <canvas ref={(self: any) => this.displayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 0, imageRendering: "pixelated", backgroundCcolor: "#F5F5F5"}}></canvas>
-        <canvas ref={(self: any) => this.overlayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 1, imageRendering: "pixelated", cursor: "crosshair"}}></canvas>
-      </div>
-      <Panel>
+    let toolbox = null;
+    if (this.state.showTools) {
+      toolbox = <div className="toolbox" style={{padding: "10px"}}>
         <div style={{paddingTop: "4px"}}>
           {groupFrameLinks}
         </div>
         <div style={{paddingTop: "4px"}}>
           <ButtonGroup>
-            <Button bsSize="small" onClick={this.resetLayersAndActiveFrame.bind(this)}>Reset (r)</Button>
-            <Button bsSize="small" onClick={this.advanceFrame.bind(this, -1)}>Previous (,)</Button>
-            <Button bsSize="small" onClick={this.playPause.bind(this)}>Play/Stop (space)</Button>
-            <Button bsSize="small" onClick={this.advanceFrame.bind(this, 1)}>Next (.)</Button>
+            <Button bsSize="small" onClick={this.toggleTools.bind(this)}>Toggle Tools: tab</Button>
+            <Button bsSize="small" onClick={this.resetLayersAndActiveFrame.bind(this)}>Reset: r</Button>
+            <Button bsSize="small" onClick={this.advanceFrame.bind(this, -1)}>Previous: ,</Button>
+            <Button bsSize="small" onClick={this.playPause.bind(this)}>Play/Stop: space</Button>
+            <Button bsSize="small" onClick={this.advanceFrame.bind(this, 1)}>Next: .</Button>
+            <Button bsSize="small" onClick={this.zoom.bind(this, 1 / 2)}>Zoom Out: [</Button>
+            <Button bsSize="small" onClick={this.zoom.bind(this, 2)}>Zoom In: ]</Button>
           </ButtonGroup>
         </div>
         <div style={{paddingTop: "4px"}}>
@@ -637,7 +646,18 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         <div className="propertyContainer" style={{paddingTop: "4px"}}>
           {blockInfo}
         </div>
-      </Panel>
+      </div>
+    }
+
+    return <div>
+      <div className="toast" ref={(self: any) => this.toast = self}>
+        Toast
+      </div>
+      <div ref={(self: any) => this.container = self}>
+        <canvas ref={(self: any) => this.displayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 0, imageRendering: "pixelated", backgroundCcolor: "#F5F5F5"}}></canvas>
+        <canvas ref={(self: any) => this.overlayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 1, imageRendering: "pixelated", cursor: "crosshair"}}></canvas>
+      </div>
+      {toolbox}
     </div>
   }
 
@@ -922,9 +942,10 @@ interface AnalyzerViewCompareComponentProps {
 export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCompareComponentProps, {
   frames: AnalyzerFrame [][],
   groupNames: string [],
-  decodedFrameCount: number,
   analyzerFailedToLoad: boolean,
-  decoding: false
+  decodedFrameCount: number,
+  loading: false,
+  status: string
 }> {
   public static defaultProps: AnalyzerViewCompareComponentProps = {
     decoderVideoUrlPairs: [],
@@ -939,7 +960,8 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
       groupNames: null,
       decodedFrameCount: 0,
       analyzerFailedToLoad: null,
-      decoding: true
+      loading: true,
+      status: ""
     } as any;
   }
   componentWillMount() {
@@ -952,8 +974,10 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     this.load(decoderUrls, videoUrls);
   }
   load(decoderPaths: string[], videoPaths: string[]) {
+    this.setState({ status: "Loading Decoders" } as any);
     Promise.all(decoderPaths.map(path => Decoder.loadDecoder(path))).then(decoders => {
       console.info(decoders);
+      this.setState({ status: "Downloading Files" } as any);
       Promise.all(videoPaths.map(path => downloadFile(path))).then(bytes => {
         console.info(bytes);
         let decodedFrames = [];
@@ -965,8 +989,9 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
         for (let i = 0; i < decoderPaths.length; i++) {
           groupNames.push(decoderPaths[i] + " - " + videoPaths[i]);
         }
+        this.setState({ status: "Decoding Frames" } as any);
         Promise.all(decoders.map(decoder => this.decodeFrames(decoder, this.props.maxFrames))).then(frames => {
-          this.setState({ frames: frames, groupNames: groupNames, decoding: false } as any);
+          this.setState({ frames: frames, groupNames: groupNames, loading: false } as any);
         });
       });
     });
@@ -980,7 +1005,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
       let interval = setInterval(() => {
         deocder.setLayers(this.props.layers);
         deocder.readFrame().then((frames) => {
-          this.setState({ decodedFrameCount: this.decodedFrameCount } as any);
+          this.setState({ status: `Decoded ${this.decodedFrameCount} Frames ...` } as any);
           if (!frames) {
             clearInterval(interval);
             resolve(decodedFrames);
@@ -1001,10 +1026,10 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
   }
   render() {
     let frames = this.state.frames;
-    if (this.state.decoding) {
-      return <Panel>
-        <span><span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Decoding frame {this.state.decodedFrameCount}...</span>
-      </Panel>
+    if (this.state.loading) {
+      return <div className="panel">
+        <span><span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> {this.state.status}</span>
+      </div>
     }
 
     return <div>
