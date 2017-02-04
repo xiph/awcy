@@ -4,13 +4,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>Analyzer</title>
-  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400|Roboto:500" rel="stylesheet">
   <link rel="stylesheet" href="https://bootswatch.com/cyborg/bootstrap.min.css">
 </head>
 <body>
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
       background-color: #222222;
     }
 
@@ -109,12 +107,12 @@
 
     .sidePanel {
       position: fixed;
-      top: 0;
+      top: 384px;
+      bottom: 0;
       right: 0;
       z-index: 20;
       opacity: 1;
-      width: 256px;
-      height: 256px;
+      width: 384px;
       background-color: rgba(20, 20, 20, 0.8);
       padding-left: 10px;
       vertical-align: middle;
@@ -122,6 +120,7 @@
       padding: 10px;
       font-size: 11px;
       border-bottom-left-radius: 1em;
+      /*pointer-events: none;*/
     }
 
     .panel {
@@ -129,6 +128,41 @@
       background-color: rgba(20, 20, 20, 0.8);
       color: white;
     }
+
+    .zoomPanel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 20;
+      opacity: 1;
+      width: 384px;
+      height: 384px;
+      pointer-events: none;
+      background-color: rgba(20, 20, 20, 0.8);
+    }
+
+    .sectionHeader {
+      font-size: 12px;
+      padding-top: 8px;
+      padding-bottom: 2px;
+      font-weight: bold;
+    }
+
+    table {
+      table-layout: fixed;
+      width: 100%;
+      background-color: transparent;
+    }
+
+    table > thead > tr > td {
+      font-weight: bold;
+    }
+
+    table > tbody > tr > td {
+      padding-left: 2px;
+    }
+
+    ul { padding-left: 1.2em; }
 
   </style>
   <div id="analyzer-app"></div>

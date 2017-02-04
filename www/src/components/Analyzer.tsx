@@ -13,6 +13,7 @@ const DEFAULT_MARGIN = { top: 10, right: 10, bottom: 20, left: 40 };
 const MAX_FRAMES = 128;
 const MI_SIZE_LOG2 = 3;
 const MI_SIZE = 1 << MI_SIZE_LOG2;
+const ZOOM_WIDTH = 384;
 
 const COLORS = [
   "#E85EBE", "#009BFF", "#00FF00", "#0000FF", "#FF0000", "#01FFFE", "#FFA6FE",
@@ -41,6 +42,24 @@ const BLOCK_SIZES = [
   [6, 5],
   [6, 6]
 ];
+
+function forEachValue(o: any, fn: (v: any) => void) {
+  for (let n in o) {
+    fn(o[n]);
+  }
+}
+function fractionalBitsToString(v: number) {
+  return ((v / 8) | 0).toLocaleString();
+}
+function toPercent(v: number) {
+  return (v * 100).toFixed(2) + "%";
+}
+function withCommas(v: number) {
+  return v.toLocaleString();
+}
+function toByteSize(v: number) {
+  return withCommas(v) + " Bytes";
+}
 
 function getLineOffset(lineWidth: number) {
   return lineWidth % 2 == 0 ? 0 : 0.5;
@@ -115,6 +134,8 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   displayContext: CanvasRenderingContext2D;
   overlayCanvas: HTMLCanvasElement;
   overlayContext: CanvasRenderingContext2D;
+  zoomCanvas: HTMLCanvasElement;
+  zoomContext: CanvasRenderingContext2D;
   compositionCanvas: HTMLCanvasElement;
   compositionContext: CanvasRenderingContext2D = null;
   container: HTMLDivElement = null;
@@ -295,6 +316,12 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.overlayCanvas.width = w * scale * this.ratio;
 		this.overlayCanvas.height = h * scale * this.ratio;
     this.overlayContext = this.overlayCanvas.getContext("2d");
+
+    this.zoomCanvas.style.width = ZOOM_WIDTH + "px";
+		this.zoomCanvas.style.height = ZOOM_WIDTH + "px";
+    this.zoomCanvas.width = ZOOM_WIDTH * this.ratio;
+		this.zoomCanvas.height = ZOOM_WIDTH * this.ratio;
+    this.zoomContext = this.zoomCanvas.getContext("2d");
   }
   showToast(message: string, duration = 1000) {
     console.log(message);
@@ -342,6 +369,23 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
     this.drawLayers(frame, ctx, src, dst);
   }
+  drawZoom(group: number, index: number) {
+    let frame = this.props.frames[group][index];
+    let mousePosition = this.mousePosition.clone().divideScalar(this.state.scale).snap();
+    let src = Rectangle.createRectangleCenteredAtPoint(mousePosition, 64, 64);
+    let dst = new Rectangle(0, 0, ZOOM_WIDTH * this.ratio, ZOOM_WIDTH * this.ratio);
+
+    this.zoomContext.clearRect(0, 0, dst.w, dst.h);
+    if (this.state.showDecodedImage) {
+      this.zoomContext.mozImageSmoothingEnabled = false;
+      (this.zoomContext as any).imageSmoothingEnabled = false;
+      this.zoomContext.clearRect(dst.x, dst.y, dst.w, dst.h);
+      this.zoomContext.drawImage(this.frameCanvas,
+        src.x, src.y, src.w, src.h,
+        dst.x, dst.y, dst.w, dst.h);
+    }
+    this.drawLayers(frame, this.zoomContext, src, dst);
+  }
   drawLayers(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     ctx.save();
     ctx.globalAlpha = 0.5;
@@ -388,6 +432,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
     if (this.state.activeFrame >= 0) {
       this.draw(this.state.activeGroup, this.state.activeFrame);
+      this.drawZoom(this.state.activeGroup, this.state.activeFrame);
     }
   }
   reset() {
@@ -510,10 +555,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.setState(o as any);
   }
   onMouseDown(event: MouseEvent) {
-    // ...
+    this.handleMouseEvent(event);
   }
   onMouseMove(event: MouseEvent) {
-    this.handleMouseEvent(event);
+    // this.handleMouseEvent(event);
   }
   handleMouseEvent(event: MouseEvent) {
     function getMousePosition(canvas: HTMLCanvasElement, event: MouseEvent) {
@@ -604,10 +649,31 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       return `${a}, ${b}`;
     }
     if (frame) {
+      let frames = this.props.frames[this.state.activeGroup];
+      let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
+
+      let accounting = this.getActiveFrame().accounting;
+      let total = 0;
+      forEachValue(accounting.frameSymbols, (symbol) => {
+        total += symbol.bits;
+      });
+
+      let rows = []
+      for (let name in accounting.frameSymbols) {
+        let symbol = accounting.frameSymbols[name];
+        rows.push(<tr key={name}>
+          <td>{name}</td>
+          <td style={{textAlign: "right"}}>{fractionalBitsToString(symbol.bits)}</td>
+          <td style={{textAlign: "right"}}>{toPercent(symbol.bits / total)}</td>
+          <td style={{textAlign: "right"}}>{withCommas(symbol.samples)}</td>
+        </tr>);
+      }
+
       let json = frame.json;
       let p = this.getParentMIPosition(frame, this.mousePosition);
       if (p) {
         blockInfo = <div className="sidePanel">
+          <div className="sectionHeader">Mode Info</div>
           <div>Block: {p.x} x {p.y}</div>
           <div>Block Size: {getProperty(p, json, "blockSize")}</div>
           <div>Transform Size: {getProperty(p, json, "transformSize")}</div>
@@ -616,6 +682,27 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           <div>Skip: {getProperty(p, json, "skip")}</div>
           <div>Motion Vectors: {getMotionVector(p, json)}</div>
           <div>Reference Frame: {getReferenceFrame(p, json)}</div>
+          <div className="sectionHeader">Frame Info</div>
+          <div>Frame Bits: {fractionalBitsToString(total)}</div>
+          <table className="symbolTable">
+            <thead>
+              <tr>
+                <td style={{width: "128px"}}>Symbol</td>
+                <td style={{textAlign: "right"}}>Bits</td>
+                <td style={{textAlign: "right"}}>%</td>
+                <td style={{textAlign: "right"}}>Samples</td>
+              </tr>
+            </thead>
+            <tbody>
+              {rows}
+            </tbody>
+          </table>
+          <div className="sectionHeader">AV1 Analyzer Tips</div>
+          <ul>
+            <li>Click anywhere on the image to lock focus and get mode info details.</li>
+            <li>All analyzer features have keyboard shortcuts, use them.</li>
+            <li>Toggle between video sequences by using the number keys: 1, 2, 3, etc.</li>
+          </ul>
         </div>
       }
     }
@@ -658,6 +745,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         <canvas ref={(self: any) => this.overlayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 1, imageRendering: "pixelated", cursor: "crosshair"}}></canvas>
       </div>
       {toolbox}
+      <div className="zoomPanel" style={{display: this.state.showTools ? "block" : "none"}}>
+        <canvas ref={(self: any) => this.zoomCanvas = self} width="256" height="256"></canvas>
+      </div>
     </div>
   }
 
