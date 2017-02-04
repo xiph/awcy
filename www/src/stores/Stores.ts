@@ -27,7 +27,7 @@ declare var tinycolor: any;
 
 export let baseUrl = window.location.origin + '/';
 export let analyzerReportBaseUrl = baseUrl + "/analyzer.html";
-export let analyzerBaseUrl = "http://aomanalyzer.org" + '/';
+export let analyzerBaseUrl = "/analyzer.html";
 var inMockMode = false;
 
 export function formatDate(date) {
