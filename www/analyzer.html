@@ -1,45 +1,109 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>Analyzer</title>
-        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400|Roboto:500" rel="stylesheet">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
-        <link rel="stylesheet" href="react-select.css">
-    </head>
-    <body>
-        <style>
-          body {
-            font-family: 'Roboto', sans-serif;
-          }
 
+<head>
+  <meta charset="UTF-8" />
+  <title>Analyzer</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400|Roboto:500" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
+  <link rel="stylesheet" href="react-select.css">
+</head>
+<body>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
 
-          .glyphicon-refresh-animate {
-              -animation: spin .7s infinite linear;
-              -webkit-animation: spin2 .7s infinite linear;
-          }
+    .glyphicon-refresh-animate {
+      -animation: spin .7s infinite linear;
+      -webkit-animation: spin2 .7s infinite linear;
+    }
 
-          @-webkit-keyframes spin2 {
-              from { -webkit-transform: rotate(0deg);}
-              to { -webkit-transform: rotate(360deg);}
-          }
+    @-webkit-keyframes spin2 {
+      from {
+        -webkit-transform: rotate(0deg);
+      }
+      to {
+        -webkit-transform: rotate(360deg);
+      }
+    }
 
-          @keyframes spin {
-              from { transform: scale(1) rotate(0deg);}
-              to { transform: scale(1) rotate(360deg);}
-          }
+    @keyframes spin {
+      from {
+        transform: scale(1) rotate(0deg);
+      }
+      to {
+        transform: scale(1) rotate(360deg);
+      }
+    }
 
-          .d3Tooltip {
-            font: 10px sans-serif;
-          }
-        </style>
-        <div id="analyzer-app"></div>
-        <!-- Dependencies -->
-        <script src="lib/d3.v4.min.js"></script>
-        <script src="lib/react.min.js"></script>
-        <script src="lib/react-dom.min.js"></script>
-        <!-- Main -->
-        <script src="./dist/analyzer.bundle.js"></script>
-    </body>
+    .d3Tooltip {
+      font: 10px sans-serif;
+    }
+
+    .chartParent {
+      background-color: #FFF;
+      -webkit-transition: all 1s linear;
+    }
+
+    .chartParent:target {
+      background-color: #EBEDEF;
+      -webkit-transition: all 1s linear;
+    }
+
+    .frameContainer {
+      word-wrap: break-word;
+      font-size: 11px;
+    }
+
+    .propertyContainer {
+      word-wrap: break-word;
+      font-size: 11px;
+    }
+
+    .frameLink {
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .activeFrameLink {
+      text-decoration: underline;
+      padding: 2px;
+      font-weight: bold;
+      color: blueviolet;
+      cursor: pointer;
+    }
+
+    .toast {
+      font-size: 12px;
+      /*font-family: 'Roboto Mono', monospace;*/
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      z-index: 10;
+      opacity: 0;
+      height: 40px;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      overflow: hidden;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 40px;       /* the same as your div height */
+      pointer-events: none;
+    }
+
+  </style>
+  <div id="analyzer-app"></div>
+  <!-- Dependencies -->
+  <script src="lib/d3.v4.min.js"></script>
+  <script src="lib/react.min.js"></script>
+  <script src="lib/react-dom.min.js"></script>
+  <!-- Main -->
+  <script src="./dist/analyzer.bundle.js"></script>
+  <script src="lib/mousetrap.min.js"></script>
+  <script src="lib/dragscroll.js"></script>
+</body>
+
 </html>
