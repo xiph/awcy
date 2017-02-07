@@ -22,10 +22,9 @@ cp asm/examples/decoder.js ins/bin/decoder.js
 
 echo Configuring New ABI Analyzer
 
-make distclean
 git reset --hard
 git merge --no-commit -s recursive -X theirs analyzer/aom-analyzer
-
+rm -rf asm/
 mkdir -p asm
 pushd asm
 emconfigure ../configure --disable-multithread --disable-runtime-cpu-detect --target=generic-gnu --enable-accounting --enable-analyzer --disable-docs --disable-webm-io --extra-cflags="-D_POSIX_SOURCE" $BUILD_OPTIONS
