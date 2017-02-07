@@ -26,7 +26,7 @@ export class AccountingSymbol {
   }
 }
 
-type AccountingSymbolMap = { [name: string]: AccountingSymbol };
+export type AccountingSymbolMap = { [name: string]: AccountingSymbol };
 
 export class Accounting {
   symbols: AccountingSymbol[] = null;
@@ -42,7 +42,11 @@ export class Accounting {
     this.frameSymbols = Accounting.flatten(this.symbols);
     return this.frameSymbols;
   }
-
+  createBlockSymbols(c: number, r: number) {
+    return Accounting.flatten(this.symbols.filter(symbol => {
+      return symbol.x === c && symbol.y === r;
+    }));
+  }
   static flatten(sybmols: AccountingSymbol[]): AccountingSymbolMap {
     let map = Object.create(null);
     sybmols.forEach(symbol => {

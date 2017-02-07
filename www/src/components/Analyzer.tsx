@@ -2,7 +2,7 @@ import * as React from "react";
 import { ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon } from "react-bootstrap";
 import { } from "react-bootstrap";
 import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile } from "../stores/Stores";
-import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, clamp, Vector } from "../analyzer";
+import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector } from "../analyzer";
 import { Promise } from "es6-promise";
 
 import { BarPlot, BarPlotTable, Data } from "./Plot";
@@ -49,10 +49,13 @@ function forEachValue(o: any, fn: (v: any) => void) {
   }
 }
 function fractionalBitsToString(v: number) {
-  return ((v / 8) | 0).toLocaleString();
+  if (v > 16) {
+    return ((v / 8) | 0).toLocaleString();
+  }
+  return (v / 8).toLocaleString();
 }
 function toPercent(v: number) {
-  return (v * 100).toFixed(2) + "%";
+  return (v * 100).toFixed(1);
 }
 function withCommas(v: number) {
   return v.toLocaleString();
@@ -102,6 +105,208 @@ interface AnalyzerViewProps {
   frames: AnalyzerFrame[][],
   groupNames?: string[],
   playbackFrameRate?: number;
+}
+
+export class HistogramComponent extends React.Component<{
+  histograms: Histogram[];
+  highlight?: number;
+  height?: number;
+}, {
+
+}> {
+  public static defaultProps = {
+    height: 128
+  };
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+  ratio: number;
+  w: number;
+  h: number;
+  constructor() {
+    super();
+    this.ratio = window.devicePixelRatio || 1;
+  }
+  componentDidUpdate(prevProps, prevState) {
+    this.renderHistogram(this.context, this.props.histograms);
+  }
+  componentDidMount() {
+    let w = this.w = 360;
+    let h = this.h = this.props.height;
+    this.canvas.style.width = w + "px";
+    this.canvas.style.height = h + "px";
+    this.canvas.width = w * this.ratio;
+    this.canvas.height = h * this.ratio;
+    this.context = this.canvas.getContext("2d");
+    this.renderHistogram(this.context, this.props.histograms);
+  }
+  renderHistogram(ctx: CanvasRenderingContext2D, histograms: Histogram[]) {
+    let names = null;
+    if (histograms.length) {
+      if (!histograms[0]) {
+        return;
+      }
+      names = histograms[0].names;
+    }
+    if (!names) {
+      let max = 0;
+      histograms.forEach(histogram => {
+        for (var name in histogram.counts) {
+          max = Math.max(max, parseInt(name, 10));
+        }
+      });
+      names = [];
+      for (let i = 0; i <= max; i++) {
+        names.push(i);
+      }
+    }
+    function valueOf(histogram, name) {
+      let counts = histogram.counts;
+      return counts[name] === undefined ? 0 : counts[name];
+    }
+    let rows = [];
+    histograms.forEach((histogram: Histogram, i) => {
+      let row = { frame: i, total: 0 };
+      let total = 0;
+      names.forEach((name, i) => {
+        total += valueOf(histogram, i);
+      });
+      names.forEach((name, i) => {
+        row[name] = valueOf(histogram, i) / total;
+      });
+      rows.push(row);
+    });
+    this.renderChart(ctx, names, rows);
+    return;
+  }
+
+  renderChart(ctx: CanvasRenderingContext2D, names: string[], data: any[], yDomain = [0, 1]) {
+    ctx.save();
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    let r = this.ratio;
+    let w = this.w * r;
+    let lw = 8 * r;
+    let tw = 64 * r; // Max Text Width
+    let h = this.h * r;
+    let bw = Math.min(16 * r, (w - lw - tw) / data.length | 0);
+    for (let i = 0; i < data.length; i++) {
+      let t = 0;
+      names.forEach((k, j) => {
+        let v = data[i][k];
+        ctx.fillStyle = COLORS[j];
+        ctx.fillRect(i * bw, t * h | 0, bw - 1, v * h | 0);
+        t += v;
+      });
+      if (this.props.highlight == i) {
+        ctx.fillStyle = "white";
+        ctx.fillRect(i * bw, 0, bw - 1, r * 2);
+      }
+    }
+
+    // Legend
+
+    let lh = 8 * r;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.font = (8 * r) + "px Arial";
+    for (let i = 0; i < names.length; i++) {
+      ctx.fillStyle = COLORS[i];
+      ctx.fillRect(w - lw, i * lh, lw, lh);
+      ctx.fillStyle = "white";
+      ctx.fillText(names[i], w - lw - 2 * r, i * lh + (lh / 2), tw);
+    }
+    ctx.restore();
+  }
+
+  render() {
+    return  <div id="c" className="chartParent">
+      <canvas ref={(self: any) => this.canvas = self} width="256" height="256"></canvas>
+    </div>
+  }
+}
+
+export class AccountingComponent extends React.Component<{
+  symbols: AccountingSymbolMap;
+}, {
+
+}> {
+  render() {
+    let symbols = this.props.symbols;
+    let total = 0;
+    forEachValue(symbols, (symbol) => {
+      total += symbol.bits;
+    });
+
+    let rows = []
+    for (let name in symbols) {
+      let symbol = symbols[name];
+      rows.push(<tr key={name}>
+        <td className="propertyName">{name}</td>
+        <td className="propertyValue" style={{textAlign: "right"}}>{fractionalBitsToString(symbol.bits)}</td>
+        <td className="propertyValue" style={{textAlign: "right"}}>{toPercent(symbol.bits / total)}</td>
+        <td className="propertyValue" style={{textAlign: "right"}}>{withCommas(symbol.samples)}</td>
+      </tr>);
+    }
+
+    return <div>
+      <table className="symbolTable">
+        <thead>
+          <tr>
+            <td style={{width: "140px"}}>Symbol</td>
+            <td style={{textAlign: "right"}}>Bits {fractionalBitsToString(total)}</td>
+            <td style={{textAlign: "right"}}>%</td>
+            <td style={{textAlign: "right"}}>Samples</td>
+          </tr>
+        </thead>
+        <tbody>
+          {rows}
+        </tbody>
+      </table>
+    </div>
+  }
+}
+
+export class ModeInfoComponent extends React.Component<{
+  frame: AnalyzerFrame;
+  position: Vector;
+}, {
+
+}> {
+  render() {
+    let c = this.props.position.x;
+    let r = this.props.position.y;
+    let json = this.props.frame.json;
+    function getProperty(name: string): string{
+      if (!json[name]) return "N/A";
+      let v = json[name][r][c];
+      if (!json[name + "Map"]) return String(v);
+      return json[name + "Map"][v];
+    }
+    function getMotionVector() {
+      let motionVectors = json["motionVectors"];
+      if (!motionVectors) return "N/A";
+      let v = motionVectors[r][c];
+      return `${v[0]},${v[1]} ${v[2]},${v[3]}`;
+    }
+    function getReferenceFrame() {
+      let referenceFrame = json["referenceFrame"];
+      if (!referenceFrame) return "N/A";
+      let map = json["referenceFrameMap"];
+      let v = referenceFrame[r][c];
+      let a = v[0] >= 0 ? ((map && map[v[0]] !== undefined) ? map[v[0]] : v[0]) : "N/A";
+      let b = v[1] >= 0 ? ((map && map[v[1]] !== undefined) ? map[v[1]] : v[1]) : "N/A";
+      return `${a}, ${b}`;
+    }
+    return <div>
+      <div><span className="propertyName">Block:</span> <span className="propertyValue">{c}x{r}</span></div>
+      <div><span className="propertyName">Block Size:</span> <span className="propertyValue">{getProperty("blockSize")}</span></div>
+      <div><span className="propertyName">Transform Size:</span> <span className="propertyValue">{getProperty("transformSize")}</span></div>
+      <div><span className="propertyName">Transform Type:</span> <span className="propertyValue">{getProperty("transformType")}</span></div>
+      <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
+      <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
+      <div><span className="propertyName">Motion Vectors:</span> <span className="propertyValue">{getMotionVector()}</span></div>
+      <div><span className="propertyName">Reference Frame:</span> <span className="propertyValue">{getReferenceFrame()}</span></div>
+    </div>
+  }
 }
 
 export class AnalyzerView extends React.Component<AnalyzerViewProps, {
@@ -607,6 +812,28 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   updateBlockInfo() {
     this.forceUpdate();
   }
+  getSymbolHist(frames: AnalyzerFrame[]): Histogram [] {
+    let data = [];
+    let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
+    frames.forEach((frame, i) => {
+      let row = { frame: i, total: 0 };
+      let symbols = frame.accounting.createFrameSymbols();
+      let total = 0;
+      names.forEach(name => {
+        let symbol = symbols[name];
+        let bits = symbol ? symbol.bits : 0;
+        total += bits;
+      });
+      names.forEach((name, i) => {
+        let symbol = symbols[name];
+        let bits = symbol ? symbol.bits : 0;
+        row[i] = bits / total;
+      });
+      data.push(row);
+    });
+    return data.map(data => new Histogram(data, names));
+  }
+
   render() {
     let groups = this.props.frames;
     let groupFrameLinks = groups.map((group, i) => {
@@ -627,76 +854,42 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
     let blockInfo = null;
     let frame = this.getActiveFrame();
-    function getProperty(p: Vector, json: any, name: string): string{
-      if (!json[name]) return "N/A";
-      let v = json[name][p.y][p.x];
-      if (!json[name + "Map"]) return String(v);
-      return json[name + "Map"][v];
-    }
-    function getMotionVector(p: Vector, json: any) {
-      let motionVectors = frame.json["motionVectors"];
-      if (!motionVectors) return "N/A";
-      let v = motionVectors[p.y][p.x];
-      return `${v[0]},${v[1]} ${v[2]},${v[3]}`;
-    }
-    function getReferenceFrame(p: Vector, json: any) {
-      let referenceFrame = frame.json["referenceFrame"];
-      if (!referenceFrame) return "N/A";
-      let map = frame.json["referenceFrameMap"];
-      let v = referenceFrame[p.y][p.x];
-      let a = v[0] >= 0 ? ((map && map[v[0]] !== undefined) ? map[v[0]] : v[0]) : "N/A";
-      let b = v[1] >= 0 ? ((map && map[v[1]] !== undefined) ? map[v[1]] : v[1]) : "N/A";
-      return `${a}, ${b}`;
-    }
     if (frame) {
       let frames = this.props.frames[this.state.activeGroup];
       let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
-
       let accounting = this.getActiveFrame().accounting;
-      let total = 0;
-      forEachValue(accounting.frameSymbols, (symbol) => {
-        total += symbol.bits;
-      });
-
-      let rows = []
-      for (let name in accounting.frameSymbols) {
-        let symbol = accounting.frameSymbols[name];
-        rows.push(<tr key={name}>
-          <td>{name}</td>
-          <td style={{textAlign: "right"}}>{fractionalBitsToString(symbol.bits)}</td>
-          <td style={{textAlign: "right"}}>{toPercent(symbol.bits / total)}</td>
-          <td style={{textAlign: "right"}}>{withCommas(symbol.samples)}</td>
-        </tr>);
-      }
 
       let json = frame.json;
       let p = this.getParentMIPosition(frame, this.mousePosition);
       if (p) {
+        let symbolHist = this.getSymbolHist(frames);
+        let blockSymbols = this.getActiveFrame().accounting.createBlockSymbols(p.x, p.y);
+
         blockInfo = <div className="sidePanel">
-          <div className="sectionHeader">Mode Info</div>
-          <div>Block: {p.x} x {p.y}</div>
-          <div>Block Size: {getProperty(p, json, "blockSize")}</div>
-          <div>Transform Size: {getProperty(p, json, "transformSize")}</div>
-          <div>Transform Type: {getProperty(p, json, "transformType")}</div>
-          <div>Mode: {getProperty(p, json, "mode")}</div>
-          <div>Skip: {getProperty(p, json, "skip")}</div>
-          <div>Motion Vectors: {getMotionVector(p, json)}</div>
-          <div>Reference Frame: {getReferenceFrame(p, json)}</div>
+
+          <div className="sectionHeader">Symbols</div>
+          <HistogramComponent histograms={symbolHist} highlight={this.state.activeFrame} height={256}></HistogramComponent>
+
+          <div className="sectionHeader">Block Size</div>
+          <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame}></HistogramComponent>
+
+          <div className="sectionHeader">Transform Size</div>
+          <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame}></HistogramComponent>
+
+          <div className="sectionHeader">Transform Type</div>
+          <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} height={32} highlight={this.state.activeFrame}></HistogramComponent>
+
+          <div className="sectionHeader">Prediction Mode</div>
+          <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame}></HistogramComponent>
+
+          <div className="sectionHeader">Skip Mode</div>
+          <HistogramComponent histograms={frames.map(x => x.skipHist)} height={32} highlight={this.state.activeFrame}></HistogramComponent>
+
+          <div className="sectionHeader">Block Info</div>
+          <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
+          <AccountingComponent symbols={blockSymbols}></AccountingComponent>
           <div className="sectionHeader">Frame Info</div>
-          <div>Frame Bits: {fractionalBitsToString(total)}</div>
-          <table className="symbolTable">
-            <thead>
-              <tr>
-                <td style={{width: "128px"}}>Symbol</td>
-                <td style={{textAlign: "right"}}>Bits</td>
-                <td style={{textAlign: "right"}}>%</td>
-                <td style={{textAlign: "right"}}>Samples</td>
-              </tr>
-            </thead>
-            <tbody>
-              {rows}
-            </tbody>
-          </table>
+          <AccountingComponent symbols={accounting.frameSymbols}></AccountingComponent>
           <div className="sectionHeader">AV1 Analyzer Tips</div>
           <ul>
             <li>Click anywhere on the image to lock focus and get mode info details.</li>
@@ -1125,363 +1318,5 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     return <div>
       <AnalyzerView frames={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.props.playbackFrameRate} ></AnalyzerView>
     </div>;
-  }
-}
-
-interface AnalyzerComponentProps {
-  decoderUrl: string;
-  videoUrl: string;
-  playbackFrameRate?: number;
-  layers?: number;
-  maxFrames?: number
-}
-
-export class AnalyzerComponent extends React.Component<AnalyzerComponentProps, {
-    frames: AnalyzerFrame[];
-    analyzerFailedToLoad: boolean | null
-    decoding: boolean;
-  }> {
-  bitsSvg: SVGElement;
-  symbolsSvg: SVGElement;
-  blockSizeSvg: SVGElement;
-  transformSizeSvg: SVGElement;
-  transformTypeSvg: SVGElement;
-  predictionModeSvg: SVGElement;
-  skipSvg: SVGElement;
-
-  public static defaultProps: AnalyzerComponentProps = {
-    decoderUrl: null,
-    videoUrl: null,
-    playbackFrameRate: 30,
-    maxFrames: MAX_FRAMES,
-    layers: 0xFFFFFFFF
-  };
-
-  constructor() {
-    super();
-    this.state = {
-      frames: null,
-      analyzerFailedToLoad: null,
-      decoding: false
-    };
-  }
-  componentWillMount() {
-    this.load(this.props.decoderUrl, this.props.videoUrl);
-  }
-  load(decoderPath: string, videoPath: string) {
-    if (videoPath.endsWith(".json")) {
-      loadFramesFromJson(videoPath).then((frames) => {
-        frames = frames.slice(0, this.props.maxFrames);
-        this.setState({ frames, analyzerFailedToLoad: false } as any);
-        this.renderCharts();
-      });
-    } else {
-      Decoder.loadDecoder(decoderPath).then((decoder) => {
-        console.info(decoder);
-        downloadFile(videoPath).then((bytes) => {
-          decoder.openFileBytes(bytes);
-          this.setState({ frames: [], analyzerFailedToLoad: false } as any);
-          this.decode(decoder, this.props.maxFrames);
-        }).catch(() => {
-          this.setState({ analyzerFailedToLoad: true } as any);
-        });
-      }).catch(() => {
-        this.setState({ analyzerFailedToLoad: true } as any);
-      });
-    }
-  }
-  decode(analyzer: Decoder, count: number) {
-    this.decodeFrames(analyzer, count, () => {
-      this.renderCharts();
-    });
-  }
-  renderCharts() {
-    let frames = this.state.frames;
-    this.renderBitsChart();
-    this.renderSymbolsChart();
-    this.renderHistogram(this.blockSizeSvg, frames.map(x => x.blockSizeHist));
-    this.renderHistogram(this.transformSizeSvg, frames.map(x => x.transformSizeHist));
-    this.renderHistogram(this.transformTypeSvg, frames.map(x => x.transformTypeHist));
-    this.renderHistogram(this.predictionModeSvg, frames.map(x => x.predictionModeHist));
-    this.renderHistogram(this.skipSvg, frames.map(x => x.skipHist));
-  }
-  decodeFrames(deocder: Decoder, count: number, next: any) {
-    let time = performance.now();
-    this.setState({ decoding: true } as any);
-    let interval = setInterval(() => {
-      deocder.setLayers(this.props.layers);
-      deocder.readFrame().then((frames) => {
-        this.forceUpdate();
-        if (!frames) {
-          clearInterval(interval);
-          this.setState({ decoding: false } as any);
-          console.info(`Decode Time: ${performance.now() - time}`);
-          next();
-          return;
-        }
-        frames.forEach(frame => {
-          this.state.frames.push(frame);
-        });
-        if (--count <= 0) {
-          clearInterval(interval);
-          this.setState({ decoding: false } as any);
-          console.info(`Decode Time: ${performance.now() - time}`);
-          next();
-        }
-      });
-    }, 16);
-  }
-  renderChart(element: SVGElement, names: string[], data: any[], yDomain = [0, 1]) {
-    let legendWidth = 128;
-    var svg = d3.select(element),
-      margin = DEFAULT_MARGIN,
-      width = +svg.attr("width") - margin.left - margin.right,
-      height = +svg.attr("height") - margin.top - margin.bottom,
-      g = svg.append("g").attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
-
-    var x = d3.scaleBand()
-      .rangeRound([0, width - legendWidth])
-      .padding(0.1)
-      .align(0.1);
-    var y = d3.scaleLinear().rangeRound([height, 0]);
-    var z = d3.scaleOrdinal(d3.schemeCategory20);
-
-    var stack = d3.stack();
-
-    x.domain(data.map((d, i) => i));
-    x.domain(d3.range(data.length));
-    y.domain(yDomain).nice();
-    z.domain(names.length);
-
-    var tooltip = d3.select("body")
-      .append("div")
-      .style("padding", "4px")
-      .style("background-color", "white")
-      .style("position", "absolute")
-      .style("z-index", "10")
-      .style("visibility", "hidden")
-      .text("a simple tooltip");
-
-    g.selectAll(".serie")
-      .data(stack.keys(names)(data))
-      .enter().append("g")
-      .attr("class", "serie")
-      .attr("fill", function (d) {
-        return z(d.key);
-      })
-      .selectAll("rect")
-      .data(function (d) {
-        return d;
-      })
-      .enter().append("rect")
-      .attr("x", function (d, i) {
-        return x(i);
-      })
-      .attr("y", function (d) {
-        return y(d[1]);
-      })
-      .attr("height", function (d) {
-        return y(d[0]) - y(d[1]);
-      })
-      .attr("width", x.bandwidth())
-      .on("mouseover", function (d) {
-        return tooltip.style("visibility", "visible");
-      })
-      .on("mousemove", function (d) {
-        tooltip.style("top", (d3.event.pageY - 10) + "px");
-        tooltip.style("left", (d3.event.pageX + 10) + "px");
-        // let text = ((d[1] - d[0]) * 100).toFixed(2) + "%";
-        let text = (d[1] - d[0]).toFixed(3);
-        tooltip.text(text);
-      })
-      .on("mouseout", function (d) {
-        return tooltip.style("visibility", "hidden");
-      });
-
-    g.append("g")
-      .attr("class", "axis axis--y")
-      .call(d3.axisLeft(y).ticks(5, "s"))
-      .append("text")
-    // .attr("x", 2)
-    // .attr("y", y(y.ticks(5).pop()))
-    // .attr("dy", "0.35em")
-    // .attr("text-anchor", "start")
-    // .attr("fill", "#000")
-    // .text("Population");
-
-    g.append("g")
-      .attr("class", "axis axis--x")
-      .attr("transform", "translate(0, " + height + ")")
-      .call(d3.axisBottom(x));
-
-    var legend = g.selectAll(".legend")
-      .data(names)
-      .enter().append("g")
-      .attr("class", "legend")
-      .attr("transform", function (d, i) { return `translate(${width - legendWidth}, ${i * 16})`; })
-      .style("font", "10px sans-serif");
-
-    legend.append("rect")
-      .attr("x", 0)
-      .attr("y", 2)
-      .attr("width", 14)
-      .attr("height", 14)
-      .attr("fill", z);
-
-    legend.append("text")
-      .attr("x", 16)
-      .attr("y", 9)
-      .attr("dy", ".35em")
-      .attr("text-anchor", "start")
-      .text(function (d) { return d; });
-  }
-  renderHistogram(element: SVGElement, histograms: Histogram[]) {
-    let names = null;
-    if (histograms.length) {
-      if (!histograms[0]) {
-        return;
-      }
-      names = histograms[0].names;
-    }
-    if (!names) {
-      let max = 0;
-      histograms.forEach(histogram => {
-        for (var name in histogram.counts) {
-          max = Math.max(max, parseInt(name, 10));
-        }
-      });
-      names = [];
-      for (let i = 0; i <= max; i++) {
-        names.push(i);
-      }
-    }
-    function valueOf(histogram, name) {
-      let counts = histogram.counts;
-      return counts[name] === undefined ? 0 : counts[name];
-    }
-    let rows = [];
-    histograms.forEach((histogram: Histogram, i) => {
-      let row = { frame: i, total: 0 };
-      let total = 0;
-      names.forEach((name, i) => {
-        total += valueOf(histogram, i);
-      });
-      names.forEach((name, i) => {
-        row[name] = valueOf(histogram, i) / total;
-      });
-      rows.push(row);
-    });
-    this.renderChart(element, names, rows);
-    return;
-  }
-  renderBitsChart() {
-    console.debug("Rendering Chart");
-    let data = [];
-    let frames = this.state.frames;
-    let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
-    let max = 0;
-    frames.forEach((frame, i) => {
-      let row = { frame: i, Bits: 0 };
-      let symbols = frame.accounting.createFrameSymbols();
-      let total = 0;
-      names.forEach(name => {
-        let symbol = symbols[name];
-        let bits = symbol ? symbol.bits : 0;
-        total += bits;
-      });
-      total >>= 3;
-      row.Bits = total;
-      max = Math.max(max, total);
-      data.push(row);
-    });
-    this.renderChart(this.bitsSvg, ["Bits"], data, [0, max]);
-  }
-  renderSymbolsChart() {
-    console.debug("Rendering Chart");
-
-    let data = [];
-    let frames = this.state.frames;
-    let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
-
-    frames.forEach((frame, i) => {
-      let row = { frame: i, total: 0 };
-      let symbols = frame.accounting.createFrameSymbols();
-      let total = 0;
-      names.forEach(name => {
-        let symbol = symbols[name];
-        let bits = symbol ? symbol.bits : 0;
-        total += bits;
-      });
-
-      names.forEach(name => {
-        let symbol = symbols[name];
-        let bits = symbol ? symbol.bits : 0;
-        row[name] = bits / total;
-      });
-
-      data.push(row);
-    });
-
-    this.renderChart(this.symbolsSvg, names, data);
-  }
-  render() {
-    console.debug("Rendering Analyzer");
-    let frames = this.state.frames;
-    let analyzerHeader = `Analyzer Report: ${this.props.videoUrl}`;
-    if (!frames) {
-      return <Panel header={analyzerHeader}>
-        {this.state.analyzerFailedToLoad ?
-          <span><span className="glyphicon glyphicon-warning-sign"></span> Analyzer failed to load. </span> :
-          <span><span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Loading frames ... </span>
-        }
-      </Panel>
-    }
-
-    let decoding = this.state.decoding;
-    if (decoding) {
-      return <Panel header={analyzerHeader}>
-        <span><span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Decoding frame {frames.length}...</span>
-      </Panel>
-    }
-
-    return <Panel header={analyzerHeader}>
-      <div>
-        <AnalyzerView frames={null} playbackFrameRate={this.props.playbackFrameRate} ></AnalyzerView>
-      </div>
-      <div id="a" className="chartParent">
-        <a href="#a">Bits per frame</a><br />
-        <svg ref={(self: any) => this.bitsSvg = self} width="1600" height="100"></svg>
-      </div>
-
-      <div id="b" className="chartParent">
-        <a href="#b">% of bits used to encode symbols per frame</a><br />
-        <svg ref={(self: any) => this.symbolsSvg = self} width="1600" height="300"></svg>
-      </div>
-
-      <div id="c" className="chartParent">
-        <a href="#c">% of pixels covered by block size per frame</a><br />
-        <svg ref={(self: any) => this.blockSizeSvg = self} width="1600" height="300"></svg>
-      </div>
-
-      <div id="d" className="chartParent">
-        <a href="#d">% of pixels covered by transform size per frame</a><br />
-        <svg ref={(self: any) => this.transformSizeSvg = self} width="1600" height="300"></svg>
-      </div>
-
-      <div id="e" className="chartParent">
-        <a href="#e">% of pixels covered by transform type per frame</a><br />
-        <svg ref={(self: any) => this.transformTypeSvg = self} width="1600" height="300"></svg>
-      </div>
-
-      <div id="f" className="chartParent">
-        <a href="#f">% of pixels predicted by mode per frame</a><br />
-        <svg ref={(self: any) => this.predictionModeSvg = self} width="1600" height="300"></svg>
-      </div>
-
-      <div id="g" className="chartParent">
-        <a href="#g">% of pixels skipped per frame</a><br />
-        <svg ref={(self: any) => this.skipSvg = self} width="1600" height="100"></svg>
-      </div>
-    </Panel>
   }
 }

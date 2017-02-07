@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Analyzer</title>
-  <link rel="stylesheet" href="https://bootswatch.com/cyborg/bootstrap.min.css">
+  <link rel="stylesheet" href="lib/bootstrap.min.css">
 </head>
 <body>
   <style>
@@ -40,7 +40,6 @@
     }
 
     .chartParent {
-      background-color: #FFF;
       -webkit-transition: all 1s linear;
     }
 
@@ -121,6 +120,7 @@
       font-size: 11px;
       border-bottom-left-radius: 1em;
       /*pointer-events: none;*/
+      overflow: scroll;
     }
 
     .panel {
@@ -143,9 +143,19 @@
 
     .sectionHeader {
       font-size: 12px;
-      padding-top: 8px;
-      padding-bottom: 2px;
+      margin-top: 8px;
+      margin-bottom: 4px;
       font-weight: bold;
+      border-bottom: 1px solid deepskyblue;
+      color: deepskyblue;
+    }
+
+    .propertyName {
+      font-size: 11px;
+    }
+    .propertyValue {
+      font-size: 11px;
+      font-family: monospace;
     }
 
     table {
@@ -156,6 +166,13 @@
 
     table > thead > tr > td {
       font-weight: bold;
+      font-size: 12px;
+      color: #999999;
+      padding-bottom: 2px;
+    }
+
+    table > thead > tr {
+      border-bottom: 1px solid #666666;
     }
 
     table > tbody > tr > td {
