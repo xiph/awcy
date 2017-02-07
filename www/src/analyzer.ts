@@ -386,6 +386,9 @@ export class Decoder {
   frameCanvas: HTMLCanvasElement = null;
   frameContext: CanvasRenderingContext2D = null;
 
+  /** Whether to read image data after decoding a frame. */
+  shouldReadImageData: boolean = true;
+
   constructor(nativeModule) {
     this.nativeModule = nativeModule;
     this.native = DecoderModule(nativeModule);
@@ -432,7 +435,9 @@ export class Decoder {
       frames.push(frame);
       this.frames.push(frame);
     }
-    frames[frames.length - 1].imageData = this.readImage();
+    if (this.shouldReadImageData) {
+      frames[frames.length - 1].imageData = this.readImage();
+    }
     return frames;
   }
 

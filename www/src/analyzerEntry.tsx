@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { AnalyzerComponent, AnalyzerViewCompareComponent } from "./components/Analyzer";
+import { AnalyzerViewCompareComponent, AnalyzerBenchmarkComponent } from "./components/Analyzer";
 import { forEachUrlParameter, getUrlParameters } from "./stores/Stores";
 
 let parameters = getUrlParameters();
@@ -10,6 +10,7 @@ let file = parameters.file;
 let playbackFrameRate = parameters.playbackFrameRate;
 let layers = parameters.layers;
 let maxFrames = parameters.maxFrames;
+let benchmark = parameters.benchmark;
 
 
 /**
@@ -35,12 +36,22 @@ let pairs = getDecoderVideoUrls();
     playbackFrameRate={playbackFrameRate}
     layers={layers}
     maxFrames={maxFrames}/>,
-    */}
-ReactDOM.render(
-  <AnalyzerViewCompareComponent
-    decoderVideoUrlPairs={pairs}
-    playbackFrameRate={playbackFrameRate}
-    layers={layers}
-    maxFrames={maxFrames}/>,
-  document.getElementById("analyzer-app")
-);
+  */}
+
+if (parameters.benchmark) {
+  ReactDOM.render(
+    <AnalyzerBenchmarkComponent
+      decoderVideoUrlPairs={pairs}
+      maxFrames={maxFrames}/>,
+    document.getElementById("analyzer-app")
+  );
+} else {
+  ReactDOM.render(
+    <AnalyzerViewCompareComponent
+      decoderVideoUrlPairs={pairs}
+      playbackFrameRate={playbackFrameRate}
+      layers={layers}
+      maxFrames={maxFrames}/>,
+    document.getElementById("analyzer-app")
+  );
+}
