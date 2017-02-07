@@ -1227,7 +1227,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
   groupNames: string [],
   analyzerFailedToLoad: boolean,
   decodedFrameCount: number,
-  loading: false,
+  loading: "done" | "failed" | "loading",
   status: string
 }> {
   public static defaultProps: AnalyzerViewCompareComponentProps = {
@@ -1243,7 +1243,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
       groupNames: null,
       decodedFrameCount: 0,
       analyzerFailedToLoad: null,
-      loading: true,
+      loading: "loading",
       status: ""
     } as any;
   }
@@ -1274,9 +1274,13 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
         }
         this.setState({ status: "Decoding Frames" } as any);
         Promise.all(decoders.map(decoder => this.decodeFrames(decoder, this.props.maxFrames))).then(frames => {
-          this.setState({ frames: frames, groupNames: groupNames, loading: false } as any);
+          this.setState({ frames: frames, groupNames: groupNames, loading: "done" } as any);
         });
+      }).catch(e => {
+        this.setState({ status: "Downloading Files Failed", loading: "error" } as any);
       });
+    }).catch(e => {
+      this.setState({ status: "Loading Decoders Failed", loading: "error" } as any);
     });
   }
 
@@ -1309,9 +1313,10 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
   }
   render() {
     let frames = this.state.frames;
-    if (this.state.loading) {
+    if (this.state.loading != "done") {
+      let icon = this.state.loading === "loading" ? <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> : <span className="glyphicon glyphicon-ban-circle"></span>;
       return <div className="panel">
-        <span><span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> {this.state.status}</span>
+        <span>{icon} {this.state.status}</span>
       </div>
     }
 
