@@ -14,6 +14,7 @@ const MAX_FRAMES = 128;
 const MI_SIZE_LOG2 = 3;
 const MI_SIZE = 1 << MI_SIZE_LOG2;
 const ZOOM_WIDTH = 384;
+const ZOOM_SOURCE = 64;
 
 const COLORS = [
   "#E85EBE", "#009BFF", "#00FF00", "#0000FF", "#FF0000", "#01FFFE", "#FFA6FE",
@@ -207,12 +208,12 @@ export class HistogramComponent extends React.Component<{
     let lh = 8 * r;
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
-    ctx.font = (8 * r) + "px Arial";
+    ctx.font = (10 * r) + "px Arial";
     for (let i = 0; i < names.length; i++) {
       ctx.fillStyle = COLORS[i];
-      ctx.fillRect(w - lw, i * lh, lw, lh);
+      ctx.fillRect(w - lw, i * (lh + 2 * r), lw, lh);
       ctx.fillStyle = "white";
-      ctx.fillText(names[i], w - lw - 2 * r, i * lh + (lh / 2), tw);
+      ctx.fillText(names[i], w - lw - 2 * r, i * (lh + 2 * r) + (lh / 2));
     }
     ctx.restore();
   }
@@ -498,7 +499,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.frameContext = this.frameCanvas.getContext("2d");
     this.compositionCanvas = document.createElement("canvas");
     this.compositionContext = this.compositionCanvas.getContext("2d");
-    this.mousePosition = new Vector(0, 0);
+    this.mousePosition = new Vector(128, 128);
   }
   resetCanvas(w: number, h: number) {
     let scale = this.state.scale;
@@ -573,11 +574,21 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let dst = src.clone().multiplyScalar(scale * this.ratio);
 
     this.drawLayers(frame, ctx, src, dst);
+
+    if (this.state.showTools) {
+      ctx.save();
+      ctx.strokeStyle = "white";
+      ctx.setLineDash([2, 4]);
+      let w = ZOOM_SOURCE * ratio * scale;
+      ctx.strokeRect(this.mousePosition.x * ratio - w / 2,
+                     this.mousePosition.y * ratio - w / 2, w, w);
+      ctx.restore();
+    }
   }
   drawZoom(group: number, index: number) {
     let frame = this.props.frames[group][index];
     let mousePosition = this.mousePosition.clone().divideScalar(this.state.scale).snap();
-    let src = Rectangle.createRectangleCenteredAtPoint(mousePosition, 64, 64);
+    let src = Rectangle.createRectangleCenteredAtPoint(mousePosition, ZOOM_SOURCE, ZOOM_SOURCE);
     let dst = new Rectangle(0, 0, ZOOM_WIDTH * this.ratio, ZOOM_WIDTH * this.ratio);
 
     this.zoomContext.clearRect(0, 0, dst.w, dst.h);
@@ -632,7 +643,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.overlayCanvas.addEventListener("mousedown", this.onMouseDown.bind(this));
   }
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.scale != prevState.scale) {
+    let imageData = this.props.frames[this.state.activeGroup][0].imageData;
+    let frameSizeChanged = this.frameSize.w !== imageData.width || this.frameSize.h != imageData.height;
+    if (this.state.scale != prevState.scale || frameSizeChanged) {
       this.reset();
     }
     if (this.state.activeFrame >= 0) {
@@ -641,7 +654,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
   }
   reset() {
-    let imageData = this.props.frames[0][0].imageData;
+    let imageData = this.props.frames[this.state.activeGroup][0].imageData;
     let w = imageData.width, h = imageData.height;
     this.resetCanvas(w, h);
   }
@@ -867,29 +880,33 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
         blockInfo = <div className="sidePanel">
 
+          <div className="sectionHeader">Block Info</div>
+          <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
+
           <div className="sectionHeader">Symbols</div>
           <HistogramComponent histograms={symbolHist} highlight={this.state.activeFrame} height={256}></HistogramComponent>
 
           <div className="sectionHeader">Block Size</div>
-          <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame}></HistogramComponent>
+          <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256}></HistogramComponent>
 
           <div className="sectionHeader">Transform Size</div>
-          <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame}></HistogramComponent>
+          <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256}></HistogramComponent>
 
           <div className="sectionHeader">Transform Type</div>
-          <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} height={32} highlight={this.state.activeFrame}></HistogramComponent>
+          <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={64}></HistogramComponent>
 
           <div className="sectionHeader">Prediction Mode</div>
-          <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame}></HistogramComponent>
+          <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256}></HistogramComponent>
 
           <div className="sectionHeader">Skip Mode</div>
-          <HistogramComponent histograms={frames.map(x => x.skipHist)} height={32} highlight={this.state.activeFrame}></HistogramComponent>
+          <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={32}></HistogramComponent>
 
-          <div className="sectionHeader">Block Info</div>
-          <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
+          <div className="sectionHeader">Block Symbols</div>
           <AccountingComponent symbols={blockSymbols}></AccountingComponent>
-          <div className="sectionHeader">Frame Info</div>
+
+          <div className="sectionHeader">Frame Symbols</div>
           <AccountingComponent symbols={accounting.frameSymbols}></AccountingComponent>
+
           <div className="sectionHeader">AV1 Analyzer Tips</div>
           <ul>
             <li>Click anywhere on the image to lock focus and get mode info details.</li>
@@ -947,10 +964,11 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   drawSkip(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let skip = frame.json["skip"];
     this.drawFillBlock(frame, ctx, src, dst, (c, r, sc, sr) => {
-      if (!skip[r][c]) {
+      let v = skip[r][c];
+      if (!v) {
         return false;
       }
-      ctx.fillStyle = "red";
+      ctx.fillStyle = COLORS[v];
       return true;
     });
   }
