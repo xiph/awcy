@@ -1,5 +1,4 @@
 import { Dispatcher } from "flux";
-import { Analyzer } from "../analyzer";
 
 export var AppDispatcher = new Dispatcher<Action>();
 export class Action { }
@@ -238,6 +237,7 @@ export type Report = { [name: string]: number[][] };
 
 export type BDRateReportJSON = {
   metric_names: string[],
+  error_strings: string[],
   average: {
     [index: string]: number
   },

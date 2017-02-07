@@ -818,84 +818,83 @@ export class BDRatePlot extends ScatterPlot<BDRatePlotProps, BDRatePlotState> {
 
   drawCrosshairs(dp: Point) {
     super.drawCrosshairs(dp);
-    return;
-    let p = this.inverseTransformPoint(dp.clone());
-    let series = this.state.series;
-    let vIntersections: {series: ScatterPlotSeries, p: Point} [] = [];
-    let hIntersections: {series: ScatterPlotSeries, p: Point} [] = [];
-    for (let j = 0; j < series.length; j++) {
-      let s = series[j];
-      let v = s.values;
-      let v0 = new Point(p.x, 0);
-      let v1 = new Point(p.x, 100);
+    // let p = this.inverseTransformPoint(dp.clone());
+    // let series = this.state.series;
+    // let vIntersections: {series: ScatterPlotSeries, p: Point} [] = [];
+    // let hIntersections: {series: ScatterPlotSeries, p: Point} [] = [];
+    // for (let j = 0; j < series.length; j++) {
+    //   let s = series[j];
+    //   let v = s.values;
+    //   let v0 = new Point(p.x, 0);
+    //   let v1 = new Point(p.x, 100);
 
-      let h0 = new Point(0, p.y);
-      let h1 = new Point(100, p.y);
+    //   let h0 = new Point(0, p.y);
+    //   let h1 = new Point(100, p.y);
 
-      for (let i = 1; i < v.length; i++) {
-        let b0 = new Point(v[i - 1][0], v[i - 1][1]);
-        let b1 = new Point(v[i][0], v[i][1]);
-        let result = segmentIntersection(v0, v1, b0, b1);
-        if (result && result.intersectsSegmentA && result.intersectsSegmentB) {
-          vIntersections.push({series: s, p: result.intersection});
-          this.ctx.globalAlpha = 0.2;
-          this.ctx.strokeStyle = s.color;
-          this.drawLine(new Point(0, result.intersection.y), new Point(1000, result.intersection.y));
-          this.ctx.globalAlpha = 1;
-        }
+    //   for (let i = 1; i < v.length; i++) {
+    //     let b0 = new Point(v[i - 1][0], v[i - 1][1]);
+    //     let b1 = new Point(v[i][0], v[i][1]);
+    //     let result = segmentIntersection(v0, v1, b0, b1);
+    //     if (result && result.intersectsSegmentA && result.intersectsSegmentB) {
+    //       vIntersections.push({series: s, p: result.intersection});
+    //       this.ctx.globalAlpha = 0.2;
+    //       this.ctx.strokeStyle = s.color;
+    //       this.drawLine(new Point(0, result.intersection.y), new Point(1000, result.intersection.y));
+    //       this.ctx.globalAlpha = 1;
+    //     }
 
-        result = segmentIntersection(h0, h1, b0, b1);
-        if (result && result.intersectsSegmentA && result.intersectsSegmentB) {
-          hIntersections.push({series: s, p: result.intersection});
-          this.ctx.globalAlpha = 0.2;
-          this.ctx.strokeStyle = s.color;
-          this.drawLine(new Point(result.intersection.x, 0), new Point(result.intersection.x, 1000));
-          this.ctx.globalAlpha = 1;
-        }
-      }
-    }
-    this.ctx.fillStyle = "#000000";
+    //     result = segmentIntersection(h0, h1, b0, b1);
+    //     if (result && result.intersectsSegmentA && result.intersectsSegmentB) {
+    //       hIntersections.push({series: s, p: result.intersection});
+    //       this.ctx.globalAlpha = 0.2;
+    //       this.ctx.strokeStyle = s.color;
+    //       this.drawLine(new Point(result.intersection.x, 0), new Point(result.intersection.x, 1000));
+    //       this.ctx.globalAlpha = 1;
+    //     }
+    //   }
+    // }
+    // this.ctx.fillStyle = "#000000";
 
-    vIntersections.forEach(o => this.drawDot(o.p, 1));
-    hIntersections.forEach(o => this.drawDot(o.p, 1));
+    // vIntersections.forEach(o => this.drawDot(o.p, 1));
+    // hIntersections.forEach(o => this.drawDot(o.p, 1));
 
-    // vIntersections.sort((a, b) => { return a.p.y - b.p.y; });
-    // hIntersections.sort((a, b) => { return a.p.x - b.p.x; });
+    // // vIntersections.sort((a, b) => { return a.p.y - b.p.y; });
+    // // hIntersections.sort((a, b) => { return a.p.x - b.p.x; });
 
-    function toString(intersections: {series: ScatterPlotSeries, p: Point} [], isX = true) {
-      let a = [];
-      let b = [];
-      for (let i = 0; i < intersections.length; i++) {
-        let n = intersections[i].series.name;
-        let p = intersections[i].p;
-        let v = (isX ? p.x : p.y);
-        a.push(n + " = " + v.toFixed(2));
-        if (i > 0) {
-          let lastN = intersections[i - 1].series.name;
-          let lastP = intersections[i - 1].p;
-          let lastV = (isX ? lastP.x : lastP.y);
-          let d = v - lastV;
-          a.push(n + " - " + lastN + " = " + d.toFixed(2) + " (" + ((d / lastV) * 100).toFixed(2) + "%)");
-        }
-      }
-      return a.join(", ");
-    }
+    // function toString(intersections: {series: ScatterPlotSeries, p: Point} [], isX = true) {
+    //   let a = [];
+    //   let b = [];
+    //   for (let i = 0; i < intersections.length; i++) {
+    //     let n = intersections[i].series.name;
+    //     let p = intersections[i].p;
+    //     let v = (isX ? p.x : p.y);
+    //     a.push(n + " = " + v.toFixed(2));
+    //     if (i > 0) {
+    //       let lastN = intersections[i - 1].series.name;
+    //       let lastP = intersections[i - 1].p;
+    //       let lastV = (isX ? lastP.x : lastP.y);
+    //       let d = v - lastV;
+    //       a.push(n + " - " + lastN + " = " + d.toFixed(2) + " (" + ((d / lastV) * 100).toFixed(2) + "%)");
+    //     }
+    //   }
+    //   return a.join(", ");
+    // }
 
-    if (hIntersections.length) {
-      let last = hIntersections[hIntersections.length - 1].p;
-      let s = toString(hIntersections, true);
-      let dp = this.transformPoint(last.clone());
-      dp.y = this.device.h;
-      this.drawDeviceText(dp, s, 8, -8, "left", "top", 7);
-    }
+    // if (hIntersections.length) {
+    //   let last = hIntersections[hIntersections.length - 1].p;
+    //   let s = toString(hIntersections, true);
+    //   let dp = this.transformPoint(last.clone());
+    //   dp.y = this.device.h;
+    //   this.drawDeviceText(dp, s, 8, -8, "left", "top", 7);
+    // }
 
-    if (vIntersections.length) {
-      let last = vIntersections[vIntersections.length - 1].p;
-      let s = toString(vIntersections, false);
-      let dp = this.transformPoint(last.clone());
-      dp.x = this.device.w;
-      this.drawDeviceText(dp, s, -8, 8, "right", "bottom", 7);
-    }
+    // if (vIntersections.length) {
+    //   let last = vIntersections[vIntersections.length - 1].p;
+    //   let s = toString(vIntersections, false);
+    //   let dp = this.transformPoint(last.clone());
+    //   dp.x = this.device.w;
+    //   this.drawDeviceText(dp, s, -8, 8, "right", "bottom", 7);
+    // }
   }
 }
 

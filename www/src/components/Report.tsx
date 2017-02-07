@@ -2,7 +2,6 @@ import * as React from "react";
 import { Glyphicon, Checkbox, Panel, Table } from "react-bootstrap";
 import { Col, Row, Button } from "react-bootstrap";
 import { BDRateReport, Report, AppStore, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex} from "../stores/Stores";
-import { AnalyzerComponent } from "./Analyzer"
 
 declare var require: any;
 
