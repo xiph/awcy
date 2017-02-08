@@ -266,6 +266,28 @@ export class AccountingComponent extends React.Component<{
   }
 }
 
+export class FrameInfoComponent extends React.Component<{
+  frame: AnalyzerFrame;
+  activeFrame: number;
+}, {
+
+}> {
+  render() {
+    let frame = this.props.frame;
+    return <div>
+      <div style={{float: "left", width: "40%"}}>
+        <div><span className="propertyName">Frame:</span> <span className="propertyValue">{this.props.activeFrame}</span></div>
+        <div><span className="propertyName">Frame Type:</span> <span className="propertyValue">{frame.json.frameType}</span></div>
+        <div><span className="propertyName">Show Frame:</span> <span className="propertyValue">{frame.json.showFrame}</span></div>
+      </div>
+      <div style={{float: "left", width: "60%"}}>
+        <div><span className="propertyName">BaseQIndex:</span> <span className="propertyValue">{frame.json.baseQIndex}</span></div>
+        <div><span className="propertyName">Frame Size:</span> <span className="propertyValue">{frame.imageData.width} x {frame.imageData.height}</span></div>
+      </div>
+    </div>
+  }
+}
+
 export class ModeInfoComponent extends React.Component<{
   frame: AnalyzerFrame;
   position: Vector;
@@ -298,14 +320,18 @@ export class ModeInfoComponent extends React.Component<{
       return `${a}, ${b}`;
     }
     return <div>
-      <div><span className="propertyName">Block:</span> <span className="propertyValue">{c}x{r}</span></div>
-      <div><span className="propertyName">Block Size:</span> <span className="propertyValue">{getProperty("blockSize")}</span></div>
-      <div><span className="propertyName">Transform Size:</span> <span className="propertyValue">{getProperty("transformSize")}</span></div>
-      <div><span className="propertyName">Transform Type:</span> <span className="propertyValue">{getProperty("transformType")}</span></div>
-      <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
-      <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
-      <div><span className="propertyName">Motion Vectors:</span> <span className="propertyValue">{getMotionVector()}</span></div>
-      <div><span className="propertyName">Reference Frame:</span> <span className="propertyValue">{getReferenceFrame()}</span></div>
+      <div style={{float: "left", width: "40%"}}>
+        <div><span className="propertyName">Block:</span> <span className="propertyValue">{c}x{r}</span></div>
+        <div><span className="propertyName">Block Size:</span> <span className="propertyValue">{getProperty("blockSize")}</span></div>
+        <div><span className="propertyName">Transform Size:</span> <span className="propertyValue">{getProperty("transformSize")}</span></div>
+        <div><span className="propertyName">Transform Type:</span> <span className="propertyValue">{getProperty("transformType")}</span></div>
+      </div>
+      <div style={{float: "left", width: "60%"}}>
+        <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
+        <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
+        <div><span className="propertyName">Motion Vectors:</span> <span className="propertyValue">{getMotionVector()}</span></div>
+        <div><span className="propertyName">Reference Frame:</span> <span className="propertyValue">{getReferenceFrame()}</span></div>
+      </div>
     </div>
   }
 }
@@ -869,11 +895,15 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
       let json = frame.json;
       let p = this.getParentMIPosition(frame, this.mousePosition);
+
       if (p) {
         let symbolHist = this.getSymbolHist(frames);
         let blockSymbols = this.getActiveFrame().accounting.createBlockSymbols(p.x, p.y);
 
         blockInfo = <div className="sidePanel">
+
+          <div className="sectionHeader">Frame Info</div>
+          <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame}></FrameInfoComponent>
 
           <div className="sectionHeader">Block Info</div>
           <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
@@ -925,7 +955,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
               <Button bsSize="small" onClick={this.resetLayersAndActiveFrame.bind(this)}><span className="glyphicon glyphicon-repeat"></span></Button>
             </OverlayTrigger>
 
-            <OverlayTrigger placement="top" overlay={<Tooltip>Back: ,</Tooltip>}>
+            <OverlayTrigger placement="top" overlay={<Tooltip>Previous: ,</Tooltip>}>
               <Button bsSize="small" onClick={this.advanceFrame.bind(this, -1)}><span className="glyphicon glyphicon-step-backward"></span></Button>
             </OverlayTrigger>
 
@@ -1402,7 +1432,12 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
         }
         let groupNames = [];
         for (let i = 0; i < decoderPaths.length; i++) {
-          groupNames.push(decoderPaths[i] + " - " + videoPaths[i]);
+          let videoPath = videoPaths[i];
+          let j = videoPath.lastIndexOf("/");
+          if (j >= 0) {
+            videoPath = videoPath.substring(j + 1);
+          }
+          groupNames.push(videoPath);
         }
         this.setState({ status: "Decoding Frames" } as any);
         Promise.all(decoders.map(decoder => this.decodeFrames(decoder, this.props.maxFrames))).then(frames => {
