@@ -1,45 +1,196 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>Analyzer</title>
-        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400|Roboto:500" rel="stylesheet">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="xiphbar.css" media="screen, print">
-        <link rel="stylesheet" href="react-select.css">
-    </head>
-    <body>
-        <style>
-          body {
-            font-family: 'Roboto', sans-serif;
-          }
 
+<head>
+  <meta charset="UTF-8" />
+  <title>Analyzer</title>
+  <link rel="stylesheet" href="lib/bootstrap.min.css">
+</head>
+<body>
+  <style>
+    body {
+      background-color: #222222;
+    }
 
-          .glyphicon-refresh-animate {
-              -animation: spin .7s infinite linear;
-              -webkit-animation: spin2 .7s infinite linear;
-          }
+    .glyphicon-refresh-animate {
+      -animation: spin .7s infinite linear;
+      -webkit-animation: spin2 .7s infinite linear;
+    }
 
-          @-webkit-keyframes spin2 {
-              from { -webkit-transform: rotate(0deg);}
-              to { -webkit-transform: rotate(360deg);}
-          }
+    @-webkit-keyframes spin2 {
+      from {
+        -webkit-transform: rotate(0deg);
+      }
+      to {
+        -webkit-transform: rotate(360deg);
+      }
+    }
 
-          @keyframes spin {
-              from { transform: scale(1) rotate(0deg);}
-              to { transform: scale(1) rotate(360deg);}
-          }
+    @keyframes spin {
+      from {
+        transform: scale(1) rotate(0deg);
+      }
+      to {
+        transform: scale(1) rotate(360deg);
+      }
+    }
 
-          .d3Tooltip {
-            font: 10px sans-serif;
-          }
-        </style>
-        <div id="analyzer-app"></div>
-        <!-- Dependencies -->
-        <script src="lib/d3.v4.min.js"></script>
-        <script src="lib/react.min.js"></script>
-        <script src="lib/react-dom.min.js"></script>
-        <!-- Main -->
-        <script src="./dist/analyzer.bundle.js"></script>
-    </body>
+    .d3Tooltip {
+      font: 10px sans-serif;
+    }
+
+    .chartParent {
+      -webkit-transition: all 1s linear;
+    }
+
+    .chartParent:target {
+      background-color: #EBEDEF;
+      -webkit-transition: all 1s linear;
+    }
+
+    .frameContainer {
+      word-wrap: break-word;
+      font-size: 11px;
+    }
+
+    .propertyContainer {
+      word-wrap: break-word;
+      font-size: 11px;
+    }
+
+    .frameLink {
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .activeFrameLink {
+      text-decoration: underline;
+      padding: 2px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .toast {
+      font-size: 12px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      right: 0;
+      z-index: 10;
+      opacity: 0;
+      height: 40px;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      overflow: hidden;
+      text-align: left;
+      padding-left: 10px;
+      vertical-align: middle;
+      line-height: 40px;       /* the same as your div height */
+      pointer-events: none;
+    }
+
+    .toolbox {
+      font-size: 12px;
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      z-index: 20;
+      opacity: 1;
+      height: 128px;
+      background-color: rgba(20, 20, 20, 0.8);
+      padding-left: 10px;
+      vertical-align: middle;
+      color: white;
+    }
+
+    .sidePanel {
+      position: fixed;
+      top: 384px;
+      bottom: 0;
+      right: 0;
+      z-index: 20;
+      opacity: 1;
+      width: 384px;
+      background-color: rgba(20, 20, 20, 0.9);
+      padding-left: 10px;
+      vertical-align: middle;
+      color: white;
+      padding: 10px;
+      font-size: 11px;
+      border-bottom-left-radius: 1em;
+      overflow: scroll;
+      /*pointer-events: none;*/
+    }
+
+    .panel {
+      padding: 10px;
+      background-color: rgba(20, 20, 20, 0.8);
+      color: white;
+    }
+
+    .zoomPanel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 20;
+      opacity: 1;
+      width: 384px;
+      height: 384px;
+      pointer-events: none;
+      background-color: rgba(20, 20, 20, 0.8);
+    }
+
+    .sectionHeader {
+      font-size: 12px;
+      margin-top: 8px;
+      margin-bottom: 4px;
+      font-weight: bold;
+      border-bottom: 1px solid deepskyblue;
+      color: deepskyblue;
+    }
+
+    .propertyName {
+      font-size: 11px;
+    }
+    .propertyValue {
+      font-size: 11px;
+      font-family: monospace;
+    }
+
+    table {
+      table-layout: fixed;
+      width: 100%;
+      background-color: transparent;
+    }
+
+    table > thead > tr > td {
+      font-weight: bold;
+      font-size: 12px;
+      color: #999999;
+      padding-bottom: 2px;
+    }
+
+    table > thead > tr {
+      border-bottom: 1px solid #666666;
+    }
+
+    table > tbody > tr > td {
+      padding-left: 2px;
+    }
+
+    ul { padding-left: 1.2em; }
+
+  </style>
+  <div id="analyzer-app"></div>
+  <!-- Dependencies -->
+  <script src="lib/d3.v4.min.js"></script>
+  <script src="lib/react.min.js"></script>
+  <script src="lib/react-dom.min.js"></script>
+  <!-- Main -->
+  <script src="./dist/analyzer.bundle.js"></script>
+  <script src="lib/mousetrap.min.js"></script>
+  <script src="lib/dragscroll.js"></script>
+</body>
+
 </html>

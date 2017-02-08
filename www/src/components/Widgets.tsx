@@ -2,7 +2,6 @@ import * as React from "react";
 import { Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar } from "react-bootstrap";
 import { } from "react-bootstrap";
 import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile } from "../stores/Stores";
-import { Analyzer } from "../analyzer";
 import { Promise } from "es6-promise";
 
 import { BarPlot, BarPlotTable, Data } from "./Plot";

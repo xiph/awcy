@@ -148,10 +148,8 @@ export class JobComponent extends React.Component<JobProps, {
       details.push(keyValue("Status", JobStatus[job.status]));
     }
     let award = null;
-    if (false) {
-      let src = ["img/bottle.png", "img/mug.png", "img/beer.png"][hashString(job.commit) % 3];
-      award = <div style={{paddingRight: "10px", display: "flex", justifyContent: "center"}}><img src={src} style={{height: 32, padding: 2}}/></div>
-    }
+    // let src = ["img/bottle.png", "img/mug.png", "img/beer.png"][hashString(job.commit) % 3];
+    // award = <div style={{paddingRight: "10px", display: "flex", justifyContent: "center"}}><img src={src} style={{height: 32, padding: 2}}/></div>
 
     return <div className="list-group-item job" style={{ borderRight, borderLeft, backgroundColor}}>
       <Modal show={this.state.showCancelModal} onHide={this.abortCancel.bind(this)}>
