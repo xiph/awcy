@@ -3,7 +3,7 @@ import { Tabs, Tab, Table, ListGroup, ListGroupItem, Glyphicon } from "react-boo
 import { Jumbotron, Grid, Popover, OverlayTrigger, Navbar, Checkbox, Form, FormGroup, ControlLabel, FormControl, HelpBlock, Modal, Panel, Label, Col, Row, Button, ProgressBar, Badge, ButtonToolbar, DropdownButton, MenuItem } from "react-bootstrap";
 
 import { BDRatePlot, sortArray, ScatterPlotSeries, PlotAxis } from "./Plot";
-import { VideoReportComponent, BDRateReportComponent } from "./Report";
+import { VideoReportComponent, BDRateReportComponent, AnalyzerLinksComponent } from "./Report";
 import { JobSelectorComponent } from "./JobSelector";
 import { Promise } from "es6-promise";
 import { AnalyzerVideoSelectorComponent } from "./Widgets";
@@ -132,14 +132,6 @@ export class FullReportComponent extends React.Component<void, {
       </Tabs>
     }
 
-    let qualities = (jobs[0].qualities || "20 32 43 55 63").split(" ").map(x => parseInt(x));
-    let analyzerUrls = qualities.map(quality => {
-      let url = analyzerBaseUrl + `?` + jobs.map(job => {
-        return `decoder=${job.decocerUrl()}&file=${job.ivfUrl(video, quality)}`;
-      }).join("&");
-      return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
-    });
-
     return <div key={video}>
       <Panel className="videoReport" header={video}>
         <Table condensed bordered={false} style={{width: "100%"}}>
@@ -153,8 +145,6 @@ export class FullReportComponent extends React.Component<void, {
           </tbody>
         </Table>
         {tabs}
-        <h5><Glyphicon glyph="film" /> Analyzer Links</h5>
-        <div>{analyzerUrls}</div>
       </Panel>
     </div>
   }
@@ -204,6 +194,7 @@ export class FullReportComponent extends React.Component<void, {
       <div style={{ paddingTop: 8 }}>
         {this.renderVideoReport(this.state.video, this.state.metric)}
         <BDRateReportComponent a={jobs[0]} b={jobs[1]}/>
+        <AnalyzerLinksComponent jobs={jobs}></AnalyzerLinksComponent>
       </div>
     </div>;
   }

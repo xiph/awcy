@@ -417,8 +417,14 @@ export class Job {
     return baseUrl + `runs/${this.id}/js/decoder.js`;
   }
 
+  ivfUrlPrefix() {
+    return baseUrl + `runs/${this.id}/${this.task}/`;
+  }
+  ivfUrlName(name: string, quality: number) {
+    return `${name}-${quality}.ivf`;
+  }
   ivfUrl(name: string, quality: number) {
-    return baseUrl + `runs/${this.id}/${this.task}/${name}-${quality}.ivf`;
+    return this.ivfUrlPrefix() + this.ivfUrlName(name, quality);
   }
 
   analyzerIvfUrl(name: string, quality: number) {

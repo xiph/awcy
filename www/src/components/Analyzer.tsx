@@ -269,6 +269,7 @@ export class AccountingComponent extends React.Component<{
 export class FrameInfoComponent extends React.Component<{
   frame: AnalyzerFrame;
   activeFrame: number;
+  activeGroup: number;
 }, {
 
 }> {
@@ -276,6 +277,7 @@ export class FrameInfoComponent extends React.Component<{
     let frame = this.props.frame;
     return <div>
       <div style={{float: "left", width: "40%"}}>
+        <div><span className="propertyName">Video:</span> <span className="propertyValue">{this.props.activeGroup}</span></div>
         <div><span className="propertyName">Frame:</span> <span className="propertyValue">{this.props.activeFrame}</span></div>
         <div><span className="propertyName">Frame Type:</span> <span className="propertyValue">{frame.json.frameType}</span></div>
         <div><span className="propertyName">Show Frame:</span> <span className="propertyValue">{frame.json.showFrame}</span></div>
@@ -699,6 +701,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       this.playInterval = 0;
     }
   }
+  advanceGroup(delta) {
+    let activeGroup = this.state.activeGroup + delta;
+    if (activeGroup < 0) {
+      activeGroup += this.props.frames.length;
+    }
+    activeGroup = activeGroup % this.props.frames.length;
+    this.setActiveGroup(activeGroup);
+  }
   advanceFrame(delta) {
     let activeFrame = this.state.activeFrame + delta;
     if (activeFrame < 0) {
@@ -727,6 +737,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     });
     Mousetrap.bind([','], () => {
       this.advanceFrame(-1);
+    });
+    Mousetrap.bind(['='], (e) => {
+      this.advanceGroup(1);
+      e.preventDefault();
+    });
+    Mousetrap.bind(['-'], () => {
+      this.advanceGroup(-1);
     });
     Mousetrap.bind([']'], () => {
       this.zoom(2);
@@ -903,7 +920,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         blockInfo = <div className="sidePanel">
 
           <div className="sectionHeader">Frame Info</div>
-          <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame}></FrameInfoComponent>
+          <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.state.activeGroup}></FrameInfoComponent>
 
           <div className="sectionHeader">Block Info</div>
           <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
