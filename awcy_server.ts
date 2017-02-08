@@ -127,8 +127,7 @@ function process_build_queue() {
         }
         try {
           fs.mkdirSync('runs/'+build_job.run_id+'/js');
-          fs.copySync(build_job.codec+'/asm/examples/decoder.js','runs/'+build_job.run_id+'/js/decoder.js');
-          fs.copySync(build_job.codec+'/aomanalyzer.js','runs/'+build_job.run_id+'/js/decoder2.js');
+          fs.copySync(build_job.codec+'/aomanalyzer.js','runs/'+build_job.run_id+'/js/decoder.js');
         } catch (e) {
           /* no analyzer */
         }
