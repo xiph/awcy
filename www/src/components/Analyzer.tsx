@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon } from "react-bootstrap";
+import { OverlayTrigger, Tooltip, ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon } from "react-bootstrap";
 import { } from "react-bootstrap";
 import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile } from "../stores/Stores";
 import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector } from "../analyzer";
@@ -445,7 +445,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     showMotionVectors: {
       key: "m",
       description: "Motion Vectors",
-      detail: "Display motion vectors, darker colors represent longer vectors.",
+      detail: "Display motion vectors.",
       default: false,
       value: undefined
     },
@@ -849,19 +849,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
   render() {
     let groups = this.props.frames;
-    let groupFrameLinks = groups.map((group, i) => {
-      let frameLinks = group.map((frames, j) => {
-        return <a className={i == this.state.activeGroup && j == this.state.activeFrame ? "activeFrameLink" : "frameLink"} onClick={this.setActiveGroupAndFrame.bind(this, i, j)}>{j}</a>
-      });
-      let groupName = this.props.groupNames ? this.props.groupNames[i] : String(i);
-      return <div className="frameContainer">{groupName} ({i + 1}): {frameLinks}</div>
-    });
 
     let layerButtons = [];
     for (let name in this.options) {
       let option = this.options[name];
       layerButtons.push(
-        <Button bsStyle={this.state[name] ? "primary" : "default"} bsSize="small" onClick={this.toggleLayer.bind(this, name)}>{option.description}: {option.key}</Button>
+        <OverlayTrigger placement="top" overlay={<Tooltip>{option.detail} ({option.key})</Tooltip>}>
+          <Button bsStyle={this.state[name] ? "primary" : "default"} bsSize="xsmall" onClick={this.toggleLayer.bind(this, name)}>{option.description}</Button>
+        </OverlayTrigger>
       );
     }
 
@@ -922,17 +917,33 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     if (this.state.showTools) {
       toolbox = <div className="toolbox" style={{padding: "10px"}}>
         <div style={{paddingTop: "4px"}}>
-          {groupFrameLinks}
-        </div>
-        <div style={{paddingTop: "4px"}}>
           <ButtonGroup>
-            <Button bsSize="small" onClick={this.toggleTools.bind(this)}>Toggle Tools: tab</Button>
-            <Button bsSize="small" onClick={this.resetLayersAndActiveFrame.bind(this)}>Reset: r</Button>
-            <Button bsSize="small" onClick={this.advanceFrame.bind(this, -1)}>Previous: ,</Button>
-            <Button bsSize="small" onClick={this.playPause.bind(this)}>Play/Stop: space</Button>
-            <Button bsSize="small" onClick={this.advanceFrame.bind(this, 1)}>Next: .</Button>
-            <Button bsSize="small" onClick={this.zoom.bind(this, 1 / 2)}>Zoom Out: [</Button>
-            <Button bsSize="small" onClick={this.zoom.bind(this, 2)}>Zoom In: ]</Button>
+            <OverlayTrigger placement="top" overlay={<Tooltip>Toggle Tools: tab</Tooltip>}>
+              <Button bsSize="small" onClick={this.toggleTools.bind(this)}><span className="glyphicon glyphicon-th"></span></Button>
+            </OverlayTrigger>
+            <OverlayTrigger placement="top" overlay={<Tooltip>Repeat: r</Tooltip>}>
+              <Button bsSize="small" onClick={this.resetLayersAndActiveFrame.bind(this)}><span className="glyphicon glyphicon-repeat"></span></Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement="top" overlay={<Tooltip>Back: ,</Tooltip>}>
+              <Button bsSize="small" onClick={this.advanceFrame.bind(this, -1)}><span className="glyphicon glyphicon-step-backward"></span></Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement="top" overlay={<Tooltip>Pause / Play: space</Tooltip>}>
+              <Button bsSize="small" onClick={this.playPause.bind(this)}><span className="glyphicon glyphicon-play"></span></Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement="top" overlay={<Tooltip>Next: .</Tooltip>}>
+              <Button bsSize="small" onClick={this.advanceFrame.bind(this, 1)}><span className="glyphicon glyphicon-step-forward"></span></Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement="top" overlay={<Tooltip>Zoom Out: [</Tooltip>}>
+              <Button bsSize="small" onClick={this.zoom.bind(this, 1 / 2)}><span className="glyphicon glyphicon-zoom-out"></span></Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement="top" overlay={<Tooltip>Zoom In: ]</Tooltip>}>
+              <Button bsSize="small" onClick={this.zoom.bind(this, 2)}><span className="glyphicon glyphicon-zoom-in"></span></Button>
+            </OverlayTrigger>
           </ButtonGroup>
         </div>
         <div style={{paddingTop: "4px"}}>
