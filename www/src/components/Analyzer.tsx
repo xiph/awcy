@@ -1,7 +1,7 @@
 import * as React from "react";
 import { OverlayTrigger, Tooltip, ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon } from "react-bootstrap";
 import { } from "react-bootstrap";
-import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile } from "../stores/Stores";
+import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile, fileExists, analyzerBaseUrl, baseUrl } from "../stores/Stores";
 import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector } from "../analyzer";
 import { Promise } from "es6-promise";
 
@@ -1507,5 +1507,75 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     return <div>
       <AnalyzerView frames={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.props.playbackFrameRate} ></AnalyzerView>
     </div>;
+  }
+}
+
+export class CreateAnalyzerUrlComponent extends React.Component<{
+
+}, {
+  urls: string [];
+  exists: boolean [];
+}> {
+  timeout: any;
+  constructor() {
+    super();
+    let urls = [];
+    let exists = [];
+    for (let i = 0; i < 10; i++) {
+      urls.push("");
+      exists.push(false);
+    }
+    this.state = {
+      urls: urls,
+      exists: exists
+    } as any;
+  }
+  onChange(i, e) {
+    let value = e.target.value;
+    let state = this.state;
+    state.urls[i] = e.target.value;
+    this.setState(state);
+
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
+    this.timeout = setTimeout(() => {
+      fileExists(state.urls[i]).then(exists => {
+        let state = this.state;
+        state.exists[i] = exists;
+        this.setState(state);
+      });
+    }, 1000);
+  }
+  getValidationState(i): "success" | "warning" | "error" {
+    if (this.state.urls[i] && !this.state.exists[i]) {
+      return "error";
+    }
+    return "success";
+  }
+  render() {
+    let urls = [];
+    urls = this.state.urls.map((url, i) => {
+      return <div style={{paddingBottom: "4px"}}>
+        <FormGroup validationState={this.getValidationState(i)}>
+          <FormControl key={i} type="text" value={url} placeholder="Enter a decoder or file url." onChange={this.onChange.bind(this, i)}></FormControl>
+          <FormControl.Feedback />
+        </FormGroup>
+      </div>
+    })
+    let url = baseUrl + analyzerBaseUrl + "?" + this.state.urls.filter(s => !!s).map(s => {
+      if (s.indexOf(".js") >= 0) {
+        return "decoder=" + s;
+      } else {
+        return "file=" + s;
+      }
+    }).join("&");
+    return <div className="panel">
+      <h3>Analyzer Url Builder</h3>
+      <Form>
+        {urls}
+      </Form>
+      <a href={url}>{url}</a>
+    </div>
   }
 }

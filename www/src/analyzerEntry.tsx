@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { AnalyzerViewCompareComponent, AnalyzerBenchmarkComponent } from "./components/Analyzer";
+import { AnalyzerViewCompareComponent, AnalyzerBenchmarkComponent, CreateAnalyzerUrlComponent } from "./components/Analyzer";
 import { forEachUrlParameter, getUrlParameters } from "./stores/Stores";
 
 let parameters = getUrlParameters();
@@ -11,6 +11,7 @@ let playbackFrameRate = parameters.playbackFrameRate;
 let layers = parameters.layers;
 let maxFrames = parameters.maxFrames;
 let benchmark = parameters.benchmark;
+let build = parameters.build;
 let filePrefix = parameters.filePrefix || "";
 
 
@@ -31,19 +32,17 @@ function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string} [] {
 }
 
 let pairs = getDecoderVideoUrls();
-{/*<AnalyzerComponent
-    decoderUrl={decoder}
-    videoUrl={file}
-    playbackFrameRate={playbackFrameRate}
-    layers={layers}
-    maxFrames={maxFrames}/>,
-  */}
 
 if (parameters.benchmark) {
   ReactDOM.render(
     <AnalyzerBenchmarkComponent
       decoderVideoUrlPairs={pairs}
       maxFrames={maxFrames}/>,
+    document.getElementById("analyzer-app")
+  );
+} else if (build) {
+  ReactDOM.render(
+    <CreateAnalyzerUrlComponent/>,
     document.getElementById("analyzer-app")
   );
 } else {
