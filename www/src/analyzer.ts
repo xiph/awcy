@@ -42,6 +42,25 @@ export class Accounting {
     this.frameSymbols = Accounting.flatten(this.symbols);
     return this.frameSymbols;
   }
+  countBits(): {blocks: number [][], total: number} {
+    let counts = [];
+    let total = 0;
+    this.symbols.forEach(symbol => {
+      let {x, y} = symbol;
+      if (x < 0 || y < 0) {
+        return;
+      }
+      if (!counts[y]) {
+        counts[y] = [];
+      }
+      if (counts[y][x] === undefined) {
+        counts[y][x] = 0;
+      }
+      counts[y][x] += symbol.bits;
+      total += symbol.bits;
+    });
+    return {blocks: counts, total: total};
+  }
   createBlockSymbols(c: number, r: number) {
     return Accounting.flatten(this.symbols.filter(symbol => {
       return symbol.x === c && symbol.y === r;

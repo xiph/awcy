@@ -1,7 +1,7 @@
 import * as React from "react";
 import { OverlayTrigger, Tooltip, ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon } from "react-bootstrap";
 import { } from "react-bootstrap";
-import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile } from "../stores/Stores";
+import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile, fileExists, analyzerBaseUrl, baseUrl } from "../stores/Stores";
 import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector } from "../analyzer";
 import { Promise } from "es6-promise";
 
@@ -44,6 +44,9 @@ const BLOCK_SIZES = [
   [6, 6]
 ];
 
+function blockSizeArea(size: number) {
+  return (1 << BLOCK_SIZES[size][0]) * (1 << BLOCK_SIZES[size][1]);
+}
 function forEachValue(o: any, fn: (v: any) => void) {
   for (let n in o) {
     fn(o[n]);
@@ -349,6 +352,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     showTransformGrid: boolean;
     showSkip: boolean;
     showMode: boolean;
+    showBits: boolean;
     showTransformType: boolean;
     showTools: boolean;
   }> {
@@ -491,13 +495,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       default: false,
       value: undefined
     },
-    // showBits: {
-    //   key: "b",
-    //   description: "Bits",
-    //   detail: "Display bits.",
-    //   default: false,
-    //   value: undefined
-    // },
+    showBits: {
+      key: "b",
+      description: "Bits",
+      detail: "Display bits.",
+      default: false,
+      value: undefined
+    },
     showSkip: {
       key: "k",
       description: "Skip",
@@ -517,6 +521,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       showTransformGrid: false,
       showSkip: false,
       showMode: false,
+      showBits: false,
       showDecodedImage: true,
       showMotionVectors: false,
       showReferenceFrames: false,
@@ -635,6 +640,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     ctx.globalAlpha = 0.5;
     this.state.showSkip && this.drawSkip(frame, ctx, src, dst);
     this.state.showMode && this.drawMode(frame, ctx, src, dst);
+    this.state.showBits && this.drawBits(frame, ctx, src, dst);
     this.state.showTransformType && this.drawTransformType(frame, ctx, src, dst);
     this.state.showMotionVectors && this.drawMotionVectors(frame, ctx, src, dst);
     this.state.showReferenceFrames && this.drawReferenceFrames(frame, ctx, src, dst);
@@ -1021,7 +1027,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
   drawSkip(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let skip = frame.json["skip"];
-    this.drawFillBlock(frame, ctx, src, dst, (c, r, sc, sr) => {
+    this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
       let v = skip[r][c];
       if (!v) {
         return false;
@@ -1032,7 +1038,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   }
   drawReferenceFrames(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let reference = frame.json["referenceFrame"];
-    this.drawFillBlock(frame, ctx, src, dst, (c, r, sc, sr) => {
+    this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
       let v = reference[r][c][0];
       if (v < 0) {
         return false;
@@ -1095,8 +1101,25 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   }
   drawTransformType(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let type = frame.json["transformType"];
-    this.drawFillBlock(frame, ctx, src, dst, (c, r, sc, sr) => {
+    this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
       ctx.fillStyle = COLORS[type[r][c]];
+      return true;
+    });
+  }
+  drawBits(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
+    let {blocks, total} = frame.accounting.countBits();
+    let maxBitsPerPixel = 0;
+    this.visitBlocks("block", frame, (blockSize, c, r, sc, sr, bounds) => {
+      let area = blockSizeArea(blockSize);
+      let bits = blocks[r][c] | 0;
+      maxBitsPerPixel = Math.max(maxBitsPerPixel, bits / area);
+    });
+    // maxBitsPerPixel = 16; TODO: Consider making this a constant to make it easier to compare frames.
+    this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
+      let area = blockSizeArea(blockSize);
+      let bits = blocks[r][c] | 0;
+      ctx.globalAlpha = (bits / area) / maxBitsPerPixel;
+      ctx.fillStyle = "#9400D3";
       return true;
     });
   }
@@ -1167,13 +1190,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
     ctx.restore();
   }
-  drawFillBlock(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, setFillStyle: (c, r, sc, sr) => boolean) {
+  drawFillBlock(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, setFillStyle: (blockSize, c, r, sc, sr) => boolean) {
     let scale = dst.w / src.w;
     ctx.save();
     ctx.translate(-src.x * scale, -src.y * scale);
     this.visitBlocks("block", frame, (blockSize, c, r, sc, sr, bounds) => {
       bounds.multiplyScalar(scale);
-      setFillStyle(c, r, sc, sr) && ctx.fillRect(bounds.x, bounds.y, bounds.w, bounds.h);
+      setFillStyle(blockSize, c, r, sc, sr) && ctx.fillRect(bounds.x, bounds.y, bounds.w, bounds.h);
     });
     ctx.restore();
   }
@@ -1507,5 +1530,75 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     return <div>
       <AnalyzerView frames={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.props.playbackFrameRate} ></AnalyzerView>
     </div>;
+  }
+}
+
+export class CreateAnalyzerUrlComponent extends React.Component<{
+
+}, {
+  urls: string [];
+  exists: boolean [];
+}> {
+  timeout: any;
+  constructor() {
+    super();
+    let urls = [];
+    let exists = [];
+    for (let i = 0; i < 10; i++) {
+      urls.push("");
+      exists.push(false);
+    }
+    this.state = {
+      urls: urls,
+      exists: exists
+    } as any;
+  }
+  onChange(i, e) {
+    let value = e.target.value;
+    let state = this.state;
+    state.urls[i] = e.target.value;
+    this.setState(state);
+
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
+    this.timeout = setTimeout(() => {
+      fileExists(state.urls[i]).then(exists => {
+        let state = this.state;
+        state.exists[i] = exists;
+        this.setState(state);
+      });
+    }, 1000);
+  }
+  getValidationState(i): "success" | "warning" | "error" {
+    if (this.state.urls[i] && !this.state.exists[i]) {
+      return "error";
+    }
+    return "success";
+  }
+  render() {
+    let urls = [];
+    urls = this.state.urls.map((url, i) => {
+      return <div style={{paddingBottom: "4px"}}>
+        <FormGroup validationState={this.getValidationState(i)}>
+          <FormControl key={i} type="text" value={url} placeholder="Enter a decoder or file url." onChange={this.onChange.bind(this, i)}></FormControl>
+          <FormControl.Feedback />
+        </FormGroup>
+      </div>
+    })
+    let url = baseUrl + analyzerBaseUrl + "?" + this.state.urls.filter(s => !!s).map(s => {
+      if (s.indexOf(".js") >= 0) {
+        return "decoder=" + s;
+      } else {
+        return "file=" + s;
+      }
+    }).join("&");
+    return <div className="panel">
+      <h3>Analyzer Url Builder</h3>
+      <Form>
+        {urls}
+      </Form>
+      <a href={url}>{url}</a>
+    </div>
   }
 }
