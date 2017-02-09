@@ -964,8 +964,8 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             </DropdownButton>{' '}
             <DropdownButton bsSize="small" title="Bits Mode" id="dropdown-size-xsmall" onSelect={this.onBitsModeSelect.bind(this)}>
               <MenuItem eventKey="linear" active={this.state.showBitsMode == "linear"}>Single Color</MenuItem>
-              <MenuItem eventKey="heat" active={this.state.showBitsMode == "heat"}>Heatmap</MenuItem>
-              <MenuItem eventKey="heat-opaque" active={this.state.showBitsMode == "heat-opaque"}>Heatmap (Opaque)</MenuItem>
+              <MenuItem eventKey="heat" active={this.state.showBitsMode == "heat"}>Heat Map</MenuItem>
+              <MenuItem eventKey="heat-opaque" active={this.state.showBitsMode == "heat-opaque"}>Heat Map (Opaque)</MenuItem>
             </DropdownButton>{' '}
             <DropdownButton bsSize="small" title="Bits Filter" id="dropdown-size-xsmall" onSelect={this.onBitsFilterSelect.bind(this)}>
               <MenuItem eventKey="" active={this.state.showBitsFilter == ""}>None</MenuItem>
