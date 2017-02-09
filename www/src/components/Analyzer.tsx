@@ -1108,8 +1108,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   }
   drawBits(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let {blocks, total} = frame.accounting.countBits();
-    // TODO: Tweak this max value. If it's not a constant then we can't compare different frames and/or vidoes.
-    let maxBitsPerPixel = 16;
+    let maxBitsPerPixel = 0;
+    this.visitBlocks("block", frame, (blockSize, c, r, sc, sr, bounds) => {
+      let area = blockSizeArea(blockSize);
+      let bits = blocks[r][c] | 0;
+      maxBitsPerPixel = Math.max(maxBitsPerPixel, bits / area);
+    });
+    // maxBitsPerPixel = 16; TODO: Consider making this a constant to make it easier to compare frames.
     this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
       let area = blockSizeArea(blockSize);
       let bits = blocks[r][c] | 0;
