@@ -110,7 +110,11 @@ interface Internal {
 }
 
 export class AnalyzerFrame {
-  json: Object;
+  json: {
+    frameType: number;
+    showFrame: number;
+    baseQIndex: number;
+  };
   accounting: Accounting;
   blockSizeHist: Histogram;
   transformSizeHist: Histogram;

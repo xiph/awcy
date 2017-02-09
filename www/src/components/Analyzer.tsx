@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon } from "react-bootstrap";
+import { OverlayTrigger, Tooltip, ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon } from "react-bootstrap";
 import { } from "react-bootstrap";
 import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile } from "../stores/Stores";
 import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector } from "../analyzer";
@@ -266,6 +266,30 @@ export class AccountingComponent extends React.Component<{
   }
 }
 
+export class FrameInfoComponent extends React.Component<{
+  frame: AnalyzerFrame;
+  activeFrame: number;
+  activeGroup: number;
+}, {
+
+}> {
+  render() {
+    let frame = this.props.frame;
+    return <div>
+      <div style={{float: "left", width: "40%"}}>
+        <div><span className="propertyName">Video:</span> <span className="propertyValue">{this.props.activeGroup}</span></div>
+        <div><span className="propertyName">Frame:</span> <span className="propertyValue">{this.props.activeFrame}</span></div>
+        <div><span className="propertyName">Frame Type:</span> <span className="propertyValue">{frame.json.frameType}</span></div>
+        <div><span className="propertyName">Show Frame:</span> <span className="propertyValue">{frame.json.showFrame}</span></div>
+      </div>
+      <div style={{float: "left", width: "60%"}}>
+        <div><span className="propertyName">BaseQIndex:</span> <span className="propertyValue">{frame.json.baseQIndex}</span></div>
+        <div><span className="propertyName">Frame Size:</span> <span className="propertyValue">{frame.imageData.width} x {frame.imageData.height}</span></div>
+      </div>
+    </div>
+  }
+}
+
 export class ModeInfoComponent extends React.Component<{
   frame: AnalyzerFrame;
   position: Vector;
@@ -298,14 +322,18 @@ export class ModeInfoComponent extends React.Component<{
       return `${a}, ${b}`;
     }
     return <div>
-      <div><span className="propertyName">Block:</span> <span className="propertyValue">{c}x{r}</span></div>
-      <div><span className="propertyName">Block Size:</span> <span className="propertyValue">{getProperty("blockSize")}</span></div>
-      <div><span className="propertyName">Transform Size:</span> <span className="propertyValue">{getProperty("transformSize")}</span></div>
-      <div><span className="propertyName">Transform Type:</span> <span className="propertyValue">{getProperty("transformType")}</span></div>
-      <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
-      <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
-      <div><span className="propertyName">Motion Vectors:</span> <span className="propertyValue">{getMotionVector()}</span></div>
-      <div><span className="propertyName">Reference Frame:</span> <span className="propertyValue">{getReferenceFrame()}</span></div>
+      <div style={{float: "left", width: "40%"}}>
+        <div><span className="propertyName">Block:</span> <span className="propertyValue">{c}x{r}</span></div>
+        <div><span className="propertyName">Block Size:</span> <span className="propertyValue">{getProperty("blockSize")}</span></div>
+        <div><span className="propertyName">Transform Size:</span> <span className="propertyValue">{getProperty("transformSize")}</span></div>
+        <div><span className="propertyName">Transform Type:</span> <span className="propertyValue">{getProperty("transformType")}</span></div>
+      </div>
+      <div style={{float: "left", width: "60%"}}>
+        <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
+        <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
+        <div><span className="propertyName">Motion Vectors:</span> <span className="propertyValue">{getMotionVector()}</span></div>
+        <div><span className="propertyName">Reference Frame:</span> <span className="propertyValue">{getReferenceFrame()}</span></div>
+      </div>
     </div>
   }
 }
@@ -445,7 +473,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     showMotionVectors: {
       key: "m",
       description: "Motion Vectors",
-      detail: "Display motion vectors, darker colors represent longer vectors.",
+      detail: "Display motion vectors.",
       default: false,
       value: undefined
     },
@@ -673,6 +701,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       this.playInterval = 0;
     }
   }
+  advanceGroup(delta) {
+    let activeGroup = this.state.activeGroup + delta;
+    if (activeGroup < 0) {
+      activeGroup += this.props.frames.length;
+    }
+    activeGroup = activeGroup % this.props.frames.length;
+    this.setActiveGroup(activeGroup);
+  }
   advanceFrame(delta) {
     let activeFrame = this.state.activeFrame + delta;
     if (activeFrame < 0) {
@@ -701,6 +737,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     });
     Mousetrap.bind([','], () => {
       this.advanceFrame(-1);
+    });
+    Mousetrap.bind(['='], (e) => {
+      this.advanceGroup(1);
+      e.preventDefault();
+    });
+    Mousetrap.bind(['-'], () => {
+      this.advanceGroup(-1);
     });
     Mousetrap.bind([']'], () => {
       this.zoom(2);
@@ -849,19 +892,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
   render() {
     let groups = this.props.frames;
-    let groupFrameLinks = groups.map((group, i) => {
-      let frameLinks = group.map((frames, j) => {
-        return <a className={i == this.state.activeGroup && j == this.state.activeFrame ? "activeFrameLink" : "frameLink"} onClick={this.setActiveGroupAndFrame.bind(this, i, j)}>{j}</a>
-      });
-      let groupName = this.props.groupNames ? this.props.groupNames[i] : String(i);
-      return <div className="frameContainer">{groupName} ({i + 1}): {frameLinks}</div>
-    });
 
     let layerButtons = [];
     for (let name in this.options) {
       let option = this.options[name];
       layerButtons.push(
-        <Button bsStyle={this.state[name] ? "primary" : "default"} bsSize="small" onClick={this.toggleLayer.bind(this, name)}>{option.description}: {option.key}</Button>
+        <OverlayTrigger placement="top" overlay={<Tooltip>{option.detail} ({option.key})</Tooltip>}>
+          <Button bsStyle={this.state[name] ? "primary" : "default"} bsSize="xsmall" onClick={this.toggleLayer.bind(this, name)}>{option.description}</Button>
+        </OverlayTrigger>
       );
     }
 
@@ -874,11 +912,15 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
       let json = frame.json;
       let p = this.getParentMIPosition(frame, this.mousePosition);
+
       if (p) {
         let symbolHist = this.getSymbolHist(frames);
         let blockSymbols = this.getActiveFrame().accounting.createBlockSymbols(p.x, p.y);
 
         blockInfo = <div className="sidePanel">
+
+          <div className="sectionHeader">Frame Info</div>
+          <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.state.activeGroup}></FrameInfoComponent>
 
           <div className="sectionHeader">Block Info</div>
           <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
@@ -922,17 +964,33 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     if (this.state.showTools) {
       toolbox = <div className="toolbox" style={{padding: "10px"}}>
         <div style={{paddingTop: "4px"}}>
-          {groupFrameLinks}
-        </div>
-        <div style={{paddingTop: "4px"}}>
           <ButtonGroup>
-            <Button bsSize="small" onClick={this.toggleTools.bind(this)}>Toggle Tools: tab</Button>
-            <Button bsSize="small" onClick={this.resetLayersAndActiveFrame.bind(this)}>Reset: r</Button>
-            <Button bsSize="small" onClick={this.advanceFrame.bind(this, -1)}>Previous: ,</Button>
-            <Button bsSize="small" onClick={this.playPause.bind(this)}>Play/Stop: space</Button>
-            <Button bsSize="small" onClick={this.advanceFrame.bind(this, 1)}>Next: .</Button>
-            <Button bsSize="small" onClick={this.zoom.bind(this, 1 / 2)}>Zoom Out: [</Button>
-            <Button bsSize="small" onClick={this.zoom.bind(this, 2)}>Zoom In: ]</Button>
+            <OverlayTrigger placement="top" overlay={<Tooltip>Toggle Tools: tab</Tooltip>}>
+              <Button bsSize="small" onClick={this.toggleTools.bind(this)}><span className="glyphicon glyphicon-th"></span></Button>
+            </OverlayTrigger>
+            <OverlayTrigger placement="top" overlay={<Tooltip>Repeat: r</Tooltip>}>
+              <Button bsSize="small" onClick={this.resetLayersAndActiveFrame.bind(this)}><span className="glyphicon glyphicon-repeat"></span></Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement="top" overlay={<Tooltip>Previous: ,</Tooltip>}>
+              <Button bsSize="small" onClick={this.advanceFrame.bind(this, -1)}><span className="glyphicon glyphicon-step-backward"></span></Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement="top" overlay={<Tooltip>Pause / Play: space</Tooltip>}>
+              <Button bsSize="small" onClick={this.playPause.bind(this)}><span className="glyphicon glyphicon-play"></span></Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement="top" overlay={<Tooltip>Next: .</Tooltip>}>
+              <Button bsSize="small" onClick={this.advanceFrame.bind(this, 1)}><span className="glyphicon glyphicon-step-forward"></span></Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement="top" overlay={<Tooltip>Zoom Out: [</Tooltip>}>
+              <Button bsSize="small" onClick={this.zoom.bind(this, 1 / 2)}><span className="glyphicon glyphicon-zoom-out"></span></Button>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement="top" overlay={<Tooltip>Zoom In: ]</Tooltip>}>
+              <Button bsSize="small" onClick={this.zoom.bind(this, 2)}><span className="glyphicon glyphicon-zoom-in"></span></Button>
+            </OverlayTrigger>
           </ButtonGroup>
         </div>
         <div style={{paddingTop: "4px"}}>
@@ -1391,7 +1449,12 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
         }
         let groupNames = [];
         for (let i = 0; i < decoderPaths.length; i++) {
-          groupNames.push(decoderPaths[i] + " - " + videoPaths[i]);
+          let videoPath = videoPaths[i];
+          let j = videoPath.lastIndexOf("/");
+          if (j >= 0) {
+            videoPath = videoPath.substring(j + 1);
+          }
+          groupNames.push(videoPath);
         }
         this.setState({ status: "Decoding Frames" } as any);
         Promise.all(decoders.map(decoder => this.decodeFrames(decoder, this.props.maxFrames))).then(frames => {

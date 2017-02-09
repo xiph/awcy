@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Glyphicon, Checkbox, Panel, Table } from "react-bootstrap";
 import { Col, Row, Button } from "react-bootstrap";
-import { BDRateReport, Report, AppStore, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex} from "../stores/Stores";
+import { BDRateReport, Report, AppStore, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex, analyzerBaseUrl} from "../stores/Stores";
 
 declare var require: any;
 
@@ -115,6 +115,54 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
       <h5>Raw Data:</h5><a href={reportUrl}>{reportUrl}</a>
     </div>
     return table;
+  }
+}
+
+export class AnalyzerLinksComponent extends React.Component<{
+  jobs: Job []
+}, {
+}> {
+  render() {
+    let jobs = this.props.jobs;
+    let qualities = (jobs[0].qualities || "20 32 43 55 63").split(" ").map(x => parseInt(x));
+    let report = this.props.jobs[0].report;
+    let videoRows = [];
+    let qualityRows = [];
+    let videos = [];
+    for (let video in report) {
+      if (video != "Total") {
+        videos.push(video);
+      }
+    }
+
+    videos.forEach(video => {
+      let analyzerUrls = qualities.map(quality => {
+        let url = analyzerBaseUrl + `?` + jobs.map(job => {
+          return `decoder=${job.decocerUrl()}&file=${job.ivfUrl(video, quality)}`;
+        }).join("&");
+        return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
+      });
+      videoRows.push(<div key={video}>{video} {analyzerUrls}</div>);
+    });
+
+    let decoderRows = jobs.map(job => {
+      let urls = qualities.map(quality => {
+        let files = [];
+        videos.forEach(video => {
+          files.push(`file=${job.ivfUrlName(video, quality)}`);
+        });
+        let url = analyzerBaseUrl + `?decoder=${job.decocerUrl()}&filePrefix=${job.ivfUrlPrefix()}&` + files.join("&");
+        return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
+      });
+      return <div key={job.id}>{job.selectedName}: All Videos @ {urls}</div>
+    });
+
+    return <Panel header="Analyzer Links">
+      {videoRows}
+      <div>
+        {decoderRows}
+      </div>
+    </Panel>
   }
 }
 

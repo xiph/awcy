@@ -11,6 +11,7 @@ let playbackFrameRate = parameters.playbackFrameRate;
 let layers = parameters.layers;
 let maxFrames = parameters.maxFrames;
 let benchmark = parameters.benchmark;
+let filePrefix = parameters.filePrefix || "";
 
 
 /**
@@ -23,7 +24,7 @@ function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string} [] {
     if (key == "decoder") {
       currenDecoder = value;
     } else if (key == "file") {
-      pairs.push({decoderUrl: currenDecoder, videoUrl: value});
+      pairs.push({decoderUrl: currenDecoder, videoUrl: filePrefix + value});
     }
   });
   return pairs;
