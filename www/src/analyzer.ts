@@ -42,24 +42,36 @@ export class Accounting {
     this.frameSymbols = Accounting.flatten(this.symbols);
     return this.frameSymbols;
   }
-  countBits(): {blocks: number [][], total: number} {
-    let counts = [];
+  countCache: {[filter: string]: {blocks: number [][], total: number, leftover: number}} = {};
+  countBits(filter: string): {blocks: number [][], total: number} {
+    if (!filter) {
+      filter = "__none__";
+    }
+    if (this.countCache[filter]) {
+      return this.countCache[filter];
+    }
+    let blocks = [];
     let total = 0;
+    let leftover = 0;
     this.symbols.forEach(symbol => {
-      let {x, y} = symbol;
-      if (x < 0 || y < 0) {
+      if (filter !== "__none__" && symbol.name != filter) {
         return;
       }
-      if (!counts[y]) {
-        counts[y] = [];
+      let {x, y} = symbol;
+      if (x < 0 || y < 0) {
+        leftover += symbol.bits;
+        return;
       }
-      if (counts[y][x] === undefined) {
-        counts[y][x] = 0;
+      if (!blocks[y]) {
+        blocks[y] = [];
       }
-      counts[y][x] += symbol.bits;
+      if (blocks[y][x] === undefined) {
+        blocks[y][x] = 0;
+      }
+      blocks[y][x] += symbol.bits;
       total += symbol.bits;
     });
-    return {blocks: counts, total: total};
+    return this.countCache[filter] = {blocks: blocks, total, leftover};
   }
   createBlockSymbols(c: number, r: number) {
     return Accounting.flatten(this.symbols.filter(symbol => {

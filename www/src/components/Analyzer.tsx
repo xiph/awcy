@@ -1,5 +1,5 @@
 import * as React from "react";
-import { OverlayTrigger, Tooltip, ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon } from "react-bootstrap";
+import { OverlayTrigger, Tooltip, ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon, SplitButton, MenuItem, DropdownButton } from "react-bootstrap";
 import { } from "react-bootstrap";
 import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile, fileExists, analyzerBaseUrl, baseUrl } from "../stores/Stores";
 import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector } from "../analyzer";
@@ -27,6 +27,18 @@ const COLORS = [
   "#FFE502", "#620E00", "#008F9C", "#98FF52", "#7544B1", "#B500FF", "#00FF78",
   "#FF6E41", "#005F39", "#6B6882", "#5FAD4E", "#A75740", "#A5FFD2", "#FFB167"
 ];
+
+const HEAT_COLORS = [];
+function generateHeatColors() {
+  function color(value) {
+    var h = (1.0 - value) * 240;
+    return "hsl(" + h + ", 100%, 50%)";
+  }
+  for (let i = 0; i < 256; i++) {
+    HEAT_COLORS.push(color(i / 256));
+  }
+}
+generateHeatColors();
 
 const BLOCK_SIZES = [
   [2, 2],
@@ -353,6 +365,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     showSkip: boolean;
     showMode: boolean;
     showBits: boolean;
+    showBitsScale: "frame" | "video" | "videos";
+    showBitsMode: "linear" | "heat" | "heat-opaque";
+    showBitsFilter: "";
     showTransformType: boolean;
     showTools: boolean;
   }> {
@@ -522,6 +537,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       showSkip: false,
       showMode: false,
       showBits: false,
+      showBitsScale: "frame",
+      showBitsMode: "heat",
+      showBitsFilter: "",
       showDecodedImage: true,
       showMotionVectors: false,
       showReferenceFrames: false,
@@ -593,7 +611,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     if (this.state.showDecodedImage) {
       this.displayContext.drawImage(this.frameCanvas, 0, 0, dw, dh);
     } else {
-      this.displayContext.fillStyle = "gray";
+      this.displayContext.fillStyle = "#333333";
       this.displayContext.fillRect(0, 0, dw, dh);
     }
 
@@ -871,6 +889,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   getActiveFrame(): AnalyzerFrame {
     return this.props.frames[this.state.activeGroup][this.state.activeFrame];
   }
+  getActiveGroup(): AnalyzerFrame [] {
+    return this.props.frames[this.state.activeGroup];
+  }
   updateBlockInfo() {
     this.forceUpdate();
   }
@@ -896,6 +917,21 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     return data.map(data => new Histogram(data, names));
   }
 
+  onBitsScaleSelect(eventKey: any, event: Object) {
+    let showBitsScale = eventKey;
+    this.setState({showBitsScale} as any);
+  }
+
+  onBitsModeSelect(eventKey: any, event: Object) {
+    let showBitsMode = eventKey;
+    this.setState({showBitsMode} as any);
+  }
+
+  onBitsFilterSelect(eventKey: any, event: Object) {
+    let showBitsFilter = eventKey;
+    this.setState({showBitsFilter} as any);
+  }
+
   render() {
     let groups = this.props.frames;
 
@@ -909,60 +945,90 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       );
     }
 
-    let blockInfo = null;
+    let sidePanel = null;
     let frame = this.getActiveFrame();
     if (frame) {
       let frames = this.props.frames[this.state.activeGroup];
       let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
       let accounting = this.getActiveFrame().accounting;
 
-      let json = frame.json;
-      let p = this.getParentMIPosition(frame, this.mousePosition);
+      let layerOptions = [];
+      if (this.state.showBits) {
+        let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
 
-      if (p) {
-        let symbolHist = this.getSymbolHist(frames);
-        let blockSymbols = this.getActiveFrame().accounting.createBlockSymbols(p.x, p.y);
-
-        blockInfo = <div className="sidePanel">
-
-          <div className="sectionHeader">Frame Info</div>
-          <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.state.activeGroup}></FrameInfoComponent>
-
-          <div className="sectionHeader">Block Info</div>
-          <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
-
-          <div className="sectionHeader">Symbols</div>
-          <HistogramComponent histograms={symbolHist} highlight={this.state.activeFrame} height={256}></HistogramComponent>
-
-          <div className="sectionHeader">Block Size</div>
-          <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256}></HistogramComponent>
-
-          <div className="sectionHeader">Transform Size</div>
-          <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256}></HistogramComponent>
-
-          <div className="sectionHeader">Transform Type</div>
-          <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={64}></HistogramComponent>
-
-          <div className="sectionHeader">Prediction Mode</div>
-          <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256}></HistogramComponent>
-
-          <div className="sectionHeader">Skip Mode</div>
-          <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={32}></HistogramComponent>
-
-          <div className="sectionHeader">Block Symbols</div>
-          <AccountingComponent symbols={blockSymbols}></AccountingComponent>
-
-          <div className="sectionHeader">Frame Symbols</div>
-          <AccountingComponent symbols={accounting.frameSymbols}></AccountingComponent>
-
-          <div className="sectionHeader">AV1 Analyzer Tips</div>
-          <ul>
-            <li>Click anywhere on the image to lock focus and get mode info details.</li>
-            <li>All analyzer features have keyboard shortcuts, use them.</li>
-            <li>Toggle between video sequences by using the number keys: 1, 2, 3, etc.</li>
-          </ul>
-        </div>
+        layerOptions.push(<div>
+            <DropdownButton bsSize="small" title="Bits Scale" id="dropdown-size-xsmall" onSelect={this.onBitsScaleSelect.bind(this)}>
+              <MenuItem eventKey="frame" active={this.state.showBitsScale == "frame"}>Frame Relative</MenuItem>
+              <MenuItem eventKey="video" active={this.state.showBitsScale == "video"}>Video Relative</MenuItem>
+              <MenuItem eventKey="videos" active={this.state.showBitsScale == "videos"}>Video Relative (all)</MenuItem>
+            </DropdownButton>{' '}
+            <DropdownButton bsSize="small" title="Bits Mode" id="dropdown-size-xsmall" onSelect={this.onBitsModeSelect.bind(this)}>
+              <MenuItem eventKey="linear" active={this.state.showBitsMode == "linear"}>Single Color</MenuItem>
+              <MenuItem eventKey="heat" active={this.state.showBitsMode == "heat"}>Heatmap</MenuItem>
+              <MenuItem eventKey="heat-opaque" active={this.state.showBitsMode == "heat-opaque"}>Heatmap (Opaque)</MenuItem>
+            </DropdownButton>{' '}
+            <DropdownButton bsSize="small" title="Bits Filter" id="dropdown-size-xsmall" onSelect={this.onBitsFilterSelect.bind(this)}>
+              <MenuItem eventKey="" active={this.state.showBitsFilter == ""}>None</MenuItem>
+              {
+                names.map(name => <MenuItem key={name} eventKey={name} active={this.state.showBitsFilter == name}>{name}</MenuItem>)
+              }
+            </DropdownButton>
+          </div>
+        );
       }
+
+      let p = this.getParentMIPosition(frame, this.mousePosition);
+      let symbolHist = this.getSymbolHist(frames);
+
+      sidePanel = <div className="sidePanel">
+        {layerOptions.length ? <div className="sectionHeader">Layer Options</div> : null}
+        {layerOptions}
+
+        <div className="sectionHeader">Frame Info</div>
+        <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.state.activeGroup}></FrameInfoComponent>
+
+        {p &&
+          <div>
+            <div className="sectionHeader">Block Info</div>
+            <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
+          </div>
+        }
+
+        <div className="sectionHeader">Symbols</div>
+        <HistogramComponent histograms={symbolHist} highlight={this.state.activeFrame} height={256}></HistogramComponent>
+
+        <div className="sectionHeader">Block Size</div>
+        <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256}></HistogramComponent>
+
+        <div className="sectionHeader">Transform Size</div>
+        <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256}></HistogramComponent>
+
+        <div className="sectionHeader">Transform Type</div>
+        <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={64}></HistogramComponent>
+
+        <div className="sectionHeader">Prediction Mode</div>
+        <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256}></HistogramComponent>
+
+        <div className="sectionHeader">Skip Mode</div>
+        <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={32}></HistogramComponent>
+
+        {p &&
+          <div>
+            <div className="sectionHeader">Block Symbols</div>
+            <AccountingComponent symbols={this.getActiveFrame().accounting.createBlockSymbols(p.x, p.y)}></AccountingComponent>
+          </div>
+        }
+
+        <div className="sectionHeader">Frame Symbols</div>
+        <AccountingComponent symbols={accounting.frameSymbols}></AccountingComponent>
+
+        <div className="sectionHeader">AV1 Analyzer Tips</div>
+        <ul>
+          <li>Click anywhere on the image to lock focus and get mode info details.</li>
+          <li>All analyzer features have keyboard shortcuts, use them.</li>
+          <li>Toggle between video sequences by using the number keys: 1, 2, 3, etc.</li>
+        </ul>
+      </div>
     }
 
     console.log("Render");
@@ -1005,7 +1071,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           </ButtonGroup>
         </div>
         <div className="propertyContainer" style={{paddingTop: "4px"}}>
-          {blockInfo}
+          {sidePanel}
         </div>
       </div>
     }
@@ -1107,19 +1173,49 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     });
   }
   drawBits(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
-    let {blocks, total} = frame.accounting.countBits();
+    let {blocks, total} = frame.accounting.countBits(this.state.showBitsFilter);
+    function getBits(blocks, c, r) {
+      if (!blocks[r]) {
+        return 0;
+      }
+      return blocks[r][c] | 0;
+    }
     let maxBitsPerPixel = 0;
-    this.visitBlocks("block", frame, (blockSize, c, r, sc, sr, bounds) => {
-      let area = blockSizeArea(blockSize);
-      let bits = blocks[r][c] | 0;
-      maxBitsPerPixel = Math.max(maxBitsPerPixel, bits / area);
-    });
-    // maxBitsPerPixel = 16; TODO: Consider making this a constant to make it easier to compare frames.
+    if (this.state.showBitsScale == "frame") {
+      this.visitBlocks("block", frame, (blockSize, c, r, sc, sr, bounds) => {
+        let area = blockSizeArea(blockSize);
+        let bits = getBits(blocks, c, r);
+        maxBitsPerPixel = Math.max(maxBitsPerPixel, bits / area);
+      });
+    } else {
+      let groups = this.state.showBitsScale === "video" ? [this.getActiveGroup()] : this.props.frames;
+      groups.forEach(frames => {
+        frames.forEach(frame => {
+          let {blocks} = frame.accounting.countBits(this.state.showBitsFilter);
+          this.visitBlocks("block", frame, (blockSize, c, r, sc, sr, bounds) => {
+            let area = blockSizeArea(blockSize);
+            let bits = getBits(blocks, c, r);
+            maxBitsPerPixel = Math.max(maxBitsPerPixel, bits / area);
+          });
+        });
+      });
+    }
     this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
       let area = blockSizeArea(blockSize);
-      let bits = blocks[r][c] | 0;
-      ctx.globalAlpha = (bits / area) / maxBitsPerPixel;
-      ctx.fillStyle = "#9400D3";
+      let bits = getBits(blocks, c, r);
+      let value = (bits / area) / maxBitsPerPixel;
+      let mode = this.state.showBitsMode;
+      if (mode == "linear") {
+        ctx.globalAlpha = value;
+        ctx.fillStyle = "#9400D3";
+      } else if (mode == "heat") {
+        ctx.globalAlpha = value;
+        ctx.fillStyle = HEAT_COLORS[value * HEAT_COLORS.length | 0];
+      } else if (mode == "heat-opaque") {
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = HEAT_COLORS[value * HEAT_COLORS.length | 0];
+      }
+
       return true;
     });
   }
