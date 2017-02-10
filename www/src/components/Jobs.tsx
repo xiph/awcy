@@ -153,7 +153,7 @@ export class JobsComponent extends React.Component<JobsProps, {
               }
             }
             return true;
-          }).slice(0,256).map((job: Job) => {
+          }).slice(0,512).map((job: Job) => {
             let disabled = selectedJobs.length && !selectedJobs[0].isComparableWith(job);
             return <JobComponent disabled={disabled} detailed={this.props.detailed} key={job.id} job={job} onCancel={this.onCancelJob.bind(this)}></JobComponent>
           })}
