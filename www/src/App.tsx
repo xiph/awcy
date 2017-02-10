@@ -53,7 +53,7 @@ export class App extends React.Component<void, void> {
       </Tab>,
       <Tab eventKey={3} key="all-jobs" title="All Runs">
         <div style={{ padding: 10 }}>
-          <JobsComponent jobStatusFilter={JobStatus.All} jobs={appStore.jobs} listHeight={height - 200} />
+          <JobsComponent showFilters jobStatusFilter={JobStatus.All} jobs={appStore.jobs} listHeight={height - 200} />
         </div>
       </Tab>,
       <Tab eventKey={4} key="share" title="Share">
