@@ -154,6 +154,7 @@ interface Internal {
   _get_frame_height(): number;
   _open_file(): number;
   _set_layers(layers: number): number;
+  _get_aom_codec_build_config(): number;
   FS: any;
   HEAPU8: Uint8Array;
   UTF8ToString(p: number): string;
@@ -172,6 +173,7 @@ export class AnalyzerFrame {
   predictionModeHist: Histogram;
   skipHist: Histogram;
   imageData: ImageData;
+  config: string;
 }
 
 function getAccountingFromJson(json: any, name: string): Accounting {
@@ -471,6 +473,13 @@ export class Decoder {
     this.native._set_layers(layers);
   }
 
+  getBuildConfig() {
+    if (!this.native._get_aom_codec_build_config) {
+      return "";
+    }
+    return (this.nativeModule as any).UTF8ToString(this.native._get_aom_codec_build_config());
+  }
+
   readFrame(): Promise<AnalyzerFrame[]> {
     return Promise.resolve(this.readFrameSync());
   }
@@ -486,6 +495,7 @@ export class Decoder {
     for (let i = 0; i < o.length - 1; i++) {
       let json = o[i];
       let frame = readFrameFromJson(json);
+      frame.config = this.getBuildConfig();
       frames.push(frame);
       this.frames.push(frame);
     }
