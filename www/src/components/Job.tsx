@@ -130,6 +130,8 @@ export class JobComponent extends React.Component<JobProps, {
       backgroundColor = "#fcf6ed";
     } else if (job.status == JobStatus.Failed) {
       backgroundColor = "#fff4f4";
+    } else if (job.buildOptions == "") {
+      backgroundColor = "#eaffea";
     }
     function keyValue(key, value) {
       return <div key={key}><span className="tinyJobValue">{key}: </span><span className="tinyGrayJobValue">{String(value)}</span></div>
