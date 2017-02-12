@@ -70,34 +70,8 @@ export class AppStatusComponent extends React.Component<void, {
         }
       }
     }
-    let info = null;
-    let log = null;
-
-    let jobInfos = [];
-    appStore.jobs.jobs.forEach(job => {
-      if (job.status & JobStatus.Active) {
-        jobInfos.push(<Panel key={job.id}>
-          <JobComponent detailed job={job}/>
-          <JobLogComponent job={job} />
-        </Panel>);
-      }
-    });
-
-    let jobs = {};
-    let totalJobCount = 0;
-    appStore.jobs.jobs.forEach(job => {
-      if (job.date && daysSince(job.date) > 14) {
-        return;
-      }
-      if (!(job.nick in jobs)) {
-        jobs[job.nick] = [];
-      }
-      jobs[job.nick].push(job);
-      totalJobCount++;
-    });
-    return <div style={{height: "3000px"}}>
+    return <div>
       <RefreshComponent/>
-      {jobInfos}
       <Panel header={"AWS Status " + status}>
         {table}
       </Panel>
