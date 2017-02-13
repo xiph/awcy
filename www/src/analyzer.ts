@@ -10,15 +10,34 @@ export function clamp(v, a, b) {
   }
   return v;
 }
-function YUV2RGB(yValue, uValue, vValue) {
-  let rTmp = yValue + (1.370705 * (vValue - 128));
-  let gTmp = yValue - (0.698001 * (vValue - 128)) - (0.337633 * (uValue - 128));
-  let bTmp = yValue + (1.732446 * (uValue - 128));
+
+let YUV2RGB_TABLE = new Uint32Array(256 * 256 * 256);
+
+function YUV2RGB(y, u, v) {
+  return YUV2RGB_TABLE[(y << 16) | (u << 8) | v];
+}
+
+function computeYUV2RGB(y, u, v) {
+  let rTmp = y + (1.370705 * (v - 128));
+  let gTmp = y - (0.698001 * (v - 128)) - (0.337633 * (u - 128));
+  let bTmp = y + (1.732446 * (u - 128));
   let r = clamp(rTmp | 0, 0, 255) | 0;
   let g = clamp(gTmp | 0, 0, 255) | 0;
   let b = clamp(bTmp | 0, 0, 255) | 0;
   return (b << 16) | (g << 8) | (r << 0);
 }
+
+function buildYUVTable() {
+  for (let y = 0; y < 256; y++) {
+    for (let u = 0; u < 256; u++) {
+      for (let v = 0; v < 256; v++) {
+        YUV2RGB_TABLE[(y << 16) | (u << 8) | v] = computeYUV2RGB(y, u, v);
+      }
+    }
+  }
+}
+
+buildYUVTable();
 
 export class AccountingSymbol {
   constructor(public name: string, public bits: number, public samples: number, public x: number, public y: number) {
@@ -135,6 +154,7 @@ interface Internal {
   _get_frame_height(): number;
   _open_file(): number;
   _set_layers(layers: number): number;
+  _get_aom_codec_build_config(): number;
   FS: any;
   HEAPU8: Uint8Array;
   UTF8ToString(p: number): string;
@@ -153,6 +173,7 @@ export class AnalyzerFrame {
   predictionModeHist: Histogram;
   skipHist: Histogram;
   imageData: ImageData;
+  config: string;
 }
 
 function getAccountingFromJson(json: any, name: string): Accounting {
@@ -452,6 +473,13 @@ export class Decoder {
     this.native._set_layers(layers);
   }
 
+  getBuildConfig() {
+    if (!this.native._get_aom_codec_build_config) {
+      return "";
+    }
+    return (this.nativeModule as any).UTF8ToString(this.native._get_aom_codec_build_config());
+  }
+
   readFrame(): Promise<AnalyzerFrame[]> {
     return Promise.resolve(this.readFrameSync());
   }
@@ -467,6 +495,7 @@ export class Decoder {
     for (let i = 0; i < o.length - 1; i++) {
       let json = o[i];
       let frame = readFrameFromJson(json);
+      frame.config = this.getBuildConfig();
       frames.push(frame);
       this.frames.push(frame);
     }
@@ -495,47 +524,50 @@ export class Decoder {
     let w = this.frameSize.w;
     let h = this.frameSize.h;
 
-    let showY = !!Yp;
-    let showU = !!Up;
-    let showV = !!Vp;
-
     let p = 0;
     let bgr = 0;
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        if (bitDepth == 10) {
-          let Y = 128;
-          if (showY) {
-            p = Yp + Math.imul(Ys, y) + (x << 1);
-            Y = (H[p] + (H[p + 1] << 8)) >> 2;
-          }
-          let U = 128;
-          if (showU) {
-            p = Up + Math.imul(y >> 1, Us) + ((x >> 1) << 1);
-            U = (H[p] + (H[p + 1] << 8)) >> 2;
-          }
-          let V = 128;
-          if (showV) {
-            p = Vp + Math.imul(y >> 1, Vs) + ((x >> 1) << 1);
-            V = (H[p] + (H[p + 1] << 8)) >> 2;
-          }
+    if (bitDepth == 10) {
+      for (let y = 0; y < h; y++) {
+        let yYs = y * Ys;
+        let yUs = (y >> 1) * Us;
+        let yVs = (y >> 1) * Vs;
+        for (let x = 0; x < w; x++) {
+          p = Yp + yYs + (x << 1);
+          let Y = (H[p] + (H[p + 1] << 8)) >> 2;
+          p = Up + yUs + ((x >> 1) << 1);
+          let U = (H[p] + (H[p + 1] << 8)) >> 2;
+          p = Vp + yVs + ((x >> 1) << 1);
+          let V = (H[p] + (H[p + 1] << 8)) >> 2;
           bgr = YUV2RGB(Y, U, V);
-        } else {
-          let Y = showY ? H[Yp + Math.imul(y, Ys) + x] : 128;
-          let U = showU ? H[Up + Math.imul(y >> 1, Us) + (x >> 1)] : 128;
-          let V = showV ? H[Vp + Math.imul(y >> 1, Vs) + (x >> 1)] : 128;
-          bgr = YUV2RGB(Y, U, V);
+          let r = (bgr >> 0) & 0xFF;
+          let g = (bgr >> 8) & 0xFF;
+          let b = (bgr >> 16) & 0xFF;
+          let index = (Math.imul(y, w) + x) << 2;
+          I[index + 0] = r;
+          I[index + 1] = g;
+          I[index + 2] = b;
+          I[index + 3] = 255;
         }
-
-        let r = (bgr >> 0) & 0xFF;
-        let g = (bgr >> 8) & 0xFF;
-        let b = (bgr >> 16) & 0xFF;
-
-        let index = (Math.imul(y, w) + x) << 2;
-        I[index + 0] = r;
-        I[index + 1] = g;
-        I[index + 2] = b;
-        I[index + 3] = 255;
+      }
+    } else {
+      for (let y = 0; y < h; y++) {
+        let yYs = y * Ys;
+        let yUs = (y >> 1) * Us;
+        let yVs = (y >> 1) * Vs;
+        for (let x = 0; x < w; x++) {
+          let Y = H[Yp + yYs + x];
+          let U = H[Up + yUs + (x >> 1)];
+          let V = H[Vp + yVs + (x >> 1)];
+          bgr = YUV2RGB(Y, U, V);
+          let r = (bgr >> 0) & 0xFF;
+          let g = (bgr >> 8) & 0xFF;
+          let b = (bgr >> 16) & 0xFF;
+          let index = (Math.imul(y, w) + x) << 2;
+          I[index + 0] = r;
+          I[index + 1] = g;
+          I[index + 2] = b;
+          I[index + 3] = 255;
+        }
       }
     }
   }

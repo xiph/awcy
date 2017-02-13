@@ -15,7 +15,7 @@ const MI_SIZE_LOG2 = 3;
 const MI_SIZE = 1 << MI_SIZE_LOG2;
 const ZOOM_WIDTH = 384;
 const ZOOM_SOURCE = 64;
-
+const DEFAULT_CONFIG = "--disable-multithread --disable-runtime-cpu-detect --target=generic-gnu --enable-accounting --enable-analyzer --enable-aom_highbitdepth --extra-cflags=-D_POSIX_SOURCE";
 const COLORS = [
   "#E85EBE", "#009BFF", "#00FF00", "#0000FF", "#FF0000", "#01FFFE", "#FFA6FE",
   "#FFDB66", "#006401", "#010067", "#95003A", "#007DB5", "#FF00F6", "#FFEEE8",
@@ -581,7 +581,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.zoomContext = this.zoomCanvas.getContext("2d");
   }
   showToast(message: string, duration = 1000) {
-    console.log(message);
     this.toast.innerHTML = message;
     let opacity = 1;
     this.toast.style.opacity = String(opacity);
@@ -743,7 +742,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   }
   showActiveFrameToast(activeGroup, activeFrame) {
     let groupName = this.props.groupNames ? this.props.groupNames[activeGroup] : String(activeGroup);
-    this.showToast("Showing Frame: " + groupName + " : " + activeFrame);
+    let config = this.props.frames[activeGroup][activeFrame].config
+    if (config.indexOf(DEFAULT_CONFIG) == 0) {
+      config = config.substr(DEFAULT_CONFIG.length);
+    }
+    if (!config) {
+      config = "default";
+    }
+    this.showToast("Showing Frame: " + config + " - " + groupName + " : " + activeFrame);
   }
   zoom(value) {
     let scale = this.state.scale * value;
@@ -1022,6 +1028,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         <div className="sectionHeader">Frame Symbols</div>
         <AccountingComponent symbols={accounting.frameSymbols}></AccountingComponent>
 
+        <div className="sectionHeader">Build Config</div>
+        <div className="propertyValue">{frame.config}</div>
+
         <div className="sectionHeader">AV1 Analyzer Tips</div>
         <ul>
           <li>Click anywhere on the image to lock focus and get mode info details.</li>
@@ -1031,7 +1040,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       </div>
     }
 
-    console.log("Render");
     let toolbox = null;
     if (this.state.showTools) {
       toolbox = <div className="toolbox" style={{padding: "10px"}}>

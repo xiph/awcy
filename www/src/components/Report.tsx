@@ -134,18 +134,26 @@ export class AnalyzerLinksComponent extends React.Component<{
         videos.push(video);
       }
     }
-
     videos.forEach(video => {
-      let analyzerUrls = qualities.map(quality => {
-        let url = analyzerBaseUrl + `?` + jobs.map(job => {
-          return `decoder=${job.decocerUrl()}&file=${job.ivfUrl(video, quality)}`;
-        }).join("&");
-        return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
-      });
-      videoRows.push(<div key={video}>{video} {analyzerUrls}</div>);
+      function makeJobsUrl(jobs) {
+        return qualities.map(quality => {
+          let url = analyzerBaseUrl + `?` + jobs.map(job => {
+            return `decoder=${job.decocerUrl()}&file=${job.ivfUrl(video, quality)}`;
+          }).join("&");
+          return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
+        });
+      }
+      let cols = [
+        <td>{makeJobsUrl(jobs)}</td>
+      ];
+      if (jobs.length > 1) {
+        jobs.forEach(job => {
+          cols.push(<td key={job.id}>{makeJobsUrl([job])}</td>);
+        });
+      }
+      videoRows.push(<tr key={video}><td>{video}</td>{cols}</tr>);
     });
-
-    let decoderRows = jobs.map(job => {
+    let decoderCols = jobs.map(job => {
       let urls = qualities.map(quality => {
         let files = [];
         videos.forEach(video => {
@@ -154,14 +162,34 @@ export class AnalyzerLinksComponent extends React.Component<{
         let url = analyzerBaseUrl + `?decoder=${job.decocerUrl()}&filePrefix=${job.ivfUrlPrefix()}&` + files.join("&");
         return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
       });
-      return <div key={job.id}>{job.selectedName}: All Videos @ {urls}</div>
+      return <td key={job.id}>{urls}</td>
     });
-
     return <Panel header="Analyzer Links">
-      {videoRows}
-      <div>
-        {decoderRows}
-      </div>
+      <table id="analyzerLinksTable">
+        <col/><col/>
+        {
+          jobs.length > 1 ? jobs.map(job => <col key={job.id}/>) : null
+        }
+        <thead>
+          <tr>
+            <td>Video</td>
+            <td>{jobs.map(job => job.selectedName).join(" vs. ")}</td>
+            {
+              jobs.length > 1 ? jobs.map(job => {
+                return <td>{job.selectedName}</td>;
+              }) : null
+            }
+          </tr>
+        </thead>
+        <tbody>
+          {videoRows}
+          <tr>
+            <td>All Videos</td>
+            {jobs.length > 1 ? <td></td> : null}
+            {decoderCols}
+          </tr>
+        </tbody>
+      </table>
     </Panel>
   }
 }
