@@ -263,7 +263,9 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     let report = this.state.report;
     let summaryHeaders = ["PSNR", "PSNR Cb", "PSNR Cr", "PSNR HVS", "SSIM", "MS SSIM", "CIEDE 2000"];
     let summaryRows = [summaryHeaders];
-    summaryRows.push(summaryHeaders.map(name => report.average[name].toFixed(4)));
+    summaryRows.push(summaryHeaders.map(name =>
+      report.average[name] != undefined ? report.average[name].toFixed(4) : "N/A"
+    ));
     padTable(summaryRows);
 
     let text = report.a.id + " -> " + report.b.id + "\n\n";
@@ -272,9 +274,9 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     function toRow(video: string, data) {
       return [video].concat(displayedBDRateMetrics.map(name => {
         if (name in data) {
-          return data[name].toFixed(4);
+          return data[name] != undefined ? data[name].toFixed(4) : "N/A";
         } else {
-          return "    ";
+          return "N/A";
         }
       }));
     }
