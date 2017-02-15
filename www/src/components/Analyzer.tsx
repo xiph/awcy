@@ -13,6 +13,7 @@ const DEFAULT_MARGIN = { top: 10, right: 10, bottom: 20, left: 40 };
 const MAX_FRAMES = 128;
 const MI_SIZE_LOG2 = 3;
 const MI_SIZE = 1 << MI_SIZE_LOG2;
+const SUPER_MI_SIZE = MI_SIZE << 3;
 const ZOOM_WIDTH = 384;
 const ZOOM_SOURCE = 64;
 const DEFAULT_CONFIG = "--disable-multithread --disable-runtime-cpu-detect --target=generic-gnu --enable-accounting --enable-analyzer --enable-aom_highbitdepth --extra-cflags=-D_POSIX_SOURCE";
@@ -39,6 +40,10 @@ function generateHeatColors() {
   }
 }
 generateHeatColors();
+
+function colorScale(v, colors) {
+  return colors[Math.round(v * (colors.length - 1))];
+}
 
 const BLOCK_SIZES = [
   [2, 2],
@@ -321,6 +326,12 @@ export class ModeInfoComponent extends React.Component<{
       if (!json[name + "Map"]) return String(v);
       return json[name + "Map"][v];
     }
+    function getSuperBlockProperty(name: string): string{
+      if (!json[name]) return "N/A";
+      let v = json[name][r & ~7][c & ~7];
+      if (!json[name + "Map"]) return String(v);
+      return json[name + "Map"][v];
+    }
     function getMotionVector() {
       let motionVectors = json["motionVectors"];
       if (!motionVectors) return "N/A";
@@ -346,6 +357,7 @@ export class ModeInfoComponent extends React.Component<{
       <div style={{float: "left", width: "60%"}}>
         <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
         <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
+        <div><span className="propertyName">Dering:</span> <span className="propertyValue">{getSuperBlockProperty("deringGain")}</span></div>
         <div><span className="propertyName">Motion Vectors:</span> <span className="propertyValue">{getMotionVector()}</span></div>
         <div><span className="propertyName">Reference Frame:</span> <span className="propertyValue">{getReferenceFrame()}</span></div>
       </div>
@@ -361,8 +373,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     showMotionVectors: boolean;
     showReferenceFrames: boolean;
     showBlockGrid: boolean;
+    showSuperBlockGrid: boolean;
     showTransformGrid: boolean;
     showSkip: boolean;
+    showDering: boolean;
     showMode: boolean;
     showBits: boolean;
     showBitsScale: "frame" | "video" | "videos";
@@ -447,13 +461,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     //   default: false,
     //   value: undefined
     // },
-    // showSuperBlockGrid: {
-    //   key: "g",
-    //   description: "SB Grid",
-    //   detail: "Display the 64x64 super block grid.",
-    //   default: false,
-    //   value: undefined
-    // },
+    showSuperBlockGrid: {
+      key: "g",
+      description: "Super Block Grid",
+      detail: "Display the 64x64 super block grid.",
+      default: false,
+      value: undefined
+    },
     // showTileGrid: {
     //   key: "l",
     //   description: "Tile Grid",
@@ -469,7 +483,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       value: undefined
     },
     showTransformType: {
-      key: "g",
+      key: "y",
       description: "Transform Type",
       detail: "Display transform type.",
       default: false,
@@ -482,13 +496,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       default: false,
       value: undefined
     },
-    // showDering: {
-    //   key: "d",
-    //   description: "Dering",
-    //   detail: "Display blocks where the deringing filter is applied.",
-    //   default: false,
-    //   value: undefined
-    // },
+    showDering: {
+      key: "d",
+      description: "Dering",
+      detail: "Display blocks where the deringing filter is applied.",
+      default: false,
+      value: undefined
+    },
     showMotionVectors: {
       key: "m",
       description: "Motion Vectors",
@@ -533,8 +547,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       activeGroup: 0,
       scale: 1,
       showBlockGrid: false,
+      showSuperBlockGrid: false,
       showTransformGrid: false,
       showSkip: false,
+      showDering: false,
       showMode: false,
       showBits: false,
       showBitsScale: "frame",
@@ -658,24 +674,25 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.state.showSkip && this.drawSkip(frame, ctx, src, dst);
     this.state.showMode && this.drawMode(frame, ctx, src, dst);
     this.state.showBits && this.drawBits(frame, ctx, src, dst);
+    this.state.showDering && this.drawDering(frame, ctx, src, dst);
     this.state.showTransformType && this.drawTransformType(frame, ctx, src, dst);
     this.state.showMotionVectors && this.drawMotionVectors(frame, ctx, src, dst);
     this.state.showReferenceFrames && this.drawReferenceFrames(frame, ctx, src, dst);
     ctx.globalAlpha = 1;
+    this.state.showSuperBlockGrid && this.drawGrid(frame, "super-block", "#87CEEB", ctx, src, dst, 2);
     this.state.showTransformGrid && this.drawGrid(frame, "transform", "yellow", ctx, src, dst);
     this.state.showBlockGrid && this.drawGrid(frame, "block", "white", ctx, src, dst);
     ctx.restore();
 
   }
-  drawGrid(frame: AnalyzerFrame, mode: string, color: string, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
+  drawGrid(frame: AnalyzerFrame, mode: string, color: string, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, lineWidth = 1) {
     let scale = dst.w / src.w;
     ctx.save();
     ctx.lineWidth = 1;
     ctx.strokeStyle = color;
-    let lineOffset = getLineOffset(1);
+    let lineOffset = getLineOffset(lineWidth);
     ctx.translate(lineOffset, lineOffset);
     ctx.translate(-src.x * scale, -src.y * scale);
-    let lineWidth = 1;
     ctx.lineWidth = lineWidth;
     this.visitBlocks(mode, frame, (blockSize, c, r, sc, sr, bounds) => {
       bounds.multiplyScalar(scale);
@@ -1110,6 +1127,20 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       return true;
     });
   }
+  drawDering(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
+    let dering = frame.json["deringGain"];
+    if (!dering) {
+      return;
+    }
+    this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
+      let v = dering[r][c];
+      if (!v) {
+        return false;
+      }
+      ctx.fillStyle = colorScale(v / 3, HEAT_COLORS);
+      return true;
+    }, "super-block");
+  }
   drawReferenceFrames(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let reference = frame.json["referenceFrame"];
     this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
@@ -1218,10 +1249,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         ctx.fillStyle = "#9400D3";
       } else if (mode == "heat") {
         ctx.globalAlpha = value;
-        ctx.fillStyle = HEAT_COLORS[value * HEAT_COLORS.length | 0];
+        ctx.fillStyle = colorScale(value, HEAT_COLORS);
       } else if (mode == "heat-opaque") {
         ctx.globalAlpha = 1;
-        ctx.fillStyle = HEAT_COLORS[value * HEAT_COLORS.length | 0];
+        ctx.fillStyle = colorScale(value, HEAT_COLORS);
       }
 
       return true;
@@ -1294,11 +1325,11 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
     ctx.restore();
   }
-  drawFillBlock(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, setFillStyle: (blockSize, c, r, sc, sr) => boolean) {
+  drawFillBlock(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, setFillStyle: (blockSize, c, r, sc, sr) => boolean, mode = "block") {
     let scale = dst.w / src.w;
     ctx.save();
     ctx.translate(-src.x * scale, -src.y * scale);
-    this.visitBlocks("block", frame, (blockSize, c, r, sc, sr, bounds) => {
+    this.visitBlocks(mode, frame, (blockSize, c, r, sc, sr, bounds) => {
       bounds.multiplyScalar(scale);
       setFillStyle(blockSize, c, r, sc, sr) && ctx.fillRect(bounds.x, bounds.y, bounds.w, bounds.h);
     });
@@ -1317,7 +1348,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let rows = blockSize.length;
     let cols = blockSize[0].length;
     let S = MI_SIZE;
-    if (mode === "block") {
+    if (mode === "super-block") {
+      for (let c = 0; c < cols; c += SUPER_MI_SIZE / MI_SIZE) {
+        for (let r = 0; r < rows; r += SUPER_MI_SIZE / MI_SIZE) {
+          let size = blockSize[r][c];
+          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, SUPER_MI_SIZE, SUPER_MI_SIZE));
+        }
+      }
+    } else if (mode === "block") {
       /**
        * Maps AnalyzerBlockSize enum to [w, h] log2 pairs.
        */
