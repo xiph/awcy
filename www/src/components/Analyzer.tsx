@@ -13,6 +13,7 @@ const DEFAULT_MARGIN = { top: 10, right: 10, bottom: 20, left: 40 };
 const MAX_FRAMES = 128;
 const MI_SIZE_LOG2 = 3;
 const MI_SIZE = 1 << MI_SIZE_LOG2;
+const CLPF_SIZE_LOG2 = 5;
 const SUPER_MI_SIZE = MI_SIZE << 3;
 const ZOOM_WIDTH = 384;
 const ZOOM_SOURCE = 64;
@@ -295,6 +296,10 @@ export class FrameInfoComponent extends React.Component<{
 }> {
   render() {
     let frame = this.props.frame;
+    function getProperty(name: string): string{
+      if (frame.json[name] == undefined) return "N/A";
+      return frame.json[name];
+    }
     return <div>
       <div style={{float: "left", width: "40%"}}>
         <div><span className="propertyName">Video:</span> <span className="propertyValue">{this.props.activeGroup}</span></div>
@@ -305,6 +310,8 @@ export class FrameInfoComponent extends React.Component<{
       <div style={{float: "left", width: "60%"}}>
         <div><span className="propertyName">BaseQIndex:</span> <span className="propertyValue">{frame.json.baseQIndex}</span></div>
         <div><span className="propertyName">Frame Size:</span> <span className="propertyValue">{frame.imageData.width} x {frame.imageData.height}</span></div>
+        <div><span className="propertyName">CLPF Size:</span> <span className="propertyValue">{getProperty("clpfSize")}</span></div>
+        <div><span className="propertyName">CLPF Strength Y:</span> <span className="propertyValue">{getProperty("clpfStrengthY")}</span></div>
       </div>
     </div>
   }
@@ -358,6 +365,7 @@ export class ModeInfoComponent extends React.Component<{
         <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
         <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
         <div><span className="propertyName">Dering:</span> <span className="propertyValue">{getSuperBlockProperty("deringGain")}</span></div>
+        <div><span className="propertyName">CLPF:</span> <span className="propertyValue">{getProperty("clpf")}</span></div>
         <div><span className="propertyName">Motion Vectors:</span> <span className="propertyValue">{getMotionVector()}</span></div>
         <div><span className="propertyName">Reference Frame:</span> <span className="propertyValue">{getReferenceFrame()}</span></div>
       </div>
@@ -377,6 +385,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     showTransformGrid: boolean;
     showSkip: boolean;
     showDering: boolean;
+    showCLPF: boolean;
     showMode: boolean;
     showBits: boolean;
     showBitsScale: "frame" | "video" | "videos";
@@ -503,6 +512,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       default: false,
       value: undefined
     },
+    showCLPF: {
+      key: "l",
+      description: "CLFP",
+      detail: "Display blocks where the CLPF filter is applied.",
+      default: false,
+      value: undefined
+    },
     showMotionVectors: {
       key: "m",
       description: "Motion Vectors",
@@ -551,6 +567,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       showTransformGrid: false,
       showSkip: false,
       showDering: false,
+      showCLPF: false,
       showMode: false,
       showBits: false,
       showBitsScale: "frame",
@@ -675,6 +692,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.state.showMode && this.drawMode(frame, ctx, src, dst);
     this.state.showBits && this.drawBits(frame, ctx, src, dst);
     this.state.showDering && this.drawDering(frame, ctx, src, dst);
+    this.state.showCLPF && this.drawCLPF(frame, ctx, src, dst);
     this.state.showTransformType && this.drawTransformType(frame, ctx, src, dst);
     this.state.showMotionVectors && this.drawMotionVectors(frame, ctx, src, dst);
     this.state.showReferenceFrames && this.drawReferenceFrames(frame, ctx, src, dst);
@@ -1140,6 +1158,26 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       ctx.fillStyle = colorScale(v / 3, HEAT_COLORS);
       return true;
     }, "super-block");
+  }
+  drawCLPF(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
+    let clpf = frame.json["clpf"];
+    if (!clpf) {
+      return;
+    }
+    let strengthY = frame.json["clpfStrengthY"];
+    let size = frame.json["clpfSize"];
+    if (!size) {
+      return;
+    }
+    // Size 0 means no block signaling, 1 = 32x32, 2 = 64x64, 3 = 128x128.
+    this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
+      let v = clpf[r][c];
+      if (!v || v < 0) {
+        return false;
+      }
+      ctx.fillStyle = colorScale((v * strengthY) / 4, HEAT_COLORS);
+      return true;
+    }, (CLPF_SIZE_LOG2 - MI_SIZE_LOG2) + (size - 1));
   }
   drawReferenceFrames(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let reference = frame.json["referenceFrame"];
