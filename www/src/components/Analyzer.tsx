@@ -1325,7 +1325,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
     ctx.restore();
   }
-  drawFillBlock(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, setFillStyle: (blockSize, c, r, sc, sr) => boolean, mode = "block") {
+  drawFillBlock(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, setFillStyle: (blockSize, c, r, sc, sr) => boolean, mode: string | number = "block") {
     let scale = dst.w / src.w;
     ctx.save();
     ctx.translate(-src.x * scale, -src.y * scale);
@@ -1336,7 +1336,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     ctx.restore();
   }
 
-  visitBlocks(mode: string, frame: AnalyzerFrame, visitor: BlockVisitor) {
+  visitBlocks(mode: string | number, frame: AnalyzerFrame, visitor: BlockVisitor) {
     let blockSize = frame.json["blockSize"];
     let blockSizeMap = frame.json["blockSizeMap"];
 
@@ -1348,7 +1348,15 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let rows = blockSize.length;
     let cols = blockSize[0].length;
     let S = MI_SIZE;
-    if (mode === "super-block") {
+
+    if (typeof mode === "number") {
+      for (let c = 0; c < cols; c += 1 << mode) {
+        for (let r = 0; r < rows; r += 1 << mode) {
+          let size = blockSize[r][c];
+          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, MI_SIZE << mode, MI_SIZE << mode));
+        }
+      }
+    } else if (mode === "super-block") {
       for (let c = 0; c < cols; c += SUPER_MI_SIZE / MI_SIZE) {
         for (let r = 0; r < rows; r += SUPER_MI_SIZE / MI_SIZE) {
           let size = blockSize[r][c];
@@ -1452,6 +1460,8 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           }
         }
       }
+    } else {
+      throw new Error("Can't handle mode: " + mode);
     }
   }
 }
