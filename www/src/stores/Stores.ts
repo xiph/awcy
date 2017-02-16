@@ -758,10 +758,10 @@ export class AppStore {
   static bdRateReportCache: { [path: string]: BDRateReport } = {};
   static loadBDRateReport(a: Job, b: Job, set: string, method = "report-overlap"): Promise<BDRateReport> {
     let args = [
-      "a=" + encodeURI(a.id),
-      "b=" + encodeURI(b.id),
-      "set=" + encodeURI(set),
-      "method=" + encodeURI(method),
+      "a=" + encodeURIComponent(a.id),
+      "b=" + encodeURIComponent(b.id),
+      "set=" + encodeURIComponent(set),
+      "method=" + encodeURIComponent(method),
       "file=" + "REMOVEME",
       "format=json"
     ];
