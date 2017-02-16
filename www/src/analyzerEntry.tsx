@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { AnalyzerViewCompareComponent, AnalyzerBenchmarkComponent, CreateAnalyzerUrlComponent } from "./components/Analyzer";
+import { AnalyzerViewCompareComponent, AnalyzerBenchmarkComponent, LocalAnalyzerComponent } from "./components/Analyzer";
 import { forEachUrlParameter, getUrlParameters } from "./stores/Stores";
 
 let parameters = getUrlParameters();
@@ -11,7 +11,7 @@ let playbackFrameRate = parameters.playbackFrameRate;
 let layers = parameters.layers;
 let maxFrames = parameters.maxFrames;
 let benchmark = parameters.benchmark;
-let build = parameters.build;
+let local = parameters.local;
 let filePrefix = parameters.filePrefix || "";
 
 
@@ -40,9 +40,9 @@ if (parameters.benchmark) {
       maxFrames={maxFrames}/>,
     document.getElementById("analyzer-app")
   );
-} else if (build) {
+} else if (local) {
   ReactDOM.render(
-    <CreateAnalyzerUrlComponent/>,
+    <LocalAnalyzerComponent/>,
     document.getElementById("analyzer-app")
   );
 } else {

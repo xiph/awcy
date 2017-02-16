@@ -165,6 +165,8 @@ export class AnalyzerFrame {
     frameType: number;
     showFrame: number;
     baseQIndex: number;
+    clpfSize: number;
+    clpfStrengthY: number;
   };
   accounting: Accounting;
   blockSizeHist: Histogram;
@@ -229,6 +231,17 @@ function readFrameFromJson(json): AnalyzerFrame {
 
 export function downloadFile(url: string): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
+    if (url.startsWith(localFileProtocol)) {
+      let localFile = url.substring(localFileProtocol.length);
+      let file = localFiles[localFile];
+      if (file) {
+        resolve(new Uint8Array(file));
+        return;
+      } else {
+        reject(`Local file "${localFile}" does not exist.`);
+        return;
+      }
+    }
     let xhr = new XMLHttpRequest();
     let self = this;
     xhr.open("GET", url, true);
@@ -593,12 +606,25 @@ export class Decoder {
           }
         };
         resolve(new Decoder(Module));
-      }
+      };
       s.onerror = function () {
         reject();
       };
-      s.setAttribute('src', url);
+      if (url.startsWith(localFileProtocol)) {
+        let localFile = url.substring(localFileProtocol.length);
+        let file = localFiles[localFile];
+        if (!file) {
+          reject(`Local file "${localFile}" does not exist.`);
+          return;
+        }
+        s.textContent = file + ";\ndocument.currentScript.onload();";
+      } else {
+        s.setAttribute('src', url);
+      }
       document.body.appendChild(s);
     });
   }
 }
+
+export let localFileProtocol = "local://";
+export let localFiles = {};
