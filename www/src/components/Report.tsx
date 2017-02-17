@@ -122,13 +122,16 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
 export class AnalyzerLinksComponent extends React.Component<{
   jobs: Job []
 }, {
+  mode: string;
   maxFrames: string;
 }> {
+  modeOptions: Option[];
   maxFramesOptions: Option[];
   constructor() {
     super();
     this.state = {
-      maxFrames: "4"
+      maxFrames: "4",
+      mode: ""
     } as any;
     this.maxFramesOptions = [
       { value:  "1", label: "1" },
@@ -140,14 +143,20 @@ export class AnalyzerLinksComponent extends React.Component<{
       { value: "64", label: "64" },
       { value: "124", label: "124" }
     ];
+    this.modeOptions = [
+      { value:  "", label: "Default" },
+      { value:  "blind=1&", label: "Blind Mode" },
+    ];
   }
   onMaxFramesChange(option) {
-    this.setState({maxFrames: option.value} as any, () => {
-
-    });
+    this.setState({maxFrames: option.value} as any);
+  }
+  onModeChange(option) {
+    this.setState({mode: option.value} as any);
   }
   render() {
     let jobs = this.props.jobs;
+    let mode = this.state.mode;
     let maxFrames = this.state.maxFrames;
     let qualities = (jobs[0].qualities || "20 32 43 55 63").split(" ").map(x => parseInt(x));
     let report = this.props.jobs[0].report;
@@ -162,7 +171,7 @@ export class AnalyzerLinksComponent extends React.Component<{
     videos.forEach(video => {
       function makeJobsUrl(jobs) {
         return qualities.map(quality => {
-          let url = analyzerBaseUrl + `?maxFrames=${maxFrames}&` + jobs.map(job => {
+          let url = analyzerBaseUrl + `?${mode}maxFrames=${maxFrames}&` + jobs.map(job => {
             return `decoder=${job.decocerUrl()}&file=${job.ivfUrl(video, quality)}`;
           }).join("&");
           return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
@@ -184,7 +193,7 @@ export class AnalyzerLinksComponent extends React.Component<{
         videos.forEach(video => {
           files.push(`file=${job.ivfUrlName(video, quality)}`);
         });
-        let url = analyzerBaseUrl + `?maxFrames=${maxFrames}&decoder=${job.decocerUrl()}&filePrefix=${job.ivfUrlPrefix()}&` + files.join("&");
+        let url = analyzerBaseUrl + `?${mode}maxFrames=${maxFrames}&decoder=${job.decocerUrl()}&filePrefix=${job.ivfUrlPrefix()}&` + files.join("&");
         return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
       });
       return <td key={job.id}>{urls}</td>
@@ -193,6 +202,8 @@ export class AnalyzerLinksComponent extends React.Component<{
       <div style={{width: "128px"}} >
         <div className="selectTitle">Max Frames</div>
         <Select autofocus value={this.state.maxFrames} options={this.maxFramesOptions} onChange={this.onMaxFramesChange.bind(this)} clearable={false}/>
+        <div className="selectTitle" style={{marginTop: "8px"}}>Mode</div>
+        <Select autofocus value={this.state.mode} options={this.modeOptions} onChange={this.onModeChange.bind(this)} clearable={false}/>
       </div>
       <table id="analyzerLinksTable">
         <col/><col/>
