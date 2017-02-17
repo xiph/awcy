@@ -127,6 +127,7 @@ interface AnalyzerViewProps {
   frames: AnalyzerFrame[][],
   groupNames?: string[],
   playbackFrameRate?: number;
+  blind?: number;
 }
 
 export class HistogramComponent extends React.Component<{
@@ -393,13 +394,17 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     showBitsFilter: "";
     showTransformType: boolean;
     showTools: boolean;
+    showFrameComment: boolean;
+    activeGroupMap: number [][];
   }> {
   public static defaultProps: AnalyzerViewProps = {
     frames: [],
     groupNames: null,
-    playbackFrameRate: 30
+    playbackFrameRate: 30,
+    blind: 0
   };
 
+  activeGroupScore: number [][];
   playInterval;
   ratio: number;
   frameSize: Size;
@@ -555,9 +560,31 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       value: undefined
     }
   };
-  constructor() {
+  constructor(props: AnalyzerViewProps) {
     super();
     let ratio = window.devicePixelRatio || 1;
+    let activeGroupMap = [];
+    let activeGroupScore = [];
+    for (let i = 0; i < 1024; i++) {
+      let map = [];
+      let score = [];
+      for (let j = 0; j < props.frames.length; j++) {
+        map.push(j);
+        score.push(0);
+      }
+      if (props.blind) {
+        // Shuffle Indices
+        for (let j = 0; j < 16; j++) {
+          let a = Math.random() * map.length | 0;
+          let b = Math.random() * map.length | 0;
+          let t = map[a];
+          map[a] = map[b];
+          map[b] = t;
+        }
+      }
+      activeGroupMap.push(map);
+      activeGroupScore.push(score);
+    }
     this.state = {
       activeFrame: -1,
       activeGroup: 0,
@@ -576,7 +603,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       showDecodedImage: true,
       showMotionVectors: false,
       showReferenceFrames: false,
-      showTools: true
+      showTools: !props.blind,
+      showFrameComment: false,
+      activeGroupMap: activeGroupMap
     } as any;
     this.ratio = ratio;
     this.frameCanvas = document.createElement("canvas");
@@ -584,6 +613,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.compositionCanvas = document.createElement("canvas");
     this.compositionContext = this.compositionCanvas.getContext("2d");
     this.mousePosition = new Vector(128, 128);
+    this.activeGroupScore = activeGroupScore;
   }
   resetCanvas(w: number, h: number) {
     let scale = this.state.scale;
@@ -645,6 +675,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     } else {
       this.displayContext.fillStyle = "#333333";
       this.displayContext.fillRect(0, 0, dw, dh);
+    }
+
+    if (this.props.blind) {
+      return;
     }
 
     // Draw Layers
@@ -729,18 +763,18 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.overlayCanvas.addEventListener("mousedown", this.onMouseDown.bind(this));
   }
   componentDidUpdate(prevProps, prevState) {
-    let imageData = this.props.frames[this.state.activeGroup][0].imageData;
+    let imageData = this.props.frames[this.getActiveGroupIndex()][0].imageData;
     let frameSizeChanged = this.frameSize.w !== imageData.width || this.frameSize.h != imageData.height;
     if (this.state.scale != prevState.scale || frameSizeChanged) {
       this.reset();
     }
     if (this.state.activeFrame >= 0) {
-      this.draw(this.state.activeGroup, this.state.activeFrame);
-      this.drawZoom(this.state.activeGroup, this.state.activeFrame);
+      this.draw(this.getActiveGroupIndex(), this.state.activeFrame);
+      this.drawZoom(this.getActiveGroupIndex(), this.state.activeFrame);
     }
   }
   reset() {
-    let imageData = this.props.frames[this.state.activeGroup][0].imageData;
+    let imageData = this.props.frames[this.getActiveGroupIndex()][0].imageData;
     let w = imageData.width, h = imageData.height;
     this.resetCanvas(w, h);
   }
@@ -784,6 +818,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     if (!config) {
       config = "default";
     }
+    if (this.props.blind) {
+      return;
+    }
     this.showToast("Showing Frame: " + config + " - " + groupName + " : " + activeFrame);
   }
   zoom(value) {
@@ -792,6 +829,16 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   }
   installKeyboardShortcuts() {
     let playInterval;
+    Mousetrap.bind(['`'], (e) => {
+      this.setState({showFrameComment: !this.state.showFrameComment} as any);
+      e.preventDefault();
+    });
+    Mousetrap.bind(['enter'], (e) => {
+      this.activeGroupScore[this.state.activeFrame][this.getActiveGroupIndex()] = 1;
+      this.showToast("Voted. Press ` for results.");
+      this.forceUpdate();
+      e.preventDefault();
+    });
     Mousetrap.bind(['space'], (e) => {
       this.playPause();
       e.preventDefault();
@@ -855,14 +902,17 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.showActiveFrameToast(activeGroup, this.state.activeFrame);
   }
   setActiveFrame(activeFrame) {
-    this.setState({activeFrame} as any);
-    this.showActiveFrameToast(this.state.activeGroup, activeFrame);
+    this.setState({activeFrame, showFrameComment: false} as any);
+    this.showActiveFrameToast(this.getActiveGroupIndex(), activeFrame);
   }
   setActiveGroupAndFrame(activeGroup, activeFrame) {
     this.setState({activeGroup, activeFrame} as any);
     this.showActiveFrameToast(activeGroup, activeFrame);
   }
   toggleTools() {
+    if (this.props.blind) {
+      return;
+    }
     this.setState({showTools: !this.state.showTools} as any);
   }
   resetLayersAndActiveFrame() {
@@ -928,10 +978,16 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     return new Vector(c, r);
   }
   getActiveFrame(): AnalyzerFrame {
-    return this.props.frames[this.state.activeGroup][this.state.activeFrame];
+    return this.props.frames[this.getActiveGroupIndex()][this.state.activeFrame];
   }
   getActiveGroup(): AnalyzerFrame [] {
-    return this.props.frames[this.state.activeGroup];
+    return this.props.frames[this.getActiveGroupIndex()];
+  }
+  getActiveGroupIndex(): number {
+    if (this.state.activeFrame < 0) {
+      return 0;
+    }
+    return this.state.activeGroupMap[this.state.activeFrame][this.state.activeGroup];
   }
   updateBlockInfo() {
     this.forceUpdate();
@@ -973,6 +1029,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.setState({showBitsFilter} as any);
   }
 
+  getActiveGroupScore() {
+    let s = 0;
+    let j = this.getActiveGroupIndex();
+    for (let i = 0; i < this.activeGroupScore.length; i++) {
+      s += this.activeGroupScore[i][j];
+    }
+    return s;
+  }
   render() {
     let groups = this.props.frames;
 
@@ -989,7 +1053,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let sidePanel = null;
     let frame = this.getActiveFrame();
     if (frame) {
-      let frames = this.props.frames[this.state.activeGroup];
+      let frames = this.props.frames[this.getActiveGroupIndex()];
       let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
       let accounting = this.getActiveFrame().accounting;
 
@@ -1026,7 +1090,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         {layerOptions}
 
         <div className="sectionHeader">Frame Info</div>
-        <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.state.activeGroup}></FrameInfoComponent>
+        <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.getActiveGroupIndex()}></FrameInfoComponent>
 
         {p &&
           <div>
@@ -1119,10 +1183,29 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       </div>
     }
 
+    let activeGroup = this.getActiveGroupIndex();
+    let groupName = this.props.groupNames ? this.props.groupNames[activeGroup] : String(activeGroup);
+
     return <div>
       <div className="toast" ref={(self: any) => this.toast = self}>
         Toast
       </div>
+      { this.state.showFrameComment &&
+        <div className="frameComment">
+          <div>
+            <div className="sectionHeader">Config</div>
+            <div className="propertyValue">{this.getActiveFrame().config}</div>
+            <div className="sectionHeader">Video</div>
+            <div className="propertyValue">{groupName}</div>
+            <div className="sectionHeader">Group</div>
+            <div className="propertyValue">{activeGroup}</div>
+            <div className="sectionHeader">Score</div>
+            <div className="propertyValue">{this.getActiveGroupScore()}</div>
+            <div className="sectionHeader">Frame</div>
+            <div className="propertyValue">{this.state.activeFrame}</div>
+          </div>
+        </div>
+      }
       <div ref={(self: any) => this.container = self}>
         <canvas ref={(self: any) => this.displayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 0, imageRendering: "pixelated", backgroundCcolor: "#F5F5F5"}}></canvas>
         <canvas ref={(self: any) => this.overlayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 1, imageRendering: "pixelated", cursor: "crosshair"}}></canvas>
@@ -1508,7 +1591,8 @@ interface AnalyzerViewCompareComponentProps {
   decoderVideoUrlPairs: {decoderUrl: string, videoUrl: string} [];
   playbackFrameRate?: number;
   layers?: number;
-  maxFrames?: number
+  maxFrames?: number;
+  blind?: number;
 }
 
 export class AnalyzerBenchmarkComponent extends React.Component<{
@@ -1718,7 +1802,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     }
 
     return <div>
-      <AnalyzerView frames={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.props.playbackFrameRate} ></AnalyzerView>
+      <AnalyzerView frames={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.props.playbackFrameRate} blind={this.props.blind}></AnalyzerView>
     </div>;
   }
 }
