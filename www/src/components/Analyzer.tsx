@@ -2,7 +2,7 @@ import * as React from "react";
 import { OverlayTrigger, Tooltip, ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon, SplitButton, MenuItem, DropdownButton } from "react-bootstrap";
 import { } from "react-bootstrap";
 import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile, fileExists, analyzerBaseUrl, baseUrl } from "../stores/Stores";
-import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector } from "../analyzer";
+import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector, localFiles, localFileProtocol } from "../analyzer";
 import { Promise } from "es6-promise";
 
 import { BarPlot, BarPlotTable, Data } from "./Plot";
@@ -13,6 +13,7 @@ const DEFAULT_MARGIN = { top: 10, right: 10, bottom: 20, left: 40 };
 const MAX_FRAMES = 128;
 const MI_SIZE_LOG2 = 3;
 const MI_SIZE = 1 << MI_SIZE_LOG2;
+const CLPF_SIZE_LOG2 = 5;
 const SUPER_MI_SIZE = MI_SIZE << 3;
 const ZOOM_WIDTH = 384;
 const ZOOM_SOURCE = 64;
@@ -295,6 +296,10 @@ export class FrameInfoComponent extends React.Component<{
 }> {
   render() {
     let frame = this.props.frame;
+    function getProperty(name: string): string{
+      if (frame.json[name] == undefined) return "N/A";
+      return frame.json[name];
+    }
     return <div>
       <div style={{float: "left", width: "40%"}}>
         <div><span className="propertyName">Video:</span> <span className="propertyValue">{this.props.activeGroup}</span></div>
@@ -305,6 +310,8 @@ export class FrameInfoComponent extends React.Component<{
       <div style={{float: "left", width: "60%"}}>
         <div><span className="propertyName">BaseQIndex:</span> <span className="propertyValue">{frame.json.baseQIndex}</span></div>
         <div><span className="propertyName">Frame Size:</span> <span className="propertyValue">{frame.imageData.width} x {frame.imageData.height}</span></div>
+        <div><span className="propertyName">CLPF Size:</span> <span className="propertyValue">{getProperty("clpfSize")}</span></div>
+        <div><span className="propertyName">CLPF Strength Y:</span> <span className="propertyValue">{getProperty("clpfStrengthY")}</span></div>
       </div>
     </div>
   }
@@ -358,6 +365,7 @@ export class ModeInfoComponent extends React.Component<{
         <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
         <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
         <div><span className="propertyName">Dering:</span> <span className="propertyValue">{getSuperBlockProperty("deringGain")}</span></div>
+        <div><span className="propertyName">CLPF:</span> <span className="propertyValue">{getProperty("clpf")}</span></div>
         <div><span className="propertyName">Motion Vectors:</span> <span className="propertyValue">{getMotionVector()}</span></div>
         <div><span className="propertyName">Reference Frame:</span> <span className="propertyValue">{getReferenceFrame()}</span></div>
       </div>
@@ -377,6 +385,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     showTransformGrid: boolean;
     showSkip: boolean;
     showDering: boolean;
+    showCLPF: boolean;
     showMode: boolean;
     showBits: boolean;
     showBitsScale: "frame" | "video" | "videos";
@@ -503,6 +512,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       default: false,
       value: undefined
     },
+    showCLPF: {
+      key: "l",
+      description: "CLFP",
+      detail: "Display blocks where the CLPF filter is applied.",
+      default: false,
+      value: undefined
+    },
     showMotionVectors: {
       key: "m",
       description: "Motion Vectors",
@@ -551,6 +567,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       showTransformGrid: false,
       showSkip: false,
       showDering: false,
+      showCLPF: false,
       showMode: false,
       showBits: false,
       showBitsScale: "frame",
@@ -675,6 +692,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.state.showMode && this.drawMode(frame, ctx, src, dst);
     this.state.showBits && this.drawBits(frame, ctx, src, dst);
     this.state.showDering && this.drawDering(frame, ctx, src, dst);
+    this.state.showCLPF && this.drawCLPF(frame, ctx, src, dst);
     this.state.showTransformType && this.drawTransformType(frame, ctx, src, dst);
     this.state.showMotionVectors && this.drawMotionVectors(frame, ctx, src, dst);
     this.state.showReferenceFrames && this.drawReferenceFrames(frame, ctx, src, dst);
@@ -1141,6 +1159,26 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       return true;
     }, "super-block");
   }
+  drawCLPF(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
+    let clpf = frame.json["clpf"];
+    if (!clpf) {
+      return;
+    }
+    let strengthY = frame.json["clpfStrengthY"];
+    let size = frame.json["clpfSize"];
+    if (!size) {
+      return;
+    }
+    // Size 0 means no block signaling, 1 = 32x32, 2 = 64x64, 3 = 128x128.
+    this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
+      let v = clpf[r][c];
+      if (!v || v < 0) {
+        return false;
+      }
+      ctx.fillStyle = colorScale((v * strengthY) / 4, HEAT_COLORS);
+      return true;
+    }, (CLPF_SIZE_LOG2 - MI_SIZE_LOG2) + (size - 1));
+  }
   drawReferenceFrames(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let reference = frame.json["referenceFrame"];
     this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
@@ -1325,7 +1363,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
     ctx.restore();
   }
-  drawFillBlock(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, setFillStyle: (blockSize, c, r, sc, sr) => boolean, mode = "block") {
+  drawFillBlock(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, setFillStyle: (blockSize, c, r, sc, sr) => boolean, mode: string | number = "block") {
     let scale = dst.w / src.w;
     ctx.save();
     ctx.translate(-src.x * scale, -src.y * scale);
@@ -1336,7 +1374,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     ctx.restore();
   }
 
-  visitBlocks(mode: string, frame: AnalyzerFrame, visitor: BlockVisitor) {
+  visitBlocks(mode: string | number, frame: AnalyzerFrame, visitor: BlockVisitor) {
     let blockSize = frame.json["blockSize"];
     let blockSizeMap = frame.json["blockSizeMap"];
 
@@ -1348,7 +1386,15 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let rows = blockSize.length;
     let cols = blockSize[0].length;
     let S = MI_SIZE;
-    if (mode === "super-block") {
+
+    if (typeof mode === "number") {
+      for (let c = 0; c < cols; c += 1 << mode) {
+        for (let r = 0; r < rows; r += 1 << mode) {
+          let size = blockSize[r][c];
+          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, MI_SIZE << mode, MI_SIZE << mode));
+        }
+      }
+    } else if (mode === "super-block") {
       for (let c = 0; c < cols; c += SUPER_MI_SIZE / MI_SIZE) {
         for (let r = 0; r < rows; r += SUPER_MI_SIZE / MI_SIZE) {
           let size = blockSize[r][c];
@@ -1452,6 +1498,8 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           }
         }
       }
+    } else {
+      throw new Error("Can't handle mode: " + mode);
     }
   }
 }
@@ -1629,7 +1677,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
         this.setState({ status: "Downloading Files Failed", loading: "error" } as any);
       });
     }).catch(e => {
-      this.setState({ status: "Loading Decoders Failed", loading: "error" } as any);
+      this.setState({ status: `Loading Decoders Failed: ${e}`, loading: "error" } as any);
     });
   }
 
@@ -1675,72 +1723,129 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
   }
 }
 
-export class CreateAnalyzerUrlComponent extends React.Component<{
+export class LocalAnalyzerComponent extends React.Component<{
 
 }, {
-  urls: string [];
-  exists: boolean [];
+  show: boolean;
+  group: {decoderUrl: string, videoUrl: string, name: string} [][]
 }> {
-  timeout: any;
   constructor() {
     super();
-    let urls = [];
-    let exists = [];
-    for (let i = 0; i < 10; i++) {
-      urls.push("");
-      exists.push(false);
-    }
     this.state = {
-      urls: urls,
-      exists: exists
+      show: false,
+      group: [[], [], []]
     } as any;
   }
-  onChange(i, e) {
-    let value = e.target.value;
-    let state = this.state;
-    state.urls[i] = e.target.value;
-    this.setState(state);
-
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-    }
-    this.timeout = setTimeout(() => {
-      fileExists(state.urls[i]).then(exists => {
-        let state = this.state;
-        state.exists[i] = exists;
-        this.setState(state);
+  onDrop(i, ev) {
+    ev.preventDefault();
+    function readFile(item) {
+      return new Promise((resolve, reject) => {
+        if (item.kind == "file") {
+          let file = item.getAsFile();
+          let localName = i + "_" + file.name;
+          console.log("Loading: " + file.name);
+          let reader = new FileReader();
+          reader.onload = function() {
+            let result;
+            if (typeof reader.result == "string") {
+              result = reader.result;
+            } else {
+              result = new Uint8Array(reader.result);
+            }
+            localFiles[localName] = result;
+          };
+          if (file.type === "text/javascript") {
+            reader.readAsText(file);
+          } else {
+            reader.readAsArrayBuffer(file);
+          }
+          resolve({
+            name: file.name,
+            localName: localName,
+            type: file.type || "video/ivf"
+          });
+        } else {
+          reject();
+        }
       });
-    }, 1000);
-  }
-  getValidationState(i): "success" | "warning" | "error" {
-    if (this.state.urls[i] && !this.state.exists[i]) {
-      return "error";
     }
-    return "success";
+    var dt = ev.dataTransfer;
+    if (dt.items) {
+      let currenDecoder = null;
+      let items = [];
+      for (let i = 0; i < dt.items.length; i++) {
+        items.push(dt.items[i]);
+      }
+      let group = this.state.group;
+      group[i] = [];
+      Promise.all(items.map(item => readFile(item))).then(files => {
+        let decoder = files.find((file: any) => file.type == "text/javascript") as any;
+        if (!decoder) {
+          alert("Drag at least one decoder.js file.");
+          return;
+        }
+        files.forEach((file: any) => {
+          if (file.type == "text/javascript") {
+            return;
+          }
+          group[i].push({
+            decoderUrl: localFileProtocol + decoder.localName,
+            videoUrl: localFileProtocol + file.localName,
+            name: "(" + file.name + ", " + decoder.name + ")"
+          });
+        });
+        if (group[i].length == 0) {
+          alert("Drag at least one .ivf file.");
+          return;
+        }
+        this.setState({group} as any);
+      });
+    } else {
+      throw new Error("Can't read files.");
+    }
+  }
+  onDragOver(ev) {
+    ev.preventDefault();
+  }
+  onDragEnd() {
+    console.info("drag end");
+  }
+  analyze() {
+    this.setState({show: true} as any);
   }
   render() {
-    let urls = [];
-    urls = this.state.urls.map((url, i) => {
-      return <div style={{paddingBottom: "4px"}}>
-        <FormGroup validationState={this.getValidationState(i)}>
-          <FormControl key={i} type="text" value={url} placeholder="Enter a decoder or file url." onChange={this.onChange.bind(this, i)}></FormControl>
-          <FormControl.Feedback />
-        </FormGroup>
-      </div>
-    })
-    let url = baseUrl + analyzerBaseUrl + "?" + this.state.urls.filter(s => !!s).map(s => {
-      if (s.indexOf(".js") >= 0) {
-        return "decoder=" + s;
-      } else {
-        return "file=" + s;
-      }
-    }).join("&");
+    let group = this.state.group;
+    let pairs = group[0].concat(group[1]).concat(group[2]);
+    if (this.state.show) {
+      return <AnalyzerViewCompareComponent
+        decoderVideoUrlPairs={pairs}
+      />
+    }
     return <div className="panel">
-      <h3>Analyzer Url Builder</h3>
-      <Form>
-        {urls}
-      </Form>
-      <a href={url}>{url}</a>
+      <div style={{float: "left"}} className="dropPanel" onDrop={this.onDrop.bind(this, 0)} onDragOver={this.onDragOver.bind(this)} onDragEnd={this.onDragEnd.bind(this)}>
+        {
+          group[0].length ?
+            group[0].map(pair => pair.name).join(", ")
+            : <strong>Drag and drop a decoder and one or more video files ...</strong>
+        }
+      </div>
+      <div style={{float: "left"}} className="dropPanel" onDrop={this.onDrop.bind(this, 1)} onDragOver={this.onDragOver.bind(this)} onDragEnd={this.onDragEnd.bind(this)}>
+        {
+          group[1].length ?
+            group[1].map(pair => pair.name).join(", ")
+            : <strong>Drag and drop a decoder and one or more video files ...</strong>
+        }
+      </div>
+      <div style={{float: "left"}} className="dropPanel" onDrop={this.onDrop.bind(this, 2)} onDragOver={this.onDragOver.bind(this)} onDragEnd={this.onDragEnd.bind(this)}>
+        {
+          group[2].length ?
+            group[2].map(pair => pair.name).join(", ")
+            : <strong>Drag and drop a decoder and one or more video files ...</strong>
+        }
+      </div>
+      <div style={{clear: "left", paddingTop: "8px"}}>
+        <Button onClick={this.analyze.bind(this)} disabled={pairs.length == 0} >Analyze</Button>
+      </div>
     </div>
   }
 }
