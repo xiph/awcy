@@ -8,12 +8,12 @@ let parameters = getUrlParameters();
 let decoder = parameters.decoder;
 let file = parameters.file;
 let playbackFrameRate = parameters.playbackFrameRate | 0;
-let layers = parameters.layers | 0;
-let maxFrames = parameters.maxFrames | 0;
-let benchmark = parameters.benchmark | 0;
-let local = parameters.local | 0;
+let layers = parameters.layers;
+let maxFrames = parameters.maxFrames;
 let filePrefix = parameters.filePrefix || "";
+let local = parameters.local | 0;
 let blind = parameters.blind | 0;
+let benchmark = parameters.benchmark | 0;
 
 /**
  * Extracts decoder / file pairs from the url parameter string.
