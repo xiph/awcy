@@ -177,22 +177,26 @@ export class SubmitJobFormComponent extends React.Component<{
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("extra")}>
+        <ControlLabel>Extra CLI Options</ControlLabel>
         <FormControl type="text" placeholder="Extra CLI Options"
           value={job.extraOptions} onChange={this.onInputChange.bind(this, "extraOptions")} />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("build")}>
+      <ControlLabel>Extra Build Options (experiments)</ControlLabel>
         <FormControl type="text" placeholder="Extra Build Options"
           value={job.buildOptions} onChange={this.onInputChange.bind(this, "buildOptions")} />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("nick")}>
-        <FormControl type="text" placeholder="Your IRC nick (for auto-notifications on #daala)"
+        <ControlLabel>Your name or IRC nick</ControlLabel>
+        <FormControl type="text" placeholder="(auto-notifies on #daala)"
           value={job.nick} onChange={this.onInputChange.bind(this, "nick")} />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("qualities")}>
-        <FormControl type="text" placeholder="Custom Qualities 30 40 50 ..."
+        <ControlLabel>Custom qualities (optional)</ControlLabel>
+        <FormControl type="text" placeholder="30 40 50 ..."
           value={job.qualities} onChange={this.onInputChange.bind(this, "qualities")} />
       </FormGroup>
 

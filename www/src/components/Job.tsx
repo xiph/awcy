@@ -139,8 +139,8 @@ export class JobComponent extends React.Component<JobProps, {
 
     let details = [];
     if (this.state.detailed) {
-      if (job.buildOptions) details.push(keyValue("Build", job.buildOptions));
       if (job.extraOptions) details.push(keyValue("Extra", job.extraOptions));
+      if (job.buildOptions) details.push(keyValue("Build", job.buildOptions));
       details.push(keyValue("Codec", job.codec));
       details.push(keyValue("Commit", job.commit));
       details.push(keyValue("Task", job.task));
