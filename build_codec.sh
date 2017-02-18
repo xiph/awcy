@@ -37,7 +37,7 @@ case $CODEC in
     pushd $CODEC
     echo -- Starting x86_64 Build --
     ./configure --enable-av1 --disable-unit-tests --disable-docs $BUILD_OPTIONS
-    make
+    make -j4
     mkdir -p x86_64
     mv aomenc aomdec x86_64/
     echo -- Finished x86_64 Build --
