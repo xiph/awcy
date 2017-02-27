@@ -75,7 +75,6 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
     if (hasIvfs) {
       headers.unshift(<th className="tableToolHeader" key={"link-0"}></th>);
       headers.unshift(<th className="tableToolHeader" key={"link-1"}></th>);
-      headers.unshift(<th className="tableToolHeader" key={"link-2"}></th>);
     }
 
     let rows = [];
