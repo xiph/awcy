@@ -53,11 +53,6 @@
       font-size: 11px;
     }
 
-    .propertyContainer {
-      word-wrap: break-word;
-      font-size: 11px;
-    }
-
     .frameLink {
       padding: 2px;
       cursor: pointer;
@@ -89,7 +84,7 @@
       pointer-events: none;
     }
 
-    .toolbox {
+    #bottomPanel {
       font-size: 12px;
       position: fixed;
       left: 0;
@@ -97,21 +92,22 @@
       right: 0;
       z-index: 20;
       opacity: 1;
-      height: 80px;
+      height: 340px;
       background-color: rgba(20, 20, 20, 0.8);
+      padding-top: 10px;
       padding-left: 10px;
       vertical-align: middle;
       color: white;
     }
 
-    .sidePanel {
+    #sidePanel {
       position: fixed;
-      top: 384px;
+      top: 500px;
       bottom: 0;
       right: 0;
       z-index: 20;
       opacity: 1;
-      width: 384px;
+      width: 500px;
       background-color: rgba(20, 20, 20, 0.9);
       padding-left: 10px;
       vertical-align: middle;
@@ -119,8 +115,26 @@
       padding: 10px;
       font-size: 11px;
       border-bottom-left-radius: 1em;
-      overflow: scroll;
       /*pointer-events: none;*/
+    }
+
+    .symbolTable {
+      overflow-y: scroll;
+      height: 200px;
+    }
+    .tabContainer {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    #sidePanelScrollArea {
+      overflow-y: scroll;
+      position: absolute;
+      height: 100%;
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;  /* remove scrollbar space */
+      background: transparent;  /* optional: just make scrollbar invisible */
     }
 
     .panel {
@@ -129,14 +143,14 @@
       color: white;
     }
 
-    .zoomPanel {
+    #zoomContainer {
       position: fixed;
       top: 0;
       right: 0;
       z-index: 20;
       opacity: 1;
-      width: 384px;
-      height: 384px;
+      width: 500px;
+      height: 500px;
       pointer-events: none;
       background-color: rgba(20, 20, 20, 0.8);
     }
@@ -193,7 +207,7 @@
       border-radius: 1em;
     }
 
-    .frameComment {
+    #frameComment {
       top: 0;
       left: 0;
       right: 0;
