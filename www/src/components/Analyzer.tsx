@@ -489,6 +489,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   toast: HTMLDivElement;
   toastTimeout: any;
   mousePosition: Vector;
+  mouseZoomPosition: Vector;
 
   options = {
     // showY: {
@@ -682,6 +683,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.compositionCanvas = document.createElement("canvas");
     this.compositionContext = this.compositionCanvas.getContext("2d");
     this.mousePosition = new Vector(128, 128);
+    this.mouseZoomPosition = new Vector(128, 128);
     this.activeGroupScore = activeGroupScore;
   }
   resetCanvas(w: number, h: number) {
@@ -766,14 +768,21 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       ctx.strokeStyle = "white";
       ctx.setLineDash([2, 4]);
       let w = ZOOM_SOURCE * ratio * scale;
-      ctx.strokeRect(this.mousePosition.x * ratio - w / 2,
-                     this.mousePosition.y * ratio - w / 2, w, w);
+      ctx.strokeRect(this.mouseZoomPosition.x * ratio - w / 2,
+                     this.mouseZoomPosition.y * ratio - w / 2, w, w);
+      let r = this.getParentMIRect(frame, this.mousePosition);
+      if (r) {
+        ctx.strokeStyle = "orange";
+        ctx.lineWidth = 3;
+        ctx.setLineDash([]);
+        ctx.strokeRect(r.x * ratio * scale, r.y * ratio * scale, r.w * ratio * scale, r.h * ratio * scale);
+      }
       ctx.restore();
     }
   }
   drawZoom(group: number, index: number) {
     let frame = this.props.frames[group][index];
-    let mousePosition = this.mousePosition.clone().divideScalar(this.state.scale).snap();
+    let mousePosition = this.mouseZoomPosition.clone().divideScalar(this.state.scale).snap();
     let src = Rectangle.createRectangleCenteredAtPoint(mousePosition, ZOOM_SOURCE, ZOOM_SOURCE);
     let dst = new Rectangle(0, 0, ZOOM_WIDTH * this.ratio, ZOOM_WIDTH * this.ratio);
 
@@ -1000,12 +1009,12 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.setState(o as any);
   }
   onMouseDown(event: MouseEvent) {
-    this.handleMouseEvent(event);
+    this.handleMouseEvent(event, true);
   }
   onMouseMove(event: MouseEvent) {
-    // this.handleMouseEvent(event);
+    this.handleMouseEvent(event, false);
   }
-  handleMouseEvent(event: MouseEvent) {
+  handleMouseEvent(event: MouseEvent, click: boolean) {
     function getMousePosition(canvas: HTMLCanvasElement, event: MouseEvent) {
       let rect = canvas.getBoundingClientRect();
       return new Vector(
@@ -1014,6 +1023,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       );
     }
     this.mousePosition = getMousePosition(this.overlayCanvas, event);
+    if (click) {
+      this.mouseZoomPosition = this.mousePosition;
+    }
     this.updateBlockInfo();
   }
   getBlockSize(frame: AnalyzerFrame, c: number, r: number) {
@@ -1040,6 +1052,18 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     c = c & ~(((1 << BLOCK_SIZES[size][0]) - 1) >> MI_SIZE_LOG2);
     r = r & ~(((1 << BLOCK_SIZES[size][1]) - 1) >> MI_SIZE_LOG2);
     return new Vector(c, r);
+  }
+  getParentMIRect(frame: AnalyzerFrame, v: Vector): Rectangle {
+    let p = this.getMIPosition(frame, v);
+    let c = p.x;
+    let r = p.y;
+    let size = this.getBlockSize(frame, c, r);
+    if (size === undefined) {
+      return null;
+    }
+    c = c & ~(((1 << BLOCK_SIZES[size][0]) - 1) >> MI_SIZE_LOG2);
+    r = r & ~(((1 << BLOCK_SIZES[size][1]) - 1) >> MI_SIZE_LOG2);
+    return new Rectangle(c << MI_SIZE_LOG2, r << MI_SIZE_LOG2, 1 << BLOCK_SIZES[size][0], 1 << BLOCK_SIZES[size][1]);
   }
   getMIPosition(frame: AnalyzerFrame, v: Vector): Vector {
     let c = (v.x / this.state.scale) >> MI_SIZE_LOG2;
