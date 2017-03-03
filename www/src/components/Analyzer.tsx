@@ -46,6 +46,17 @@ function colorScale(v, colors) {
   return colors[Math.round(v * (colors.length - 1))];
 }
 
+function keyForValue(o: Object, value: any): string {
+  if (o) {
+    for (let k in o) {
+      if (o[k] === value) {
+        return k;
+      }
+    }
+  }
+  return String(value);
+}
+
 const BLOCK_SIZES = [
   [2, 2],
   [2, 3],
@@ -135,7 +146,6 @@ export class HistogramComponent extends React.Component<{
   highlight?: number;
   height?: number;
 }, {
-
 }> {
   public static defaultProps = {
     height: 128
@@ -145,9 +155,11 @@ export class HistogramComponent extends React.Component<{
   ratio: number;
   w: number;
   h: number;
+  position: Vector;
   constructor() {
     super();
     this.ratio = window.devicePixelRatio || 1;
+    this.position = new Vector(-1, -1);
   }
   componentDidUpdate(prevProps, prevState) {
     this.renderHistogram(this.context, this.props.histograms);
@@ -161,6 +173,8 @@ export class HistogramComponent extends React.Component<{
     this.canvas.height = h * this.ratio;
     this.context = this.canvas.getContext("2d");
     this.renderHistogram(this.context, this.props.histograms);
+
+    this.canvas.addEventListener("mousemove", this.handleMouseEvent.bind(this));
   }
   renderHistogram(ctx: CanvasRenderingContext2D, histograms: Histogram[]) {
     let names = null;
@@ -202,40 +216,70 @@ export class HistogramComponent extends React.Component<{
     return;
   }
 
+  handleMouseEvent(event: MouseEvent) {
+    function getMousePosition(canvas: HTMLCanvasElement, event: MouseEvent) {
+      let rect = canvas.getBoundingClientRect();
+      return new Vector(
+        event.clientX - rect.left,
+        event.clientY - rect.top
+      );
+    }
+    this.position = getMousePosition(this.canvas, event).multiplyScalar(this.ratio);
+    this.forceUpdate();
+  }
+
   renderChart(ctx: CanvasRenderingContext2D, names: string[], data: any[], yDomain = [0, 1]) {
     ctx.save();
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    let r = this.ratio;
-    let w = this.w * r;
-    let lw = 8 * r;
-    let tw = 64 * r; // Max Text Width
-    let h = this.h * r;
-    let bw = Math.min(16 * r, (w - lw - tw) / data.length | 0);
+    let w = this.w * this.ratio;
+    let h = this.h * this.ratio;
+    let bw = Math.min(16 * this.ratio, w / data.length | 0);
+    let selectedName = null;
+    let selectedValue = undefined;
+    let selectedFrame = -1;
     for (let i = 0; i < data.length; i++) {
       let t = 0;
+      let r = new Rectangle(0, 0, 0, 0);
       names.forEach((k, j) => {
         let v = data[i][k];
         ctx.fillStyle = COLORS[j];
-        ctx.fillRect(i * bw, t * h | 0, bw - 1, v * h | 0);
+        r.set(i * bw, t * h | 0, bw - 1, v * h | 0);
+        if (r.containsPoint(this.position)) {
+          ctx.globalAlpha = 1
+          selectedName = k;
+          selectedValue = v;
+          selectedFrame = i;
+        } else {
+          ctx.globalAlpha = 0.75
+        }
+        ctx.fillRect(r.x, r.y, r.w, r.h);
         t += v;
       });
       if (this.props.highlight == i) {
         ctx.fillStyle = "white";
-        ctx.fillRect(i * bw, 0, bw - 1, r * 2);
+        ctx.fillRect(i * bw, 0, bw - 1, this.ratio * 2);
       }
     }
-
-    // Legend
-
-    let lh = 8 * r;
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.font = (10 * r) + "px Arial";
-    for (let i = 0; i < names.length; i++) {
-      ctx.fillStyle = COLORS[i];
-      ctx.fillRect(w - lw, i * (lh + 2 * r), lw, lh);
+    if (selectedName) {
+      let top = this.position.distanceTo(new Vector(0, 0)) > this.position.distanceTo(new Vector(w, h));
+      let text = selectedName + " " + (selectedValue * 100).toFixed(2) + "%" + " (" + String(selectedFrame) + ")";
+      ctx.globalAlpha = 0.75;
+      ctx.font = (10 * this.ratio) + "px Arial";
+      ctx.fillStyle = "black";
+      let tw = ctx.measureText(text).width + 8 * this.ratio;
+      if (top) {
+        ctx.fillRect(0, 0, tw, 20 * this.ratio);
+      } else {
+        ctx.fillRect(w - tw, h - 20 * this.ratio, tw, 20 * this.ratio);
+      }
       ctx.fillStyle = "white";
-      ctx.fillText(names[i], w - lw - 2 * r, i * (lh + 2 * r) + (lh / 2));
+      ctx.globalAlpha = 1;
+      ctx.textBaseline = "middle";
+      if (top) {
+        ctx.fillText(text, 4 * this.ratio, 10 * this.ratio);
+      } else {
+        ctx.fillText(text, w - tw + 4 * this.ratio, h - 10 * this.ratio);
+      }
     }
     ctx.restore();
   }
@@ -301,7 +345,7 @@ export class FrameInfoComponent extends React.Component<{
       if (frame.json[name] == undefined) return "N/A";
       return frame.json[name];
     }
-    return <div>
+    return <div id="frameInfoSection">
       <div style={{float: "left", width: "40%"}}>
         <div><span className="propertyName">Video:</span> <span className="propertyValue">{this.props.activeGroup}</span></div>
         <div><span className="propertyName">Frame:</span> <span className="propertyValue">{this.props.activeFrame}</span></div>
@@ -332,13 +376,13 @@ export class ModeInfoComponent extends React.Component<{
       if (!json[name]) return "N/A";
       let v = json[name][r][c];
       if (!json[name + "Map"]) return String(v);
-      return json[name + "Map"][v];
+      return keyForValue(json[name + "Map"], v);
     }
     function getSuperBlockProperty(name: string): string{
       if (!json[name]) return "N/A";
       let v = json[name][r & ~7][c & ~7];
       if (!json[name + "Map"]) return String(v);
-      return json[name + "Map"][v];
+      return keyForValue(json[name + "Map"], v);
     }
     function getMotionVector() {
       let motionVectors = json["motionVectors"];
@@ -351,11 +395,11 @@ export class ModeInfoComponent extends React.Component<{
       if (!referenceFrame) return "N/A";
       let map = json["referenceFrameMap"];
       let v = referenceFrame[r][c];
-      let a = v[0] >= 0 ? ((map && map[v[0]] !== undefined) ? map[v[0]] : v[0]) : "N/A";
-      let b = v[1] >= 0 ? ((map && map[v[1]] !== undefined) ? map[v[1]] : v[1]) : "N/A";
+      let a = v[1] >= 0 ? keyForValue(map, v[0]) : "N/A";
+      let b = v[1] >= 0 ? keyForValue(map, v[1]) : "N/A";
       return `${a}, ${b}`;
     }
-    return <div>
+    return <div id="modeInfoSection">
       <div style={{float: "left", width: "40%"}}>
         <div><span className="propertyName">Block:</span> <span className="propertyValue">{c}x{r}</span></div>
         <div><span className="propertyName">Block Size:</span> <span className="propertyValue">{getProperty("blockSize")}</span></div>
@@ -1383,14 +1427,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let mode = frame.json["mode"];
     let modeMap = frame.json["modeMap"];
 
-    const V_PRED = modeMap.indexOf("V_PRED");
-    const H_PRED = modeMap.indexOf("H_PRED");
-    const D45_PRED = modeMap.indexOf("D45_PRED");
-    const D63_PRED = modeMap.indexOf("D63_PRED");
-    const D135_PRED = modeMap.indexOf("D135_PRED");
-    const D117_PRED = modeMap.indexOf("D117_PRED");
-    const D153_PRED = modeMap.indexOf("D153_PRED");
-    const D207_PRED = modeMap.indexOf("D207_PRED");
+    const V_PRED = modeMap.V_PRED;
+    const H_PRED = modeMap.H_PRED;
+    const D45_PRED = modeMap.D45_PRED;
+    const D63_PRED = modeMap.D63_PRED;
+    const D135_PRED = modeMap.D135_PRED;
+    const D117_PRED = modeMap.D117_PRED;
+    const D153_PRED = modeMap.D153_PRED;
+    const D207_PRED = modeMap.D207_PRED;
 
     let scale = dst.w / src.w;
     ctx.save();
@@ -1464,7 +1508,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let transformSize = frame.json["transformSize"];
     let transformSizeMap = frame.json["transformSizeMap"];
 
-
     var bounds = new Rectangle(0, 0, 0, 0);
     let rows = blockSize.length;
     let cols = blockSize[0].length;
@@ -1488,7 +1531,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       /**
        * Maps AnalyzerBlockSize enum to [w, h] log2 pairs.
        */
-      // ["BLOCK_4X4", "BLOCK_4X8", "BLOCK_8X4", "BLOCK_8X8", "BLOCK_8X16", "BLOCK_16X8", "BLOCK_16X16", "BLOCK_16X32", "BLOCK_32X16", "BLOCK_32X32", "BLOCK_32X64", "BLOCK_64X32", "BLOCK_64X64"]
       // Visit blocks >= 8x8
       for (let i = 3; i < BLOCK_SIZES.length; i++) {
         let dc = 1 << (BLOCK_SIZES[i][0] - 3);
@@ -1506,9 +1548,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       }
 
       // Visit blocks < 8x8.
-      const BLOCK_4X4 = blockSizeMap.indexOf("BLOCK_4X4");
-      const BLOCK_8X4 = blockSizeMap.indexOf("BLOCK_8X4");
-      const BLOCK_4X8 = blockSizeMap.indexOf("BLOCK_4X8");
+      const BLOCK_4X4 = blockSizeMap.BLOCK_4X4;
+      const BLOCK_8X4 = blockSizeMap.BLOCK_8X4;
+      const BLOCK_4X8 = blockSizeMap.BLOCK_4X8;
 
       for (let c = 0; c < cols; c++) {
         for (let r = 0; r < rows; r++) {
@@ -1561,7 +1603,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           }
         }
       }
-      const TX_4X4 = transformSizeMap.indexOf("TX_4X4");
+      const TX_4X4 = transformSizeMap.TX_4X4;
       // Visit blocks < 4x4.
       for (let c = 0; c < cols; c++) {
         for (let r = 0; r < rows; r++) {

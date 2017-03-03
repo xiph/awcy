@@ -214,7 +214,7 @@ function getHistogramFromJson(json: any, name: string): Histogram {
       counts[v]++;
     });
   });
-  return new Histogram(counts, json[name + "Map"]);
+  return new Histogram(counts, Object.keys(json[name + "Map"]));
 }
 
 function readFrameFromJson(json): AnalyzerFrame {
@@ -338,6 +338,12 @@ export class Rectangle {
     this.h = h;
     return this;
   }
+  containsPoint(point: Vector): boolean {
+    return (point.x >= this.x) &&
+      (point.x < this.x + this.w) &&
+      (point.y >= this.y) &&
+      (point.y < this.y + this.h);
+  }
   getCenter(): Vector {
     return new Vector(this.x + this.w / 2, this.y + this.h / 2);
   }
@@ -385,6 +391,11 @@ export class Vector {
   }
   length() {
     return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+  distanceTo(v: Vector) {
+    let x = this.x - v.x;
+    let y = this.y - v.y;
+    return Math.sqrt(x * x + y * y);
   }
   normalize() {
     return this.divideScalar(this.length());
