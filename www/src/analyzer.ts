@@ -135,7 +135,7 @@ export class Accounting {
 export class Histogram {
   constructor(
     public counts: { [id: string]: number },
-    public names: string[]) {
+    public names: { [id: string]: number }) {
     // ...
   }
 }
@@ -214,7 +214,7 @@ function getHistogramFromJson(json: any, name: string): Histogram {
       counts[v]++;
     });
   });
-  return new Histogram(counts, Object.keys(json[name + "Map"]));
+  return new Histogram(counts, json[name + "Map"]);
 }
 
 function readFrameFromJson(json): AnalyzerFrame {
