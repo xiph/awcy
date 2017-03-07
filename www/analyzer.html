@@ -92,7 +92,7 @@
       right: 0;
       z-index: 20;
       opacity: 1;
-      height: 340px;
+      height: 240px;
       background-color: rgba(20, 20, 20, 0.9);
       padding-top: 10px;
       padding-left: 10px;
@@ -109,7 +109,6 @@
       opacity: 1;
       width: 500px;
       background-color: rgba(20, 20, 20, 0.9);
-      padding-left: 10px;
       vertical-align: middle;
       color: white;
       padding: 10px;
@@ -130,11 +129,13 @@
       overflow-y: scroll;
       position: absolute;
       height: 100%;
+      width: 480px;
     }
 
     ::-webkit-scrollbar {
-      width: 10px;  /* remove scrollbar space */
-      background: transparent;  /* optional: just make scrollbar invisible */
+      width: 0px;
+      height: 0px;
+      background: transparent;
     }
 
     .panel {
