@@ -183,28 +183,16 @@ export class HistogramComponent extends React.Component<{
 
   }
   renderHistogram(ctx: CanvasRenderingContext2D, histograms: Histogram[]) {
-    let names = null;
-    if (histograms.length) {
-      if (!histograms[0]) {
-        return;
-      }
-      names = histograms[0].names;
+    let names: string [] = null;
+    let nameMap: { [id: string]: number };
+    if (!histograms.length) {
+      return;
     }
-    if (!names) {
-      let max = 0;
-      histograms.forEach(histogram => {
-        for (var name in histogram.counts) {
-          max = Math.max(max, parseInt(name, 10));
-        }
-      });
-      names = [];
-      for (let i = 0; i <= max; i++) {
-        names.push(i);
-      }
-    }
-    function valueOf(histogram, name) {
-      let counts = histogram.counts;
-      return counts[name] === undefined ? 0 : counts[name];
+    nameMap = histograms[0].names;
+    names = Object.keys(nameMap);
+    function valueOf(histogram: Histogram, name: string) {
+      let count = histogram.counts[histogram.names[name]];
+      return count === undefined ? 0 : count;
     }
     let rows = [];
     let scale = 1;
@@ -212,8 +200,8 @@ export class HistogramComponent extends React.Component<{
       let max = 0;
       histograms.forEach((histogram: Histogram, i) => {
         let total = 0;
-        names.forEach((name, i) => {
-          total += valueOf(histogram, i);
+        names.forEach((name) => {
+          total += valueOf(histogram, name);
         });
         max = Math.max(max, total);
       });
@@ -223,18 +211,18 @@ export class HistogramComponent extends React.Component<{
       let row = { frame: i, total: 0 };
       if (this.props.scale == "relative") {
         scale = 0;
-        names.forEach((name, i) => {
-          scale += valueOf(histogram, i);
+        names.forEach(name => {
+          scale += valueOf(histogram, name);
         });
       } else if (typeof this.props.scale == "number") {
         scale = this.props.scale;
       }
-      names.forEach((name, i) => {
-        row[name] = valueOf(histogram, i) / scale;
+      names.forEach(name => {
+        row[name] = valueOf(histogram, name) / scale;
       });
       rows.push(row);
     });
-    this.renderChart(ctx, names, rows);
+    this.renderChart(ctx, names, nameMap, rows);
     return;
   }
 
@@ -250,7 +238,7 @@ export class HistogramComponent extends React.Component<{
     this.forceUpdate();
   }
 
-  renderChart(ctx: CanvasRenderingContext2D, names: string[], data: any[], yDomain = [0, 1]) {
+  renderChart(ctx: CanvasRenderingContext2D, names: string[], nameMap: { [id: string]: number }, data: any[], yDomain = [0, 1]) {
     ctx.save();
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     let w = this.w * this.ratio;
@@ -262,9 +250,9 @@ export class HistogramComponent extends React.Component<{
     for (let i = 0; i < data.length; i++) {
       let t = 0;
       let r = new Rectangle(0, 0, 0, 0);
-      names.forEach((k, j) => {
+      names.forEach(k => {
         let v = data[i][k];
-        ctx.fillStyle = COLORS[j];
+        ctx.fillStyle = COLORS[nameMap[k]];
         r.set(i * bw, h - (t * h | 0) - (v * h | 0), bw - 1, v * h | 0);
         if (r.containsPoint(this.position)) {
           ctx.globalAlpha = 1
@@ -1104,7 +1092,11 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       });
       data.push(row);
     });
-    return data.map(data => new Histogram(data, names));
+    let nameMap = {};
+    names.forEach((name, i) => {
+      nameMap[name] = i;
+    });
+    return data.map(data => new Histogram(data, nameMap));
   }
 
   onBitsScaleSelect(eventKey: any, event: Object) {
@@ -1332,12 +1324,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
   drawSkip(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let skip = frame.json["skip"];
+    let map = frame.json["skipMap"];
     this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
       let v = skip[r][c];
-      if (!v) {
+      if (v == map.SKIP) {
         return false;
       }
-      ctx.fillStyle = COLORS[v];
+      ctx.fillStyle = COLORS[map.NO_SKIP];
       return true;
     });
   }
