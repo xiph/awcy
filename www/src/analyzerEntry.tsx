@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { AnalyzerViewCompareComponent, AnalyzerBenchmarkComponent, LocalAnalyzerComponent } from "./components/Analyzer";
+import { AnalyzerViewCompareComponent, LocalAnalyzerComponent } from "./components/Analyzer";
 import { forEachUrlParameter, getUrlParameters } from "./stores/Stores";
 
 let parameters = getUrlParameters();
@@ -33,14 +33,7 @@ function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string} [] {
 
 let pairs = getDecoderVideoUrls();
 
-if (parameters.benchmark) {
-  ReactDOM.render(
-    <AnalyzerBenchmarkComponent
-      decoderVideoUrlPairs={pairs}
-      maxFrames={maxFrames}/>,
-    document.getElementById("analyzer-app")
-  );
-} else if (local) {
+if (local) {
   ReactDOM.render(
     <LocalAnalyzerComponent/>,
     document.getElementById("analyzer-app")
