@@ -18,14 +18,17 @@ let benchmark = parameters.benchmark | 0;
 /**
  * Extracts decoder / file pairs from the url parameter string.
  */
-function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string} [] {
+function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string, videoName: string} [] {
   let currenDecoder = null;
+  let currenDecoderName = null;
   let pairs = [];
   forEachUrlParameter((key, value) => {
     if (key == "decoder") {
       currenDecoder = value;
+    } else if (key == "decoderName") {
+      currenDecoderName = value;
     } else if (key == "file") {
-      pairs.push({decoderUrl: currenDecoder, videoUrl: filePrefix + value});
+      pairs.push({decoderUrl: currenDecoder, videoUrl: filePrefix + value, decoderName: currenDecoderName});
     }
   });
   return pairs;
