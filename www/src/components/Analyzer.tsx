@@ -73,6 +73,17 @@ const BLOCK_SIZES = [
   [6, 6]
 ];
 
+function shuffle(array: any [], count: number) {
+  // Shuffle Indices
+  for (let j = 0; j < count; j++) {
+    let a = Math.random() * array.length | 0;
+    let b = Math.random() * array.length | 0;
+    let t = array[a];
+    array[a] = array[b];
+    array[b] = t;
+  }
+}
+
 function blockSizeArea(size: number) {
   return (1 << BLOCK_SIZES[size][0]) * (1 << BLOCK_SIZES[size][1]);
 }
@@ -623,22 +634,18 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let ratio = window.devicePixelRatio || 1;
     let activeGroupMap = [];
     let activeGroupScore = [];
+
+    let map = [];
+    for (let i = 0; i < props.frames.length; i++) {
+      map.push(i);
+    }
+    if (props.blind) {
+      shuffle(map, 16);
+    }
     for (let i = 0; i < 1024; i++) {
-      let map = [];
       let score = [];
       for (let j = 0; j < props.frames.length; j++) {
-        map.push(j);
         score.push(0);
-      }
-      if (props.blind) {
-        // Shuffle Indices
-        for (let j = 0; j < 16; j++) {
-          let a = Math.random() * map.length | 0;
-          let b = Math.random() * map.length | 0;
-          let t = map[a];
-          map[a] = map[b];
-          map[b] = t;
-        }
       }
       activeGroupMap.push(map);
       activeGroupScore.push(score);
@@ -887,7 +894,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     if (this.props.blind) {
       return;
     }
-    this.showToast("Showing Frame: " + config + " - " + groupName + " : " + activeFrame);
+    this.showToast("Showing Frame: " + groupName + ":" + activeFrame);
   }
   zoom(value) {
     let scale = this.state.scale * value;
@@ -968,7 +975,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.showActiveFrameToast(activeGroup, this.state.activeFrame);
   }
   setActiveFrame(activeFrame) {
-    this.setState({activeFrame, showFrameComment: false} as any);
+    this.setState({activeFrame} as any);
     this.showActiveFrameToast(this.getActiveGroupIndex(), activeFrame);
   }
   setActiveGroupAndFrame(activeGroup, activeFrame) {
@@ -1258,7 +1265,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             <div className="sectionHeader">Video</div>
             <div className="propertyValue">{groupName}</div>
             <div className="sectionHeader">Group</div>
-            <div className="propertyValue">{activeGroup}</div>
+            <div className="propertyValue">{activeGroup} - {this.props.groupNames[activeGroup]}</div>
             <div className="sectionHeader">Score</div>
             <div className="propertyValue">{this.getActiveGroupScore()}</div>
             <div className="sectionHeader">Frame</div>
@@ -1692,114 +1699,11 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 }
 
 interface AnalyzerViewCompareComponentProps {
-  decoderVideoUrlPairs: {decoderUrl: string, videoUrl: string} [];
+  decoderVideoUrlPairs: {decoderUrl: string, videoUrl: string, decoderName: string} [];
   playbackFrameRate?: number;
   layers?: number;
   maxFrames?: number;
   blind?: number;
-}
-
-export class AnalyzerBenchmarkComponent extends React.Component<{
-  decoderVideoUrlPairs: {decoderUrl: string, videoUrl: string} [];
-  playbackFrameRate?: number;
-  maxFrames?: number
-}, {
-  decodedFrameCount: number,
-  loading: "done" | "failed" | "loading",
-  status: string
-  elapsed: number;
-}> {
-  constructor() {
-    super();
-    this.state = {
-      loading: "loading"
-    } as any;
-  }
-  componentWillMount() {
-    let decoderUrls = [];
-    let videoUrls = [];
-    this.props.decoderVideoUrlPairs.forEach(pair => {
-      decoderUrls.push(pair.decoderUrl);
-      videoUrls.push(pair.videoUrl);
-    });
-    this.load(decoderUrls, videoUrls);
-  }
-  load(decoderPaths: string[], videoPaths: string[]) {
-    this.setState({ status: "Loading Decoders" } as any);
-    Promise.all(decoderPaths.map(path => Decoder.loadDecoder(path))).then(decoders => {
-      this.setState({ status: "Downloading Files" } as any);
-      Promise.all(videoPaths.map(path => downloadFile(path))).then(bytes => {
-        let decodedFrames = [];
-        for (let i = 0; i < decoders.length; i++) {
-          let decoder = decoders[i];
-          decoder.openFileBytes(bytes[i]);
-        }
-        let groupNames = [];
-        for (let i = 0; i < decoderPaths.length; i++) {
-          groupNames.push(decoderPaths[i] + " - " + videoPaths[i]);
-        }
-        this.setState({ status: "Decoding Frames" } as any);
-        let time = performance.now();
-        Promise.all(decoders.map(decoder => this.decodeFrames(decoder, this.props.maxFrames))).then(frames => {
-          this.setState({ frames: frames, groupNames: groupNames, loading: "done", elapsed: performance.now() - time } as any);
-        });
-      }).catch(e => {
-        this.setState({ status: "Downloading Files Failed", loading: "error" } as any);
-      });
-    }).catch(e => {
-      this.setState({ status: "Loading Decoders Failed", loading: "error" } as any);
-    });
-  }
-
-  decodedFrameCount = 0;
-  decodeFrames(decoder: Decoder, count: number): Promise<AnalyzerFrame[]>  {
-    return new Promise((resolve, reject) => {
-      let time = performance.now();
-      let decodedFrames = [];
-      let interval = setInterval(() => {
-        decoder.setLayers(0);
-        decoder.shouldReadImageData = false;
-        decoder.readFrame().then((frames) => {
-          if (this.decodedFrameCount % 10 == 0) {
-            this.setState({ status: `Decoded ${this.decodedFrameCount} Frames ...` } as any);
-          }
-          if (!frames) {
-            clearInterval(interval);
-            resolve(decodedFrames);
-            return;
-          }
-          frames.forEach(frame => {
-            decodedFrames.push(frame);
-          });
-          this.decodedFrameCount += frames.length;
-          if (--count <= 0) {
-            clearInterval(interval);
-            console.info(`Decode Time: ${performance.now() - time}`);
-            resolve(decodedFrames);
-          }
-        });
-      }, 0);
-    });
-  }
-  render() {
-    if (this.state.loading != "done") {
-      let icon = this.state.loading === "loading" ? <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> : <span className="glyphicon glyphicon-ban-circle"></span>;
-      return <div className="panel">
-        <span>{icon} {this.state.status}</span>
-      </div>
-    } else {
-      return <div className="panel">
-        <span>Decoded {this.decodedFrameCount} frames in {withCommas(this.state.elapsed)} milliseconds.</span>
-      </div>
-    }
-  }
-}
-
-interface AnalyzerViewCompareComponentProps {
-  decoderVideoUrlPairs: {decoderUrl: string, videoUrl: string} [];
-  playbackFrameRate?: number;
-  layers?: number;
-  maxFrames?: number
 }
 
 export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCompareComponentProps, {
@@ -1829,14 +1733,16 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
   }
   componentWillMount() {
     let decoderUrls = [];
+    let decoderNames = [];
     let videoUrls = [];
     this.props.decoderVideoUrlPairs.forEach(pair => {
       decoderUrls.push(pair.decoderUrl);
+      decoderNames.push(pair.decoderName);
       videoUrls.push(pair.videoUrl);
     });
-    this.load(decoderUrls, videoUrls);
+    this.load(decoderUrls, decoderNames, videoUrls);
   }
-  load(decoderPaths: string[], videoPaths: string[]) {
+  load(decoderPaths: string[], decoderNames: string[], videoPaths: string[]) {
     this.setState({ status: "Loading Decoders" } as any);
     Promise.all(decoderPaths.map(path => Decoder.loadDecoder(path))).then(decoders => {
       console.info(decoders);
@@ -1848,14 +1754,17 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
           let decoder = decoders[i];
           decoder.openFileBytes(bytes[i]);
         }
-        let groupNames = [];
+        let groupNames = decoderNames.slice();
         for (let i = 0; i < decoderPaths.length; i++) {
+          if (groupNames[i]) {
+            continue;
+          }
           let videoPath = videoPaths[i];
           let j = videoPath.lastIndexOf("/");
           if (j >= 0) {
             videoPath = videoPath.substring(j + 1);
           }
-          groupNames.push(videoPath);
+          groupNames[i] = videoPath;
         }
         this.setState({ status: "Decoding Frames" } as any);
         Promise.all(decoders.map(decoder => this.decodeFrames(decoder, this.props.maxFrames))).then(frames => {

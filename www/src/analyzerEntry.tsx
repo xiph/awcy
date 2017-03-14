@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { AnalyzerViewCompareComponent, AnalyzerBenchmarkComponent, LocalAnalyzerComponent } from "./components/Analyzer";
+import { AnalyzerViewCompareComponent, LocalAnalyzerComponent } from "./components/Analyzer";
 import { forEachUrlParameter, getUrlParameters } from "./stores/Stores";
 
 let parameters = getUrlParameters();
@@ -18,14 +18,17 @@ let benchmark = parameters.benchmark | 0;
 /**
  * Extracts decoder / file pairs from the url parameter string.
  */
-function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string} [] {
+function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string, videoName: string} [] {
   let currenDecoder = null;
+  let currenDecoderName = null;
   let pairs = [];
   forEachUrlParameter((key, value) => {
     if (key == "decoder") {
       currenDecoder = value;
+    } else if (key == "decoderName") {
+      currenDecoderName = value;
     } else if (key == "file") {
-      pairs.push({decoderUrl: currenDecoder, videoUrl: filePrefix + value});
+      pairs.push({decoderUrl: currenDecoder, videoUrl: filePrefix + value, decoderName: currenDecoderName});
     }
   });
   return pairs;
@@ -33,14 +36,7 @@ function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string} [] {
 
 let pairs = getDecoderVideoUrls();
 
-if (parameters.benchmark) {
-  ReactDOM.render(
-    <AnalyzerBenchmarkComponent
-      decoderVideoUrlPairs={pairs}
-      maxFrames={maxFrames}/>,
-    document.getElementById("analyzer-app")
-  );
-} else if (local) {
+if (local) {
   ReactDOM.render(
     <LocalAnalyzerComponent/>,
     document.getElementById("analyzer-app")

@@ -171,7 +171,7 @@ export class AnalyzerLinksComponent extends React.Component<{
       function makeJobsUrl(jobs) {
         return qualities.map(quality => {
           let url = analyzerBaseUrl + `?${mode}maxFrames=${maxFrames}&` + jobs.map(job => {
-            return `decoder=${job.decocerUrl()}&file=${job.ivfUrl(video, quality)}`;
+            return `decoder=${job.decocerUrl()}&decoderName=${encodeURIComponent(job.id)}&file=${job.ivfUrl(video, quality)}`;
           }).join("&");
           return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
         });
@@ -192,7 +192,7 @@ export class AnalyzerLinksComponent extends React.Component<{
         videos.forEach(video => {
           files.push(`file=${job.ivfUrlName(video, quality)}`);
         });
-        let url = analyzerBaseUrl + `?${mode}maxFrames=${maxFrames}&decoder=${job.decocerUrl()}&filePrefix=${job.ivfUrlPrefix()}&` + files.join("&");
+        let url = analyzerBaseUrl + `?${mode}maxFrames=${maxFrames}&decoder=${job.decocerUrl()}&decoderName=${encodeURIComponent(job.id)}&filePrefix=${job.ivfUrlPrefix()}&` + files.join("&");
         return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
       });
       return <td key={job.id}>{urls}</td>
