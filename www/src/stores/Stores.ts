@@ -578,12 +578,17 @@ let colorPool = [
 ];
 
 export function hashString(s: string) {
-  let t = 0;
-  for (let i = 0; i < s.length; i++) {
-    t += s.charCodeAt(i);
+  let hash = 0;
+  if (s.length === 0) {
+    return hash;
   }
-  return t;
+  for (let i = 0; i < s.length; i++) {
+    hash  = ((hash << 5) - hash) + s.charCodeAt(i);
+    hash |= 0;
+  }
+  return hash >>> 0;
 }
+
 function getColorForString(s: string): string {
   let t = hashString(s);
   return colorPool[t % colorPool.length];

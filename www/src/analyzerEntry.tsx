@@ -18,7 +18,7 @@ let benchmark = parameters.benchmark | 0;
 /**
  * Extracts decoder / file pairs from the url parameter string.
  */
-function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string, videoName: string} [] {
+function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string, decoderName: string} [] {
   let currenDecoder = null;
   let currenDecoderName = null;
   let pairs = [];
