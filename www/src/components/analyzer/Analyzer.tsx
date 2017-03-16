@@ -242,8 +242,8 @@ export class ModeInfoComponent extends React.Component<{
       <div style={{float: "left", width: "40%"}}>
         <div><span className="propertyName">Block:</span> <span className="propertyValue">{c}x{r}</span></div>
         <div><span className="propertyName">Block Size:</span> <span className="propertyValue">{getProperty("blockSize")}</span></div>
-        <div><span className="propertyName">Transform Size:</span> <span className="propertyValue">{getProperty("transformSize")}</span></div>
-        <div><span className="propertyName">Transform Type:</span> <span className="propertyValue">{getProperty("transformType")}</span></div>
+        <div><span className="propertyName">Tx Size:</span> <span className="propertyValue">{getProperty("transformSize")}</span></div>
+        <div><span className="propertyName">Tx Type:</span> <span className="propertyValue">{getProperty("transformType")}</span></div>
       </div>
       <div style={{float: "left", width: "60%"}}>
         <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
@@ -384,14 +384,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     // },
     showTransformGrid: {
       key: "t",
-      description: "Transform Grid",
+      description: "Tx Grid",
       detail: "Display transform blocks.",
       default: false,
       value: undefined
     },
     showTransformType: {
       key: "y",
-      description: "Transform Type",
+      description: "Tx Type",
       detail: "Display transform type.",
       default: false,
       value: undefined
@@ -1035,20 +1035,58 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         {layerOptions}
 
         <div id="sidePanelScrollArea">
-          <div className="sectionHeader">Frame Info</div>
-          <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.getActiveGroupIndex()}></FrameInfoComponent>
-
-          {p &&
-            <div>
-              <div className="sectionHeader">Block Info</div>
-              <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
-            </div>
-          }
+          <div className="sectionHeader">Histograms</div>
+          <Tabs defaultActiveKey={2} id="uncontrolled-tab-example" bsStyle="pills">
+            <Tab eventKey={1} title="Bits">
+              <div className="tabContainer">
+                <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={512} scale="max"></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={2} title="Symbols">
+              <div className="tabContainer">
+                <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={3} title="Block Size">
+              <div className="tabContainer">
+                <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={4} title="Tx Size">
+              <div className="tabContainer">
+                <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={5} title="Tx Type">
+              <div className="tabContainer">
+                <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={6} title="Prediction Mode">
+              <div className="tabContainer">
+                <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={7} title="Skip">
+              <div className="tabContainer">
+                <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+          </Tabs>
 
           {p &&
             <div>
               <div className="sectionHeader">Block Symbols</div>
               <AccountingComponent symbols={this.getActiveFrame().accounting.createBlockSymbols(p.x, p.y)}></AccountingComponent>
+            </div>
+          }
+
+          <div className="sectionHeader">Frame Info</div>
+          <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.getActiveGroupIndex()}></FrameInfoComponent>
+          {p &&
+            <div>
+              <div className="sectionHeader">Block Info</div>
+              <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
             </div>
           }
 
@@ -1097,45 +1135,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       </div>
       { this.state.showTools &&
         <div>
-          <div id="bottomPanel">
-            <Tabs defaultActiveKey={2} id="uncontrolled-tab-example" bsStyle="pills">
-              <Tab eventKey={1} title="Bits">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={160} width={1024} scale="max"></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={2} title="Symbols">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={3} title="Block Size">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={4} title="Transform Size">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={5} title="Transform Type">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={6} title="Prediction Mode">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={7} title="Skip">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-            </Tabs>
-          </div>
           <div style={{paddingTop: "4px"}}>
             {sidePanel}
           </div>
