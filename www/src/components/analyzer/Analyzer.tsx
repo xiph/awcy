@@ -1,11 +1,11 @@
 import * as React from "react";
 import { OverlayTrigger, Tooltip, ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon, SplitButton, MenuItem, DropdownButton, Tabs, Tab } from "react-bootstrap";
 import { } from "react-bootstrap";
-import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile, fileExists, analyzerBaseUrl, baseUrl } from "../stores/Stores";
-import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector, localFiles, localFileProtocol } from "../analyzer";
+import { hashString, appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile, fileExists, analyzerBaseUrl, baseUrl } from "../../stores/Stores";
+import { COLORS, HEAT_COLORS, Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector, localFiles, localFileProtocol } from "./analyzerTools";
 import { Promise } from "es6-promise";
+import { HistogramComponent } from "./Histogram";
 
-import { BarPlot, BarPlotTable, Data } from "./Plot";
 declare var d3;
 declare var Mousetrap;
 
@@ -18,29 +18,7 @@ const SUPER_MI_SIZE = MI_SIZE << 3;
 const ZOOM_WIDTH = 500;
 const ZOOM_SOURCE = 64;
 const DEFAULT_CONFIG = "--disable-multithread --disable-runtime-cpu-detect --target=generic-gnu --enable-accounting --enable-analyzer --enable-aom_highbitdepth --extra-cflags=-D_POSIX_SOURCE";
-const COLORS = [
-  "#E85EBE", "#009BFF", "#00FF00", "#0000FF", "#FF0000", "#01FFFE", "#FFA6FE",
-  "#FFDB66", "#006401", "#010067", "#95003A", "#007DB5", "#FF00F6", "#FFEEE8",
-  "#774D00", "#90FB92", "#0076FF", "#D5FF00", "#FF937E", "#6A826C", "#FF029D",
-  "#FE8900", "#7A4782", "#7E2DD2", "#85A900", "#FF0056", "#A42400", "#00AE7E",
-  "#683D3B", "#BDC6FF", "#263400", "#BDD393", "#00B917", "#9E008E", "#001544",
-  "#C28C9F", "#FF74A3", "#01D0FF", "#004754", "#E56FFE", "#788231", "#0E4CA1",
-  "#91D0CB", "#BE9970", "#968AE8", "#BB8800", "#43002C", "#DEFF74", "#00FFC6",
-  "#FFE502", "#620E00", "#008F9C", "#98FF52", "#7544B1", "#B500FF", "#00FF78",
-  "#FF6E41", "#005F39", "#6B6882", "#5FAD4E", "#A75740", "#A5FFD2", "#FFB167"
-];
 
-const HEAT_COLORS = [];
-function generateHeatColors() {
-  function color(value) {
-    var h = (1.0 - value) * 240;
-    return "hsl(" + h + ", 100%, 50%)";
-  }
-  for (let i = 0; i < 256; i++) {
-    HEAT_COLORS.push(color(i / 256));
-  }
-}
-generateHeatColors();
 
 function colorScale(v, colors) {
   return colors[Math.round(v * (colors.length - 1))];
@@ -146,170 +124,10 @@ interface BlockVisitor {
 }
 
 interface AnalyzerViewProps {
-  frames: AnalyzerFrame[][],
+  groups: AnalyzerFrame[][],
   groupNames?: string[],
   playbackFrameRate?: number;
   blind?: number;
-}
-
-export class HistogramComponent extends React.Component<{
-  histograms: Histogram[];
-  highlight?: number;
-  width?: number;
-  height?: number;
-  scale?: string | number;
-}, {
-}> {
-  public static defaultProps = {
-    width: 128,
-    height: 128,
-    scale: "relative"
-  };
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  ratio: number;
-  w: number;
-  h: number;
-  position: Vector;
-  constructor() {
-    super();
-    this.ratio = window.devicePixelRatio || 1;
-    this.position = new Vector(-1, -1);
-  }
-  componentDidUpdate(prevProps, prevState) {
-    this.renderHistogram(this.ctx, this.props.histograms);
-  }
-  componentDidMount() {
-    let w = this.w = this.props.width;
-    let h = this.h = this.props.height;
-    this.canvas.style.width = w + "px";
-    this.canvas.style.height = h + "px";
-    this.canvas.width = w * this.ratio;
-    this.canvas.height = h * this.ratio;
-    this.ctx = this.canvas.getContext("2d");
-    this.renderHistogram(this.ctx, this.props.histograms);
-    this.canvas.addEventListener("mousemove", this.handleMouseEvent.bind(this));
-  }
-  componentWillUnmount() {
-
-  }
-  renderHistogram(ctx: CanvasRenderingContext2D, histograms: Histogram[]) {
-    let names: string [] = null;
-    let nameMap: { [id: string]: number };
-    if (!histograms.length) {
-      return;
-    }
-    nameMap = histograms[0].names;
-    names = Object.keys(nameMap);
-    function valueOf(histogram: Histogram, name: string) {
-      let count = histogram.counts[histogram.names[name]];
-      return count === undefined ? 0 : count;
-    }
-    let rows = [];
-    let scale = 1;
-    if (this.props.scale == "max") {
-      let max = 0;
-      histograms.forEach((histogram: Histogram, i) => {
-        let total = 0;
-        names.forEach((name) => {
-          total += valueOf(histogram, name);
-        });
-        max = Math.max(max, total);
-      });
-      scale = max;
-    }
-    histograms.forEach((histogram: Histogram, i) => {
-      let row = { frame: i, total: 0 };
-      if (this.props.scale == "relative") {
-        scale = 0;
-        names.forEach(name => {
-          scale += valueOf(histogram, name);
-        });
-      } else if (typeof this.props.scale == "number") {
-        scale = this.props.scale;
-      }
-      names.forEach(name => {
-        row[name] = valueOf(histogram, name) / scale;
-      });
-      rows.push(row);
-    });
-    this.renderChart(ctx, names, nameMap, rows);
-    return;
-  }
-
-  handleMouseEvent(event: MouseEvent) {
-    function getMousePosition(canvas: HTMLCanvasElement, event: MouseEvent) {
-      let rect = canvas.getBoundingClientRect();
-      return new Vector(
-        event.clientX - rect.left,
-        event.clientY - rect.top
-      );
-    }
-    this.position = getMousePosition(this.canvas, event).multiplyScalar(this.ratio);
-    this.forceUpdate();
-  }
-
-  renderChart(ctx: CanvasRenderingContext2D, names: string[], nameMap: { [id: string]: number }, data: any[], yDomain = [0, 1]) {
-    ctx.save();
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    let w = this.w * this.ratio;
-    let h = this.h * this.ratio;
-    let bw = Math.min(16 * this.ratio, w / data.length | 0);
-    let selectedName = null;
-    let selectedValue = undefined;
-    let selectedFrame = -1;
-    for (let i = 0; i < data.length; i++) {
-      let t = 0;
-      let r = new Rectangle(0, 0, 0, 0);
-      names.forEach(k => {
-        let v = data[i][k];
-        ctx.fillStyle = COLORS[nameMap[k]];
-        r.set(i * bw, h - (t * h | 0) - (v * h | 0), bw - 1, v * h | 0);
-        if (r.containsPoint(this.position)) {
-          ctx.globalAlpha = 1
-          selectedName = k;
-          selectedValue = v;
-          selectedFrame = i;
-        } else {
-          ctx.globalAlpha = 0.75
-        }
-        ctx.fillRect(r.x, r.y, r.w, r.h);
-        t += v;
-      });
-      if (this.props.highlight == i) {
-        ctx.fillStyle = "white";
-        ctx.fillRect(i * bw, 0, bw - 1, this.ratio * 2);
-      }
-    }
-    if (selectedName) {
-      let top = this.position.distanceTo(new Vector(0, 0)) > this.position.distanceTo(new Vector(0, h));
-      let text = selectedName + " " + (selectedValue * 100).toFixed(2) + "%" + " (" + String(selectedFrame) + ")";
-      ctx.globalAlpha = 0.75;
-      ctx.font = (10 * this.ratio) + "px Arial";
-      ctx.fillStyle = "black";
-      let tw = ctx.measureText(text).width + 8 * this.ratio;
-      if (top) {
-        ctx.fillRect(0, 0, tw, 20 * this.ratio);
-      } else {
-        ctx.fillRect(0, h - 20 * this.ratio, tw, 20 * this.ratio);
-      }
-      ctx.fillStyle = "white";
-      ctx.globalAlpha = 1;
-      ctx.textBaseline = "middle";
-      if (top) {
-        ctx.fillText(text, 4 * this.ratio, 10 * this.ratio);
-      } else {
-        ctx.fillText(text, 4 * this.ratio, h - 10 * this.ratio);
-      }
-    }
-    ctx.restore();
-  }
-
-  render() {
-    return  <div id="c" className="chartParent">
-      <canvas ref={(self: any) => this.canvas = self} width="256" height="256"></canvas>
-    </div>
-  }
 }
 
 export class AccountingComponent extends React.Component<{
@@ -424,8 +242,8 @@ export class ModeInfoComponent extends React.Component<{
       <div style={{float: "left", width: "40%"}}>
         <div><span className="propertyName">Block:</span> <span className="propertyValue">{c}x{r}</span></div>
         <div><span className="propertyName">Block Size:</span> <span className="propertyValue">{getProperty("blockSize")}</span></div>
-        <div><span className="propertyName">Transform Size:</span> <span className="propertyValue">{getProperty("transformSize")}</span></div>
-        <div><span className="propertyName">Transform Type:</span> <span className="propertyValue">{getProperty("transformType")}</span></div>
+        <div><span className="propertyName">Tx Size:</span> <span className="propertyValue">{getProperty("transformSize")}</span></div>
+        <div><span className="propertyName">Tx Type:</span> <span className="propertyValue">{getProperty("transformType")}</span></div>
       </div>
       <div style={{float: "left", width: "60%"}}>
         <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
@@ -463,7 +281,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     activeGroupMap: number [][];
   }> {
   public static defaultProps: AnalyzerViewProps = {
-    frames: [],
+    groups: [],
     groupNames: null,
     playbackFrameRate: 30,
     blind: 0
@@ -566,14 +384,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     // },
     showTransformGrid: {
       key: "t",
-      description: "Transform Grid",
+      description: "Tx Grid",
       detail: "Display transform blocks.",
       default: false,
       value: undefined
     },
     showTransformType: {
       key: "y",
-      description: "Transform Type",
+      description: "Tx Type",
       detail: "Display transform type.",
       default: false,
       value: undefined
@@ -636,7 +454,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let activeGroupScore = [];
 
     let map = [];
-    for (let i = 0; i < props.frames.length; i++) {
+    for (let i = 0; i < props.groups.length; i++) {
       map.push(i);
     }
     if (props.blind) {
@@ -644,7 +462,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
     for (let i = 0; i < 1024; i++) {
       let score = [];
-      for (let j = 0; j < props.frames.length; j++) {
+      for (let j = 0; j < props.groups.length; j++) {
         score.push(0);
       }
       activeGroupMap.push(map);
@@ -728,7 +546,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }, duration);
   }
   draw(group: number, index: number) {
-    let frame = this.props.frames[group][index];
+    let frame = this.props.groups[group][index];
     this.frameContext.putImageData(frame.imageData, 0, 0);
 
     // Draw frameCanvas to displayCanvas
@@ -776,7 +594,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
   }
   drawZoom(group: number, index: number) {
-    let frame = this.props.frames[group][index];
+    let frame = this.props.groups[group][index];
     let mousePosition = this.mouseZoomPosition.clone().divideScalar(this.state.scale).snap();
     let src = Rectangle.createRectangleCenteredAtPoint(mousePosition, ZOOM_SOURCE, ZOOM_SOURCE);
     let dst = new Rectangle(0, 0, ZOOM_WIDTH * this.ratio, ZOOM_WIDTH * this.ratio);
@@ -826,7 +644,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     ctx.restore();
   }
   componentDidMount() {
-    if (!this.props.frames.length)
+    if (!this.props.groups.length)
       return;
     this.reset();
     this.installKeyboardShortcuts();
@@ -836,7 +654,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.overlayCanvas.addEventListener("mousedown", this.onMouseDown.bind(this));
   }
   componentDidUpdate(prevProps, prevState) {
-    let imageData = this.props.frames[this.getActiveGroupIndex()][0].imageData;
+    let imageData = this.props.groups[this.getActiveGroupIndex()][0].imageData;
     let frameSizeChanged = this.frameSize.w !== imageData.width || this.frameSize.h != imageData.height;
     if (this.state.scale != prevState.scale || frameSizeChanged) {
       this.reset();
@@ -847,7 +665,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
   }
   reset() {
-    let imageData = this.props.frames[this.getActiveGroupIndex()][0].imageData;
+    let imageData = this.props.groups[this.getActiveGroupIndex()][0].imageData;
     let w = imageData.width, h = imageData.height;
     this.resetCanvas(w, h);
   }
@@ -869,22 +687,22 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   advanceGroup(delta) {
     let activeGroup = this.state.activeGroup + delta;
     if (activeGroup < 0) {
-      activeGroup += this.props.frames.length;
+      activeGroup += this.props.groups.length;
     }
-    activeGroup = activeGroup % this.props.frames.length;
+    activeGroup = activeGroup % this.props.groups.length;
     this.setActiveGroup(activeGroup);
   }
   advanceFrame(delta) {
     let activeFrame = this.state.activeFrame + delta;
     if (activeFrame < 0) {
-      activeFrame += this.props.frames[0].length;
+      activeFrame += this.props.groups[0].length;
     }
-    activeFrame = activeFrame % this.props.frames[0].length;
+    activeFrame = activeFrame % this.props.groups[0].length;
     this.setActiveFrame(activeFrame);
   }
   showActiveFrameToast(activeGroup, activeFrame) {
     let groupName = this.props.groupNames ? this.props.groupNames[activeGroup] : String(activeGroup);
-    let config = this.props.frames[activeGroup][activeFrame].config
+    let config = this.props.groups[activeGroup][activeFrame].config
     if (config.indexOf(DEFAULT_CONFIG) == 0) {
       config = config.substr(DEFAULT_CONFIG.length);
     }
@@ -965,7 +783,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       this.setActiveGroup(i);
     }
 
-    for (let i = 1; i <= this.props.frames.length; i++) {
+    for (let i = 1; i <= this.props.groups.length; i++) {
       Mousetrap.bind([String(i)], toggleFrame.bind(this, i - 1));
     }
 
@@ -1066,10 +884,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     return new Vector(c, r);
   }
   getActiveFrame(): AnalyzerFrame {
-    return this.props.frames[this.getActiveGroupIndex()][this.state.activeFrame];
+    return this.props.groups[this.getActiveGroupIndex()][this.state.activeFrame];
   }
   getActiveGroup(): AnalyzerFrame [] {
-    return this.props.frames[this.getActiveGroupIndex()];
+    return this.props.groups[this.getActiveGroupIndex()];
   }
   getActiveGroupIndex(): number {
     if (this.state.activeFrame < 0) {
@@ -1130,7 +948,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     return s;
   }
   render() {
-    let groups = this.props.frames;
+    let groups = this.props.groups;
 
     let layerButtons = [];
     for (let name in this.options) {
@@ -1146,7 +964,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
 
     let sidePanel = null;
-    let frames = this.props.frames[this.getActiveGroupIndex()];
+    let frames = this.props.groups[this.getActiveGroupIndex()];
     let frame = this.getActiveFrame();
     if (frame) {
       let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
@@ -1217,20 +1035,58 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         {layerOptions}
 
         <div id="sidePanelScrollArea">
-          <div className="sectionHeader">Frame Info</div>
-          <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.getActiveGroupIndex()}></FrameInfoComponent>
-
-          {p &&
-            <div>
-              <div className="sectionHeader">Block Info</div>
-              <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
-            </div>
-          }
+          <div className="sectionHeader">Histograms</div>
+          <Tabs defaultActiveKey={2} id="uncontrolled-tab-example" bsStyle="pills">
+            <Tab eventKey={1} title="Bits">
+              <div className="tabContainer">
+                <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={512} scale="max"></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={2} title="Symbols">
+              <div className="tabContainer">
+                <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={3} title="Block Size">
+              <div className="tabContainer">
+                <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={4} title="Tx Size">
+              <div className="tabContainer">
+                <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={5} title="Tx Type">
+              <div className="tabContainer">
+                <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={6} title="Prediction Mode">
+              <div className="tabContainer">
+                <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+            <Tab eventKey={7} title="Skip">
+              <div className="tabContainer">
+                <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+              </div>
+            </Tab>
+          </Tabs>
 
           {p &&
             <div>
               <div className="sectionHeader">Block Symbols</div>
               <AccountingComponent symbols={this.getActiveFrame().accounting.createBlockSymbols(p.x, p.y)}></AccountingComponent>
+            </div>
+          }
+
+          <div className="sectionHeader">Frame Info</div>
+          <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.getActiveGroupIndex()}></FrameInfoComponent>
+          {p &&
+            <div>
+              <div className="sectionHeader">Block Info</div>
+              <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
             </div>
           }
 
@@ -1279,45 +1135,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       </div>
       { this.state.showTools &&
         <div>
-          <div id="bottomPanel">
-            <Tabs defaultActiveKey={2} id="uncontrolled-tab-example" bsStyle="pills">
-              <Tab eventKey={1} title="Bits">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={160} width={1024} scale="max"></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={2} title="Symbols">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={3} title="Block Size">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={4} title="Transform Size">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={5} title="Transform Type">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={6} title="Prediction Mode">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-              <Tab eventKey={7} title="Skip">
-                <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={160} width={1024}></HistogramComponent>
-                </div>
-              </Tab>
-            </Tabs>
-          </div>
           <div style={{paddingTop: "4px"}}>
             {sidePanel}
           </div>
@@ -1461,7 +1278,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         maxBitsPerPixel = Math.max(maxBitsPerPixel, bits / area);
       });
     } else {
-      let groups = this.state.showBitsScale === "video" ? [this.getActiveGroup()] : this.props.frames;
+      let groups = this.state.showBitsScale === "video" ? [this.getActiveGroup()] : this.props.groups;
       groups.forEach(frames => {
         frames.forEach(frame => {
           let {blocks} = frame.accounting.countBits(this.state.showBitsFilter);
@@ -1815,7 +1632,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     }
 
     return <div>
-      <AnalyzerView frames={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.props.playbackFrameRate} blind={this.props.blind}></AnalyzerView>
+      <AnalyzerView groups={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.props.playbackFrameRate} blind={this.props.blind}></AnalyzerView>
     </div>;
   }
 }
@@ -1824,7 +1641,7 @@ export class LocalAnalyzerComponent extends React.Component<{
 
 }, {
   show: boolean;
-  group: {decoderUrl: string, videoUrl: string, name: string} [][]
+  group: {decoderUrl: string, videoUrl: string, name: string, decoderName: string} [][]
 }> {
   constructor() {
     super();
@@ -1888,7 +1705,8 @@ export class LocalAnalyzerComponent extends React.Component<{
           group[i].push({
             decoderUrl: localFileProtocol + decoder.localName,
             videoUrl: localFileProtocol + file.localName,
-            name: "(" + file.name + ", " + decoder.name + ")"
+            name: "(" + file.name + ", " + decoder.name + ")",
+            decoderName: ""
           });
         });
         if (group[i].length == 0) {

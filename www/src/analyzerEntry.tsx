@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { AnalyzerViewCompareComponent, LocalAnalyzerComponent } from "./components/Analyzer";
+import { AnalyzerViewCompareComponent, LocalAnalyzerComponent } from "./components/analyzer/Analyzer";
 import { forEachUrlParameter, getUrlParameters } from "./stores/Stores";
 
 let parameters = getUrlParameters();
@@ -18,7 +18,7 @@ let benchmark = parameters.benchmark | 0;
 /**
  * Extracts decoder / file pairs from the url parameter string.
  */
-function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string, videoName: string} [] {
+function getDecoderVideoUrls(): {decoderUrl: string, videoUrl: string, decoderName: string} [] {
   let currenDecoder = null;
   let currenDecoderName = null;
   let pairs = [];
