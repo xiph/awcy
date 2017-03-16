@@ -298,6 +298,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   displayContext: CanvasRenderingContext2D;
   overlayCanvas: HTMLCanvasElement;
   overlayContext: CanvasRenderingContext2D;
+  canvasContainer: HTMLDivElement;
   zoomCanvas: HTMLCanvasElement;
   zoomContext: CanvasRenderingContext2D;
   compositionCanvas: HTMLCanvasElement;
@@ -511,6 +512,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
     this.displayCanvas.style.width = (w * scale) + "px";
 		this.displayCanvas.style.height = (h * scale) + "px";
+    this.canvasContainer.style.width = (w * scale) + 500 + "px";
     this.displayCanvas.width = w * scale * this.ratio;
 		this.displayCanvas.height = h * scale * this.ratio;
     this.displayContext = this.displayCanvas.getContext("2d");
@@ -1129,7 +1131,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           </div>
         </div>
       }
-      <div>
+      <div className="canvasContainer" ref={(self: any) => this.canvasContainer = self}>
         <canvas ref={(self: any) => this.displayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 0, imageRendering: "pixelated", backgroundCcolor: "#F5F5F5"}}></canvas>
         <canvas ref={(self: any) => this.overlayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 1, imageRendering: "pixelated", cursor: "crosshair"}}></canvas>
       </div>
