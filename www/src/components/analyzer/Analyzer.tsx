@@ -1,11 +1,11 @@
 import * as React from "react";
 import { OverlayTrigger, Tooltip, ButtonGroup, Pagination, Button, Panel, Form, FormGroup, ControlLabel, FormControl, ButtonToolbar, Glyphicon, SplitButton, MenuItem, DropdownButton, Tabs, Tab } from "react-bootstrap";
 import { } from "react-bootstrap";
-import { hashString, appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile, fileExists, analyzerBaseUrl, baseUrl } from "../stores/Stores";
-import { Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector, localFiles, localFileProtocol } from "../analyzer";
+import { hashString, appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile, fileExists, analyzerBaseUrl, baseUrl } from "../../stores/Stores";
+import { COLORS, HEAT_COLORS, Decoder, Rectangle, Size, AnalyzerFrame, loadFramesFromJson, downloadFile, Histogram, Accounting, AccountingSymbolMap, clamp, Vector, localFiles, localFileProtocol } from "./analyzerTools";
 import { Promise } from "es6-promise";
+import { HistogramComponent } from "./Histogram";
 
-import { BarPlot, BarPlotTable, Data } from "./Plot";
 declare var d3;
 declare var Mousetrap;
 
@@ -18,29 +18,7 @@ const SUPER_MI_SIZE = MI_SIZE << 3;
 const ZOOM_WIDTH = 500;
 const ZOOM_SOURCE = 64;
 const DEFAULT_CONFIG = "--disable-multithread --disable-runtime-cpu-detect --target=generic-gnu --enable-accounting --enable-analyzer --enable-aom_highbitdepth --extra-cflags=-D_POSIX_SOURCE";
-const COLORS = [
-  "#E85EBE", "#009BFF", "#00FF00", "#0000FF", "#FF0000", "#01FFFE", "#FFA6FE",
-  "#FFDB66", "#006401", "#010067", "#95003A", "#007DB5", "#FF00F6", "#FFEEE8",
-  "#774D00", "#90FB92", "#0076FF", "#D5FF00", "#FF937E", "#6A826C", "#FF029D",
-  "#FE8900", "#7A4782", "#7E2DD2", "#85A900", "#FF0056", "#A42400", "#00AE7E",
-  "#683D3B", "#BDC6FF", "#263400", "#BDD393", "#00B917", "#9E008E", "#001544",
-  "#C28C9F", "#FF74A3", "#01D0FF", "#004754", "#E56FFE", "#788231", "#0E4CA1",
-  "#91D0CB", "#BE9970", "#968AE8", "#BB8800", "#43002C", "#DEFF74", "#00FFC6",
-  "#FFE502", "#620E00", "#008F9C", "#98FF52", "#7544B1", "#B500FF", "#00FF78",
-  "#FF6E41", "#005F39", "#6B6882", "#5FAD4E", "#A75740", "#A5FFD2", "#FFB167"
-];
 
-const HEAT_COLORS = [];
-function generateHeatColors() {
-  function color(value) {
-    var h = (1.0 - value) * 240;
-    return "hsl(" + h + ", 100%, 50%)";
-  }
-  for (let i = 0; i < 256; i++) {
-    HEAT_COLORS.push(color(i / 256));
-  }
-}
-generateHeatColors();
 
 function colorScale(v, colors) {
   return colors[Math.round(v * (colors.length - 1))];
@@ -150,166 +128,6 @@ interface AnalyzerViewProps {
   groupNames?: string[],
   playbackFrameRate?: number;
   blind?: number;
-}
-
-export class HistogramComponent extends React.Component<{
-  histograms: Histogram[];
-  highlight?: number;
-  width?: number;
-  height?: number;
-  scale?: string | number;
-}, {
-}> {
-  public static defaultProps = {
-    width: 128,
-    height: 128,
-    scale: "relative"
-  };
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  ratio: number;
-  w: number;
-  h: number;
-  position: Vector;
-  constructor() {
-    super();
-    this.ratio = window.devicePixelRatio || 1;
-    this.position = new Vector(-1, -1);
-  }
-  componentDidUpdate(prevProps, prevState) {
-    this.renderHistogram(this.ctx, this.props.histograms);
-  }
-  componentDidMount() {
-    let w = this.w = this.props.width;
-    let h = this.h = this.props.height;
-    this.canvas.style.width = w + "px";
-    this.canvas.style.height = h + "px";
-    this.canvas.width = w * this.ratio;
-    this.canvas.height = h * this.ratio;
-    this.ctx = this.canvas.getContext("2d");
-    this.renderHistogram(this.ctx, this.props.histograms);
-    this.canvas.addEventListener("mousemove", this.handleMouseEvent.bind(this));
-  }
-  componentWillUnmount() {
-
-  }
-  renderHistogram(ctx: CanvasRenderingContext2D, histograms: Histogram[]) {
-    let names: string [] = null;
-    let nameMap: { [id: string]: number };
-    if (!histograms.length) {
-      return;
-    }
-    nameMap = histograms[0].names;
-    names = Object.keys(nameMap);
-    function valueOf(histogram: Histogram, name: string) {
-      let count = histogram.counts[histogram.names[name]];
-      return count === undefined ? 0 : count;
-    }
-    let rows = [];
-    let scale = 1;
-    if (this.props.scale == "max") {
-      let max = 0;
-      histograms.forEach((histogram: Histogram, i) => {
-        let total = 0;
-        names.forEach((name) => {
-          total += valueOf(histogram, name);
-        });
-        max = Math.max(max, total);
-      });
-      scale = max;
-    }
-    histograms.forEach((histogram: Histogram, i) => {
-      let row = { frame: i, total: 0 };
-      if (this.props.scale == "relative") {
-        scale = 0;
-        names.forEach(name => {
-          scale += valueOf(histogram, name);
-        });
-      } else if (typeof this.props.scale == "number") {
-        scale = this.props.scale;
-      }
-      names.forEach(name => {
-        row[name] = valueOf(histogram, name) / scale;
-      });
-      rows.push(row);
-    });
-    this.renderChart(ctx, names, nameMap, rows);
-    return;
-  }
-
-  handleMouseEvent(event: MouseEvent) {
-    function getMousePosition(canvas: HTMLCanvasElement, event: MouseEvent) {
-      let rect = canvas.getBoundingClientRect();
-      return new Vector(
-        event.clientX - rect.left,
-        event.clientY - rect.top
-      );
-    }
-    this.position = getMousePosition(this.canvas, event).multiplyScalar(this.ratio);
-    this.forceUpdate();
-  }
-
-  renderChart(ctx: CanvasRenderingContext2D, names: string[], nameMap: { [id: string]: number }, data: any[], yDomain = [0, 1]) {
-    ctx.save();
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    let w = this.w * this.ratio;
-    let h = this.h * this.ratio;
-    let bw = Math.min(16 * this.ratio, w / data.length | 0);
-    let selectedName = null;
-    let selectedValue = undefined;
-    let selectedFrame = -1;
-    for (let i = 0; i < data.length; i++) {
-      let t = 0;
-      let r = new Rectangle(0, 0, 0, 0);
-      names.forEach(k => {
-        let v = data[i][k];
-        ctx.fillStyle = COLORS[hashString(k) % COLORS.length];
-        r.set(i * bw, h - (t * h | 0) - (v * h | 0), bw - 1, v * h | 0);
-        if (r.containsPoint(this.position)) {
-          ctx.globalAlpha = 1
-          selectedName = k;
-          selectedValue = v;
-          selectedFrame = i;
-        } else {
-          ctx.globalAlpha = 0.75
-        }
-        ctx.fillRect(r.x, r.y, r.w, r.h);
-        t += v;
-      });
-      if (this.props.highlight == i) {
-        ctx.fillStyle = "white";
-        ctx.fillRect(i * bw, 0, bw - 1, this.ratio * 2);
-      }
-    }
-    if (selectedName) {
-      let top = this.position.distanceTo(new Vector(0, 0)) > this.position.distanceTo(new Vector(0, h));
-      let text = selectedName + " " + (selectedValue * 100).toFixed(2) + "%" + " (" + String(selectedFrame) + ")";
-      ctx.globalAlpha = 0.75;
-      ctx.font = (10 * this.ratio) + "px Arial";
-      ctx.fillStyle = "black";
-      let tw = ctx.measureText(text).width + 8 * this.ratio;
-      if (top) {
-        ctx.fillRect(0, 0, tw, 20 * this.ratio);
-      } else {
-        ctx.fillRect(0, h - 20 * this.ratio, tw, 20 * this.ratio);
-      }
-      ctx.fillStyle = "white";
-      ctx.globalAlpha = 1;
-      ctx.textBaseline = "middle";
-      if (top) {
-        ctx.fillText(text, 4 * this.ratio, 10 * this.ratio);
-      } else {
-        ctx.fillText(text, 4 * this.ratio, h - 10 * this.ratio);
-      }
-    }
-    ctx.restore();
-  }
-
-  render() {
-    return  <div id="c" className="chartParent">
-      <canvas ref={(self: any) => this.canvas = self} width="256" height="256"></canvas>
-    </div>
-  }
 }
 
 export class AccountingComponent extends React.Component<{

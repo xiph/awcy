@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { AnalyzerViewCompareComponent, LocalAnalyzerComponent } from "./components/Analyzer";
+import { AnalyzerViewCompareComponent, LocalAnalyzerComponent } from "./components/analyzer/Analyzer";
 import { forEachUrlParameter, getUrlParameters } from "./stores/Stores";
 
 let parameters = getUrlParameters();
