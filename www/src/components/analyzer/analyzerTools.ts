@@ -548,7 +548,7 @@ export class Decoder {
   }
 
   openFileBytes(buffer: Uint8Array) {
-    this.frameRate = new Int32Array(buffer.buffer)[4];
+    this.frameRate = buffer[16] | buffer[17] << 24 | buffer[18] << 16 | buffer[19] << 24;
     this.buffer = buffer;
     this.native.FS.writeFile("/tmp/input.ivf", buffer, { encoding: "binary" });
     this.native._open_file();
