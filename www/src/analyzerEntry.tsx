@@ -7,7 +7,7 @@ import { forEachUrlParameter, getUrlParameters } from "./stores/Stores";
 let parameters = getUrlParameters();
 let decoder = parameters.decoder;
 let file = parameters.file;
-let playbackFrameRate = parameters.playbackFrameRate | 0;
+let playbackFrameRate = parameters.playbackFrameRate;
 let layers = parameters.layers;
 let maxFrames = parameters.maxFrames;
 let filePrefix = parameters.filePrefix || "";
