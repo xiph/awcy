@@ -517,7 +517,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.compositionCanvas.height = h;
 
     this.displayCanvas.style.width = (w * scale) + "px";
-		this.displayCanvas.style.height = (h * scale) + "px";
+    this.displayCanvas.style.height = (h * scale) + "px";
     this.canvasContainer.style.width = (w * scale) + 500 + "px";
     this.displayCanvas.width = w * scale * this.ratio;
     this.displayCanvas.height = h * scale * this.ratio;
@@ -1008,41 +1008,43 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         let p = this.getParentMIPosition(frame, this.mousePosition);
 
         sidePanel = <div id="sidePanel">
-          <div style={{ paddingTop: "4px" }}>
-            <ButtonGroup>
-              <OverlayTrigger placement="top" overlay={<Tooltip>Toggle Tools: tab</Tooltip>}>
-                <Button onClick={this.toggleTools.bind(this)}><span className="icon-h"></span></Button>
-              </OverlayTrigger>
-              <OverlayTrigger placement="top" overlay={<Tooltip>Repeat: r</Tooltip>}>
-                <Button onClick={this.resetLayersAndActiveFrame.bind(this)}><span className="glyphicon glyphicon-repeat"></span></Button>
-              </OverlayTrigger>
+          <div id="sidePanelFixedArea">
+            <div style={{ paddingTop: "4px" }}>
+              <ButtonGroup>
+                <OverlayTrigger placement="top" overlay={<Tooltip>Toggle Tools: tab</Tooltip>}>
+                  <Button onClick={this.toggleTools.bind(this)}><span className="icon-h"></span></Button>
+                </OverlayTrigger>
+                <OverlayTrigger placement="top" overlay={<Tooltip>Repeat: r</Tooltip>}>
+                  <Button onClick={this.resetLayersAndActiveFrame.bind(this)}><span className="glyphicon glyphicon-repeat"></span></Button>
+                </OverlayTrigger>
 
-              <OverlayTrigger placement="top" overlay={<Tooltip>Previous: ,</Tooltip>}>
-                <Button onClick={this.advanceFrame.bind(this, -1)}><span className="glyphicon glyphicon-step-backward"></span></Button>
-              </OverlayTrigger>
+                <OverlayTrigger placement="top" overlay={<Tooltip>Previous: ,</Tooltip>}>
+                  <Button onClick={this.advanceFrame.bind(this, -1)}><span className="glyphicon glyphicon-step-backward"></span></Button>
+                </OverlayTrigger>
 
-              <OverlayTrigger placement="top" overlay={<Tooltip>Pause / Play: space</Tooltip>}>
-                <Button onClick={this.playPause.bind(this)}><span className="glyphicon glyphicon-play"></span></Button>
-              </OverlayTrigger>
+                <OverlayTrigger placement="top" overlay={<Tooltip>Pause / Play: space</Tooltip>}>
+                  <Button onClick={this.playPause.bind(this)}><span className="glyphicon glyphicon-play"></span></Button>
+                </OverlayTrigger>
 
-              <OverlayTrigger placement="top" overlay={<Tooltip>Next: .</Tooltip>}>
-                <Button onClick={this.advanceFrame.bind(this, 1)}><span className="glyphicon glyphicon-step-forward"></span></Button>
-              </OverlayTrigger>
+                <OverlayTrigger placement="top" overlay={<Tooltip>Next: .</Tooltip>}>
+                  <Button onClick={this.advanceFrame.bind(this, 1)}><span className="glyphicon glyphicon-step-forward"></span></Button>
+                </OverlayTrigger>
 
-              <OverlayTrigger placement="top" overlay={<Tooltip>Zoom Out: [</Tooltip>}>
-                <Button onClick={this.zoom.bind(this, 1 / 2)}><span className="glyphicon glyphicon-zoom-out"></span></Button>
-              </OverlayTrigger>
+                <OverlayTrigger placement="top" overlay={<Tooltip>Zoom Out: [</Tooltip>}>
+                  <Button onClick={this.zoom.bind(this, 1 / 2)}><span className="glyphicon glyphicon-zoom-out"></span></Button>
+                </OverlayTrigger>
 
-              <OverlayTrigger placement="top" overlay={<Tooltip>Zoom In: ]</Tooltip>}>
-                <Button onClick={this.zoom.bind(this, 2)}><span className="glyphicon glyphicon-zoom-in"></span></Button>
-              </OverlayTrigger>
-            </ButtonGroup>
-          </div>
-          <div className="sectionHeader">Layers</div>
-          <div style={{ paddingTop: "4px" }}>
-            <ButtonGroup>
-              {layerButtons}
-            </ButtonGroup>
+                <OverlayTrigger placement="top" overlay={<Tooltip>Zoom In: ]</Tooltip>}>
+                  <Button onClick={this.zoom.bind(this, 2)}><span className="glyphicon glyphicon-zoom-in"></span></Button>
+                </OverlayTrigger>
+              </ButtonGroup>
+            </div>
+            <div className="sectionHeader">Layers</div>
+            <div style={{ paddingTop: "4px" }}>
+              <ButtonGroup>
+                {layerButtons}
+              </ButtonGroup>
+            </div>
           </div>
 
           {layerOptions.length ? <div className="sectionHeader">Layer Options</div> : null}
@@ -1053,43 +1055,43 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             <Tabs defaultActiveKey={2} id="uncontrolled-tab-example" bsStyle="pills">
               <Tab eventKey={1} title="Bits">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={512} scale="max"></HistogramComponent>
+                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={480} scale="max"></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={2} title="Symbols">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={3} title="Block Size">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={4} title="Tx Size">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={5} title="Tx Type">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={6} title="Prediction Mode">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={7} title="Skip">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
                 </div>
               </Tab>
             </Tabs>
 
             <div className="sectionHeader">Info</div>
-            <Tabs defaultActiveKey={3} id="uncontrolled-tab-example" bsStyle="pills">
+            <Tabs defaultActiveKey={3} id="uncontrolled-tab-example" bsStyle="pills" style={{ height: "256px" }}>
               <Tab eventKey={3} title="Block Info">
                 <div className="tabContainer">
                   {p &&

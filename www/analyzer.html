@@ -464,7 +464,7 @@
 
     #bottomPanel {
       font-size: 12px;
-      W position: fixed;
+      position: fixed;
       left: 0;
       bottom: 0;
       right: 0;
@@ -477,8 +477,6 @@
       vertical-align: middle;
       color: white;
     }
-
-
 
     #sidePanel {
       position: fixed;
@@ -494,6 +492,9 @@
       padding: 10px;
       font-size: 11px;
       /*pointer-events: none;*/
+
+      display: flex;
+      flex-direction: column;
     }
 
 
@@ -503,10 +504,13 @@
     }
 
 
+    #sidePanelFixedArea {
+      flex: 0 0 auto;
+    }
+
     #sidePanelScrollArea {
-      overflow-y: scroll;
-      position: absolute;
-      height: 100%;
+      flex: 1 1 auto;
+      overflow: scroll;
       width: 480px;
     }
 
@@ -519,14 +523,6 @@
     #c {
       overflow-x: auto;
     }
-
-     ::-webkit-scrollbar {
-      width: 0px;
-      height: 0px;
-      background: transparent;
-    }
-
-
 
     .panel {
       padding: 10px;
@@ -657,8 +653,6 @@
     #modeInfoSection {
       height: 100px;
     }
-
-
 
     .nav>li>a {
       padding: 8px;
