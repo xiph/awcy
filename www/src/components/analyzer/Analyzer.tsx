@@ -128,6 +128,7 @@ interface AnalyzerViewProps {
   groupNames?: string[],
   playbackFrameRate?: number;
   blind?: number;
+  onDecodeAdditionalFrames: (count: number) => void;
 }
 
 export class AccountingComponent extends React.Component<{
@@ -958,6 +959,16 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
     return s;
   }
+
+  decodeAdditionalFrames(count: number) {
+    if (count > 4) {
+      alert("This may take a while.");
+    }
+    if (this.props.onDecodeAdditionalFrames) {
+      this.props.onDecodeAdditionalFrames(count);
+    }
+  }
+
   render() {
     let groups = this.props.groups;
 
@@ -1037,6 +1048,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
                 <OverlayTrigger placement="top" overlay={<Tooltip>Zoom In: ]</Tooltip>}>
                   <Button onClick={this.zoom.bind(this, 2)}><span className="glyphicon glyphicon-zoom-in"></span></Button>
                 </OverlayTrigger>
+
+                <OverlayTrigger placement="top" overlay={<Tooltip>Decode 4 Additional Frames</Tooltip>}>
+                  <Button onClick={this.decodeAdditionalFrames.bind(this, 4)}><span className="glyphicon glyphicon-cog"></span></Button>
+                </OverlayTrigger>
+
+                <OverlayTrigger placement="top" overlay={<Tooltip>Decode All Remaining Frames</Tooltip>}>
+                  <Button onClick={this.decodeAdditionalFrames.bind(this, 1024)}><span className="glyphicon glyphicon-film"></span></Button>
+                </OverlayTrigger>
               </ButtonGroup>
             </div>
             <div className="sectionHeader">Layers</div>
@@ -1055,37 +1074,37 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             <Tabs defaultActiveKey={2} id="uncontrolled-tab-example" bsStyle="pills">
               <Tab eventKey={1} title="Bits">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={480} scale="max"></HistogramComponent>
+                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={460} scale="max"></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={2} title="Symbols">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={3} title="Block Size">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={4} title="Tx Size">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={5} title="Tx Type">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={6} title="Prediction Mode">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={7} title="Skip">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
             </Tabs>
@@ -1596,9 +1615,11 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     });
     this.load(decoderUrls, decoderNames, videoUrls);
   }
+  decoders: any [] = [];
   load(decoderPaths: string[], decoderNames: string[], videoPaths: string[]) {
     this.setState({ status: "Loading Decoders" } as any);
     Promise.all(decoderPaths.map(path => Decoder.loadDecoder(path))).then(decoders => {
+      this.decoders = decoders;
       console.info(decoders);
       this.setState({ status: "Downloading Files" } as any);
       Promise.all(videoPaths.map(path => downloadFile(path))).then(bytes => {
@@ -1621,6 +1642,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
           groupNames[i] = videoPath;
         }
         this.setState({ status: "Decoding Frames" } as any);
+
         Promise.all(decoders.map(decoder => this.decodeFrames(decoder, this.props.maxFrames))).then(frames => {
           let playbackFrameRate = Math.min(this.props.playbackFrameRate, decoders[0].frameRate);
           this.setState({ frames: frames, groupNames: groupNames, loading: "done", playbackFrameRate } as any);
@@ -1633,14 +1655,24 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     });
   }
 
+  decodeAdditionalFrames(count: number) {
+    Promise.all(this.decoders.map(decoder => this.decodeFrames(decoder, count))).then(frames => {
+      let currentFrames = this.state.frames;
+      for (let i = 0; i < frames.length; i++) {
+        currentFrames[i] = currentFrames[i].concat(frames[i]);
+      }
+      this.setState({ frames: currentFrames } as any);
+    });
+  }
+
   decodedFrameCount = 0;
-  decodeFrames(deocder: Decoder, count: number): Promise<AnalyzerFrame[]> {
+  decodeFrames(decoder: Decoder, count: number): Promise<AnalyzerFrame[]> {
     return new Promise((resolve, reject) => {
       let time = performance.now();
       let decodedFrames = [];
       let interval = setInterval(() => {
-        deocder.setLayers(this.props.layers);
-        deocder.readFrame().then((frames) => {
+        decoder.setLayers(this.props.layers);
+        decoder.readFrame().then((frames) => {
           this.setState({ status: `Decoded ${this.decodedFrameCount} Frames ...` } as any);
           if (!frames) {
             clearInterval(interval);
@@ -1670,7 +1702,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     }
 
     return <div>
-      <AnalyzerView groups={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.state.playbackFrameRate} blind={this.props.blind}></AnalyzerView>
+      <AnalyzerView onDecodeAdditionalFrames={this.decodeAdditionalFrames.bind(this)} groups={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.state.playbackFrameRate} blind={this.props.blind}></AnalyzerView>
     </div>;
   }
 }

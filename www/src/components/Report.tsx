@@ -144,7 +144,8 @@ export class AnalyzerLinksComponent extends React.Component<{
     ];
     this.modeOptions = [
       { value:  "", label: "Default" },
-      { value:  "blind=1&", label: "Blind Mode" },
+      { value:  "reference", label: "Compare w/ Reference" },
+      { value:  "blind", label: "Blind Mode" }
     ];
   }
   onMaxFramesChange(option) {
@@ -162,43 +163,36 @@ export class AnalyzerLinksComponent extends React.Component<{
     let videoRows = [];
     let qualityRows = [];
     let videos = [];
+
     for (let video in report) {
       if (video != "Total") {
         videos.push(video);
       }
     }
+
+    function makePair(job: Job, video: string, quality: number): string {
+      return `decoder=${job.decocerUrl()}&decoderName=${encodeURIComponent(job.id)}&file=${job.ivfUrl(video, quality)}`;
+    }
+
+    function makeUrl(jobs: Job [], video: string, quality: number): string {
+      let modeOption = mode == "blind" ? "blind=1&" : "";
+      let url = analyzerBaseUrl + `?${modeOption}maxFrames=${maxFrames}&`;
+      if (mode == "reference") {
+        url += makePair(jobs[0], video, qualities[0]) + "&";
+      }
+      url += jobs.map(job => makePair(job, video, quality)).join("&");
+      return url;
+    }
+
     videos.forEach(video => {
-      function makeJobsUrl(jobs) {
-        return qualities.map(quality => {
-          let url = analyzerBaseUrl + `?${mode}maxFrames=${maxFrames}&` + jobs.map(job => {
-            return `decoder=${job.decocerUrl()}&decoderName=${encodeURIComponent(job.id)}&file=${job.ivfUrl(video, quality)}`;
-          }).join("&");
-          return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
-        });
-      }
-      let cols = [
-        <td>{makeJobsUrl(jobs)}</td>
-      ];
-      if (jobs.length > 1) {
-        jobs.forEach(job => {
-          cols.push(<td key={job.id}>{makeJobsUrl([job])}</td>);
-        });
-      }
-      videoRows.push(<tr key={video}><td>{video}</td>{cols}</tr>);
-    });
-    let decoderCols = jobs.map(job => {
-      let urls = qualities.map(quality => {
-        let files = [];
-        videos.forEach(video => {
-          files.push(`file=${job.ivfUrlName(video, quality)}`);
-        });
-        let url = analyzerBaseUrl + `?${mode}maxFrames=${maxFrames}&decoder=${job.decocerUrl()}&decoderName=${encodeURIComponent(job.id)}&filePrefix=${job.ivfUrlPrefix()}&` + files.join("&");
-        return <span><a key={quality} target="_blank" href={url} alt="Analyze">{quality}</a>{' '}</span>
+      let links = qualities.map(q => {
+        let url = makeUrl(jobs, video, q);
+        return <span><a key={q} target="_blank" href={url} alt="Analyze">{q}</a> </span>
       });
-      return <td key={job.id}>{urls}</td>
+      videoRows.push(<tr key={video}><td>{video}</td><td>{links}</td></tr>);
     });
     return <Panel header="Analyzer Links">
-      <div style={{width: "128px"}} >
+      <div style={{width: "256px"}} >
         <div className="selectTitle">Max Frames</div>
         <Select autofocus value={this.state.maxFrames} options={this.maxFramesOptions} onChange={this.onMaxFramesChange.bind(this)} clearable={false}/>
         <div className="selectTitle" style={{marginTop: "8px"}}>Mode</div>
@@ -207,26 +201,16 @@ export class AnalyzerLinksComponent extends React.Component<{
       <table id="analyzerLinksTable">
         <col/><col/>
         {
-          jobs.length > 1 ? jobs.map(job => <col key={job.id}/>) : null
+          jobs.map(job => <col key={job.id}/>)
         }
         <thead>
           <tr>
             <td>Video</td>
             <td>{jobs.map(job => job.selectedName).join(" vs. ")}</td>
-            {
-              jobs.length > 1 ? jobs.map(job => {
-                return <td>{job.selectedName}</td>;
-              }) : null
-            }
           </tr>
         </thead>
         <tbody>
           {videoRows}
-          <tr>
-            <td>All Videos</td>
-            {jobs.length > 1 ? <td></td> : null}
-            {decoderCols}
-          </tr>
         </tbody>
       </table>
     </Panel>
