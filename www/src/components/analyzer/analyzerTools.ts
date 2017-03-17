@@ -521,6 +521,7 @@ export class Decoder {
   lastDecodeFrameTime: number = 0;
   frames: AnalyzerFrame[] = [];
 
+  frameRate: number = 30;
   frameSize: Size = null;
   frameCanvas: HTMLCanvasElement = null;
   frameContext: CanvasRenderingContext2D = null;
@@ -547,6 +548,7 @@ export class Decoder {
   }
 
   openFileBytes(buffer: Uint8Array) {
+    this.frameRate = new Int32Array(buffer.buffer)[4];
     this.buffer = buffer;
     this.native.FS.writeFile("/tmp/input.ivf", buffer, { encoding: "binary" });
     this.native._open_file();

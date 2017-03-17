@@ -1529,15 +1529,17 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
   analyzerFailedToLoad: boolean,
   decodedFrameCount: number,
   loading: "done" | "failed" | "loading",
-  status: string
+  status: string,
+  playbackFrameRate; number;
 }> {
+  playbackFrameRate: number;
   public static defaultProps: AnalyzerViewCompareComponentProps = {
     decoderVideoUrlPairs: [],
-    playbackFrameRate: 30,
+    playbackFrameRate: 1000,
     maxFrames: MAX_FRAMES,
     layers: 0xFFFFFFFF
   };
-  constructor() {
+  constructor(props: AnalyzerViewCompareComponentProps) {
     super();
     this.state = {
       frames: [],
@@ -1545,7 +1547,8 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
       decodedFrameCount: 0,
       analyzerFailedToLoad: null,
       loading: "loading",
-      status: ""
+      status: "",
+      playbackFrameRate: props.playbackFrameRate
     } as any;
   }
   componentWillMount() {
@@ -1585,7 +1588,8 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
         }
         this.setState({ status: "Decoding Frames" } as any);
         Promise.all(decoders.map(decoder => this.decodeFrames(decoder, this.props.maxFrames))).then(frames => {
-          this.setState({ frames: frames, groupNames: groupNames, loading: "done" } as any);
+          let playbackFrameRate = Math.min(this.props.playbackFrameRate, decoders[0].frameRate);
+          this.setState({ frames: frames, groupNames: groupNames, loading: "done", playbackFrameRate} as any);
         });
       }).catch(e => {
         this.setState({ status: "Downloading Files Failed", loading: "error" } as any);
@@ -1632,7 +1636,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     }
 
     return <div>
-      <AnalyzerView groups={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.props.playbackFrameRate} blind={this.props.blind}></AnalyzerView>
+      <AnalyzerView groups={this.state.frames} groupNames={this.state.groupNames} playbackFrameRate={this.state.playbackFrameRate} blind={this.props.blind}></AnalyzerView>
     </div>;
   }
 }
