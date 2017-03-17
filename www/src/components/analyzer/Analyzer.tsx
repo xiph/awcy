@@ -1055,37 +1055,37 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             <Tabs defaultActiveKey={2} id="uncontrolled-tab-example" bsStyle="pills">
               <Tab eventKey={1} title="Bits">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={480} scale="max"></HistogramComponent>
+                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={460} scale="max"></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={2} title="Symbols">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={3} title="Block Size">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={4} title="Tx Size">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={5} title="Tx Type">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={6} title="Prediction Mode">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
               <Tab eventKey={7} title="Skip">
                 <div className="tabContainer">
-                  <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={480}></HistogramComponent>
+                  <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
             </Tabs>
