@@ -846,11 +846,11 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         event.clientY - rect.top
       );
     }
-    this.mousePosition = getMousePosition(this.overlayCanvas, event);
     if (click) {
+      this.mousePosition = getMousePosition(this.overlayCanvas, event);
       this.mouseZoomPosition = this.mousePosition;
+      this.updateBlockInfo();
     }
-    this.updateBlockInfo();
   }
   getBlockSize(frame: AnalyzerFrame, c: number, r: number) {
     let blockSize = frame.json["blockSize"];
