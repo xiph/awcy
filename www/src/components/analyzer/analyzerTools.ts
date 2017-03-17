@@ -233,7 +233,7 @@ export class AnalyzerFrame {
   transformTypeHist: Histogram;
   predictionModeHist: Histogram;
   skipHist: Histogram;
-  imageData: ImageData;
+  image: HTMLCanvasElement;
   config: string;
 }
 
@@ -585,9 +585,18 @@ export class Decoder {
       this.frames.push(frame);
     }
     if (this.shouldReadImageData) {
-      frames[frames.length - 1].imageData = this.readImage();
+      frames[frames.length - 1].image = this.makeCanvas(this.readImage());
     }
     return frames;
+  }
+
+  makeCanvas(imageData: ImageData): HTMLCanvasElement {
+    var canvas = document.createElement("canvas");
+    canvas.width = imageData.width;
+    canvas.height = imageData.height;
+    var ctx = canvas.getContext("2d");
+    ctx.putImageData(imageData, 0, 0);
+    return canvas;
   }
 
   readImage(): ImageData {

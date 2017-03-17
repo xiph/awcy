@@ -51,7 +51,7 @@ const BLOCK_SIZES = [
   [6, 6]
 ];
 
-function shuffle(array: any [], count: number) {
+function shuffle(array: any[], count: number) {
   // Shuffle Indices
   for (let j = 0; j < count; j++) {
     let a = Math.random() * array.length | 0;
@@ -134,7 +134,7 @@ export class AccountingComponent extends React.Component<{
   symbols: AccountingSymbolMap;
 }, {
 
-}> {
+  }> {
   render() {
     let symbols = this.props.symbols;
     let total = 0;
@@ -147,20 +147,20 @@ export class AccountingComponent extends React.Component<{
       let symbol = symbols[name];
       rows.push(<tr key={name}>
         <td className="propertyName">{name}</td>
-        <td className="propertyValue" style={{textAlign: "right"}}>{fractionalBitsToString(symbol.bits)}</td>
-        <td className="propertyValue" style={{textAlign: "right"}}>{toPercent(symbol.bits / total)}</td>
-        <td className="propertyValue" style={{textAlign: "right"}}>{withCommas(symbol.samples)}</td>
+        <td className="propertyValue" style={{ textAlign: "right" }}>{fractionalBitsToString(symbol.bits)}</td>
+        <td className="propertyValue" style={{ textAlign: "right" }}>{toPercent(symbol.bits / total)}</td>
+        <td className="propertyValue" style={{ textAlign: "right" }}>{withCommas(symbol.samples)}</td>
       </tr>);
     }
 
-    return <div className="symbolTable">
+    return <div>
       <table>
         <thead>
           <tr>
-            <td style={{width: "140px"}}>Symbol</td>
-            <td style={{textAlign: "right"}}>Bits {fractionalBitsToString(total)}</td>
-            <td style={{textAlign: "right"}}>%</td>
-            <td style={{textAlign: "right"}}>Samples</td>
+            <td style={{ width: "140px" }}>Symbol</td>
+            <td style={{ textAlign: "right" }}>Bits {fractionalBitsToString(total)}</td>
+            <td style={{ textAlign: "right" }}>%</td>
+            <td style={{ textAlign: "right" }}>Samples</td>
           </tr>
         </thead>
         <tbody>
@@ -177,23 +177,23 @@ export class FrameInfoComponent extends React.Component<{
   activeGroup: number;
 }, {
 
-}> {
+  }> {
   render() {
     let frame = this.props.frame;
-    function getProperty(name: string): string{
+    function getProperty(name: string): string {
       if (frame.json[name] == undefined) return "N/A";
       return frame.json[name];
     }
     return <div id="frameInfoSection">
-      <div style={{float: "left", width: "40%"}}>
+      <div style={{ float: "left", width: "40%" }}>
         <div><span className="propertyName">Video:</span> <span className="propertyValue">{this.props.activeGroup}</span></div>
         <div><span className="propertyName">Frame:</span> <span className="propertyValue">{this.props.activeFrame}</span></div>
         <div><span className="propertyName">Frame Type:</span> <span className="propertyValue">{frame.json.frameType}</span></div>
         <div><span className="propertyName">Show Frame:</span> <span className="propertyValue">{frame.json.showFrame}</span></div>
       </div>
-      <div style={{float: "left", width: "60%"}}>
+      <div style={{ float: "left", width: "60%" }}>
         <div><span className="propertyName">BaseQIndex:</span> <span className="propertyValue">{frame.json.baseQIndex}</span></div>
-        <div><span className="propertyName">Frame Size:</span> <span className="propertyValue">{frame.imageData.width} x {frame.imageData.height}</span></div>
+        <div><span className="propertyName">Frame Size:</span> <span className="propertyValue">{frame.image.width}x {frame.image.height}</span></div>
         <div><span className="propertyName">CLPF Size:</span> <span className="propertyValue">{getProperty("clpfSize")}</span></div>
         <div><span className="propertyName">CLPF Strength Y:</span> <span className="propertyValue">{getProperty("clpfStrengthY")}</span></div>
       </div>
@@ -206,18 +206,18 @@ export class ModeInfoComponent extends React.Component<{
   position: Vector;
 }, {
 
-}> {
+  }> {
   render() {
     let c = this.props.position.x;
     let r = this.props.position.y;
     let json = this.props.frame.json;
-    function getProperty(name: string): string{
+    function getProperty(name: string): string {
       if (!json[name]) return "N/A";
       let v = json[name][r][c];
       if (!json[name + "Map"]) return String(v);
       return keyForValue(json[name + "Map"], v);
     }
-    function getSuperBlockProperty(name: string): string{
+    function getSuperBlockProperty(name: string): string {
       if (!json[name]) return "N/A";
       let v = json[name][r & ~7][c & ~7];
       if (!json[name + "Map"]) return String(v);
@@ -239,13 +239,13 @@ export class ModeInfoComponent extends React.Component<{
       return `${a}, ${b}`;
     }
     return <div id="modeInfoSection">
-      <div style={{float: "left", width: "40%"}}>
+      <div style={{ float: "left", width: "40%" }}>
         <div><span className="propertyName">Block:</span> <span className="propertyValue">{c}x{r}</span></div>
         <div><span className="propertyName">Block Size:</span> <span className="propertyValue">{getProperty("blockSize")}</span></div>
         <div><span className="propertyName">Tx Size:</span> <span className="propertyValue">{getProperty("transformSize")}</span></div>
         <div><span className="propertyName">Tx Type:</span> <span className="propertyValue">{getProperty("transformType")}</span></div>
       </div>
-      <div style={{float: "left", width: "60%"}}>
+      <div style={{ float: "left", width: "60%" }}>
         <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
         <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
         <div><span className="propertyName">Dering:</span> <span className="propertyValue">{getSuperBlockProperty("deringGain")}</span></div>
@@ -258,28 +258,28 @@ export class ModeInfoComponent extends React.Component<{
 }
 
 export class AnalyzerView extends React.Component<AnalyzerViewProps, {
-    activeFrame: number;
-    activeGroup: number;
-    scale: number;
-    showDecodedImage: boolean;
-    showMotionVectors: boolean;
-    showReferenceFrames: boolean;
-    showBlockGrid: boolean;
-    showSuperBlockGrid: boolean;
-    showTransformGrid: boolean;
-    showSkip: boolean;
-    showDering: boolean;
-    showCLPF: boolean;
-    showMode: boolean;
-    showBits: boolean;
-    showBitsScale: "frame" | "video" | "videos";
-    showBitsMode: "linear" | "heat" | "heat-opaque";
-    showBitsFilter: "";
-    showTransformType: boolean;
-    showTools: boolean;
-    showFrameComment: boolean;
-    activeGroupMap: number [][];
-  }> {
+  activeFrame: number;
+  activeGroup: number;
+  scale: number;
+  showDecodedImage: boolean;
+  showMotionVectors: boolean;
+  showReferenceFrames: boolean;
+  showBlockGrid: boolean;
+  showSuperBlockGrid: boolean;
+  showTransformGrid: boolean;
+  showSkip: boolean;
+  showDering: boolean;
+  showCLPF: boolean;
+  showMode: boolean;
+  showBits: boolean;
+  showBitsScale: "frame" | "video" | "videos";
+  showBitsMode: "linear" | "heat" | "heat-opaque";
+  showBitsFilter: "";
+  showTransformType: boolean;
+  showTools: boolean;
+  showFrameComment: boolean;
+  activeGroupMap: number[][];
+}> {
   public static defaultProps: AnalyzerViewProps = {
     groups: [],
     groupNames: null,
@@ -287,7 +287,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     blind: 0
   };
 
-  activeGroupScore: number [][];
+  activeGroupScore: number[][];
   playInterval;
   ratio: number;
   frameSize: Size;
@@ -388,14 +388,16 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       description: "Tx Grid",
       detail: "Display transform blocks.",
       default: false,
-      value: undefined
+      value: undefined,
+      icon: "icon-j"
     },
     showTransformType: {
       key: "y",
       description: "Tx Type",
       detail: "Display transform type.",
       default: false,
-      value: undefined
+      value: undefined,
+      icon: "icon-m"
     },
     // showDering: {
     //   key: "d",
@@ -416,7 +418,8 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       description: "Motion Vectors",
       detail: "Display motion vectors.",
       default: false,
-      value: undefined
+      value: undefined,
+      icon: "icon-u"
     },
     showReferenceFrames: {
       key: "f",
@@ -431,21 +434,24 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       description: "Mode",
       detail: "Display prediction modes.",
       default: false,
-      value: undefined
+      value: undefined,
+      icon: "icon-l"
     },
     showBits: {
       key: "b",
       description: "Bits",
       detail: "Display bits.",
       default: false,
-      value: undefined
+      value: undefined,
+      icon: "icon-n"
     },
     showSkip: {
       key: "k",
       description: "Skip",
       detail: "Display skip flags.",
       default: false,
-      value: undefined
+      value: undefined,
+      icon: "icon-t"
     }
   };
   constructor(props: AnalyzerViewProps) {
@@ -514,19 +520,19 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 		this.displayCanvas.style.height = (h * scale) + "px";
     this.canvasContainer.style.width = (w * scale) + 500 + "px";
     this.displayCanvas.width = w * scale * this.ratio;
-		this.displayCanvas.height = h * scale * this.ratio;
+    this.displayCanvas.height = h * scale * this.ratio;
     this.displayContext = this.displayCanvas.getContext("2d");
 
     this.overlayCanvas.style.width = (w * scale) + "px";
-		this.overlayCanvas.style.height = (h * scale) + "px";
+    this.overlayCanvas.style.height = (h * scale) + "px";
     this.overlayCanvas.width = w * scale * this.ratio;
-		this.overlayCanvas.height = h * scale * this.ratio;
+    this.overlayCanvas.height = h * scale * this.ratio;
     this.overlayContext = this.overlayCanvas.getContext("2d");
 
     this.zoomCanvas.style.width = ZOOM_WIDTH + "px";
-		this.zoomCanvas.style.height = ZOOM_WIDTH + "px";
+    this.zoomCanvas.style.height = ZOOM_WIDTH + "px";
     this.zoomCanvas.width = ZOOM_WIDTH * this.ratio;
-		this.zoomCanvas.height = ZOOM_WIDTH * this.ratio;
+    this.zoomCanvas.height = ZOOM_WIDTH * this.ratio;
     this.zoomContext = this.zoomCanvas.getContext("2d");
   }
   showToast(message: string, duration = 1000) {
@@ -549,7 +555,8 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   }
   draw(group: number, index: number) {
     let frame = this.props.groups[group][index];
-    this.frameContext.putImageData(frame.imageData, 0, 0);
+    // this.frameContext.putImageData(frame.imageData, 0, 0);
+    this.frameContext.drawImage(frame.image as any, 0, 0);
 
     // Draw frameCanvas to displayCanvas
     (this.displayContext as any).imageSmoothingEnabled = false;
@@ -584,7 +591,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       ctx.setLineDash([2, 4]);
       let w = ZOOM_SOURCE * ratio * scale;
       ctx.strokeRect(this.mouseZoomPosition.x * ratio - w / 2,
-                     this.mouseZoomPosition.y * ratio - w / 2, w, w);
+        this.mouseZoomPosition.y * ratio - w / 2, w, w);
       let r = this.getParentMIRect(frame, this.mousePosition);
       if (r) {
         ctx.strokeStyle = "orange";
@@ -656,19 +663,21 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.overlayCanvas.addEventListener("mousedown", this.onMouseDown.bind(this));
   }
   componentDidUpdate(prevProps, prevState) {
-    let imageData = this.props.groups[this.getActiveGroupIndex()][0].imageData;
-    let frameSizeChanged = this.frameSize.w !== imageData.width || this.frameSize.h != imageData.height;
+    let image = this.props.groups[this.getActiveGroupIndex()][0].image;
+    let frameSizeChanged = this.frameSize.w !== image.width || this.frameSize.h != image.height;
     if (this.state.scale != prevState.scale || frameSizeChanged) {
       this.reset();
     }
     if (this.state.activeFrame >= 0) {
       this.draw(this.getActiveGroupIndex(), this.state.activeFrame);
-      this.drawZoom(this.getActiveGroupIndex(), this.state.activeFrame);
+      if (this.state.showTools) {
+        this.drawZoom(this.getActiveGroupIndex(), this.state.activeFrame);
+      }
     }
   }
   reset() {
-    let imageData = this.props.groups[this.getActiveGroupIndex()][0].imageData;
-    let w = imageData.width, h = imageData.height;
+    let image = this.props.groups[this.getActiveGroupIndex()][0].image;
+    let w = image.width, h = image.height;
     this.resetCanvas(w, h);
   }
   handleSelect(frame) {
@@ -718,12 +727,12 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   }
   zoom(value) {
     let scale = this.state.scale * value;
-    this.setState({scale} as any);
+    this.setState({ scale } as any);
   }
   installKeyboardShortcuts() {
     let playInterval;
     Mousetrap.bind(['`'], (e) => {
-      this.setState({showFrameComment: !this.state.showFrameComment} as any);
+      this.setState({ showFrameComment: !this.state.showFrameComment } as any);
       e.preventDefault();
     });
     Mousetrap.bind(['enter'], (e) => {
@@ -774,7 +783,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       let option = this.options[name];
       if (option.key) {
         if (installedKeys[option.key]) {
-          console.error("Key: " + option.key + " for " + option.description  + ", is already mapped to " + installedKeys[option.key].description);
+          console.error("Key: " + option.key + " for " + option.description + ", is already mapped to " + installedKeys[option.key].description);
         }
         installedKeys[option.key] = option;
         Mousetrap.bind([option.key], toggle.bind(this, name));
@@ -791,22 +800,22 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
   }
   setActiveGroup(activeGroup) {
-    this.setState({activeGroup} as any);
+    this.setState({ activeGroup } as any);
     this.showActiveFrameToast(activeGroup, this.state.activeFrame);
   }
   setActiveFrame(activeFrame) {
-    this.setState({activeFrame} as any);
+    this.setState({ activeFrame } as any);
     this.showActiveFrameToast(this.getActiveGroupIndex(), activeFrame);
   }
   setActiveGroupAndFrame(activeGroup, activeFrame) {
-    this.setState({activeGroup, activeFrame} as any);
+    this.setState({ activeGroup, activeFrame } as any);
     this.showActiveFrameToast(activeGroup, activeFrame);
   }
   toggleTools() {
     if (this.props.blind) {
       return;
     }
-    this.setState({showTools: !this.state.showTools} as any);
+    this.setState({ showTools: !this.state.showTools } as any);
   }
   resetLayersAndActiveFrame() {
     let o: any = {};
@@ -888,7 +897,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   getActiveFrame(): AnalyzerFrame {
     return this.props.groups[this.getActiveGroupIndex()][this.state.activeFrame];
   }
-  getActiveGroup(): AnalyzerFrame [] {
+  getActiveGroup(): AnalyzerFrame[] {
     return this.props.groups[this.getActiveGroupIndex()];
   }
   getActiveGroupIndex(): number {
@@ -900,7 +909,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   updateBlockInfo() {
     this.forceUpdate();
   }
-  getSymbolHist(frames: AnalyzerFrame[]): Histogram [] {
+  getSymbolHist(frames: AnalyzerFrame[]): Histogram[] {
     let data = [];
     let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
     frames.forEach((frame, i) => {
@@ -928,17 +937,17 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 
   onBitsScaleSelect(eventKey: any, event: Object) {
     let showBitsScale = eventKey;
-    this.setState({showBitsScale} as any);
+    this.setState({ showBitsScale } as any);
   }
 
   onBitsModeSelect(eventKey: any, event: Object) {
     let showBitsMode = eventKey;
-    this.setState({showBitsMode} as any);
+    this.setState({ showBitsMode } as any);
   }
 
   onBitsFilterSelect(eventKey: any, event: Object) {
     let showBitsFilter = eventKey;
-    this.setState({showBitsFilter} as any);
+    this.setState({ showBitsFilter } as any);
   }
 
   getActiveGroupScore() {
@@ -956,10 +965,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     for (let name in this.options) {
       let option = this.options[name];
       layerButtons.push(
-        <OverlayTrigger placement="top" overlay={<Tooltip>{option.detail} ({option.key})</Tooltip>}>
-          { option.icon ?
-            <Button bsStyle={this.state[name] ? "primary" : "default"} bsSize="small" onClick={this.toggleLayer.bind(this, name)}><span className={option.icon}></span></Button> :
-            <Button bsStyle={this.state[name] ? "primary" : "default"} bsSize="small" onClick={this.toggleLayer.bind(this, name)}>{option.description}</Button>
+        <OverlayTrigger placement="top" overlay={<Tooltip>{option.detail}({option.key})</Tooltip>}>
+          {option.icon ?
+            <Button bsStyle={this.state[name] ? "primary" : "default"} onClick={this.toggleLayer.bind(this, name)}><span className={option.icon}></span></Button> :
+            <Button bsStyle={this.state[name] ? "primary" : "default"} onClick={this.toggleLayer.bind(this, name)}>{option.description}</Button>
           }
         </OverlayTrigger>
       );
@@ -968,13 +977,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let sidePanel = null;
     let frames = this.props.groups[this.getActiveGroupIndex()];
     let frame = this.getActiveFrame();
-    if (frame) {
-      let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
-      let accounting = this.getActiveFrame().accounting;
-      let layerOptions = [];
-      if (this.state.showBits) {
+    if (this.state.showTools) {
+      if (frame) {
         let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
-        layerOptions.push(<div>
+        let accounting = this.getActiveFrame().accounting;
+        let layerOptions = [];
+        if (this.state.showBits) {
+          let names = Accounting.getSortedSymbolNames(frames.map(frame => frame.accounting));
+          layerOptions.push(<div>
             <DropdownButton bsSize="small" title="Bits Scale" id="dropdown-size-xsmall" onSelect={this.onBitsScaleSelect.bind(this)}>
               <MenuItem eventKey="frame" active={this.state.showBitsScale == "frame"}>Frame Relative</MenuItem>
               <MenuItem eventKey="video" active={this.state.showBitsScale == "video"}>Video Relative</MenuItem>
@@ -992,120 +1002,140 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
               }
             </DropdownButton>
           </div>
-        );
+          );
+        }
+
+        let p = this.getParentMIPosition(frame, this.mousePosition);
+
+        sidePanel = <div id="sidePanel">
+          <div style={{ paddingTop: "4px" }}>
+            <ButtonGroup>
+              <OverlayTrigger placement="top" overlay={<Tooltip>Toggle Tools: tab</Tooltip>}>
+                <Button onClick={this.toggleTools.bind(this)}><span className="icon-h"></span></Button>
+              </OverlayTrigger>
+              <OverlayTrigger placement="top" overlay={<Tooltip>Repeat: r</Tooltip>}>
+                <Button onClick={this.resetLayersAndActiveFrame.bind(this)}><span className="glyphicon glyphicon-repeat"></span></Button>
+              </OverlayTrigger>
+
+              <OverlayTrigger placement="top" overlay={<Tooltip>Previous: ,</Tooltip>}>
+                <Button onClick={this.advanceFrame.bind(this, -1)}><span className="glyphicon glyphicon-step-backward"></span></Button>
+              </OverlayTrigger>
+
+              <OverlayTrigger placement="top" overlay={<Tooltip>Pause / Play: space</Tooltip>}>
+                <Button onClick={this.playPause.bind(this)}><span className="glyphicon glyphicon-play"></span></Button>
+              </OverlayTrigger>
+
+              <OverlayTrigger placement="top" overlay={<Tooltip>Next: .</Tooltip>}>
+                <Button onClick={this.advanceFrame.bind(this, 1)}><span className="glyphicon glyphicon-step-forward"></span></Button>
+              </OverlayTrigger>
+
+              <OverlayTrigger placement="top" overlay={<Tooltip>Zoom Out: [</Tooltip>}>
+                <Button onClick={this.zoom.bind(this, 1 / 2)}><span className="glyphicon glyphicon-zoom-out"></span></Button>
+              </OverlayTrigger>
+
+              <OverlayTrigger placement="top" overlay={<Tooltip>Zoom In: ]</Tooltip>}>
+                <Button onClick={this.zoom.bind(this, 2)}><span className="glyphicon glyphicon-zoom-in"></span></Button>
+              </OverlayTrigger>
+            </ButtonGroup>
+          </div>
+          <div className="sectionHeader">Layers</div>
+          <div style={{ paddingTop: "4px" }}>
+            <ButtonGroup>
+              {layerButtons}
+            </ButtonGroup>
+          </div>
+
+          {layerOptions.length ? <div className="sectionHeader">Layer Options</div> : null}
+          {layerOptions}
+
+          <div id="sidePanelScrollArea">
+            <div className="sectionHeader">Histograms</div>
+            <Tabs defaultActiveKey={2} id="uncontrolled-tab-example" bsStyle="pills">
+              <Tab eventKey={1} title="Bits">
+                <div className="tabContainer">
+                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={512} scale="max"></HistogramComponent>
+                </div>
+              </Tab>
+              <Tab eventKey={2} title="Symbols">
+                <div className="tabContainer">
+                  <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                </div>
+              </Tab>
+              <Tab eventKey={3} title="Block Size">
+                <div className="tabContainer">
+                  <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                </div>
+              </Tab>
+              <Tab eventKey={4} title="Tx Size">
+                <div className="tabContainer">
+                  <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                </div>
+              </Tab>
+              <Tab eventKey={5} title="Tx Type">
+                <div className="tabContainer">
+                  <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                </div>
+              </Tab>
+              <Tab eventKey={6} title="Prediction Mode">
+                <div className="tabContainer">
+                  <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                </div>
+              </Tab>
+              <Tab eventKey={7} title="Skip">
+                <div className="tabContainer">
+                  <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
+                </div>
+              </Tab>
+            </Tabs>
+
+            <div className="sectionHeader">Info</div>
+            <Tabs defaultActiveKey={3} id="uncontrolled-tab-example" bsStyle="pills">
+              <Tab eventKey={3} title="Block Info">
+                <div className="tabContainer">
+                  {p &&
+                    <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
+                  }
+                </div>
+              </Tab>
+              <Tab eventKey={1} title="Block Symbols">
+                <div className="tabContainer">
+                  {p &&
+                    <AccountingComponent symbols={this.getActiveFrame().accounting.createBlockSymbols(p.x, p.y)}></AccountingComponent>
+                  }
+                </div>
+              </Tab>
+              <Tab eventKey={4} title="Frame Symbols">
+                <div className="tabContainer">
+                  {p &&
+                    <AccountingComponent symbols={accounting.frameSymbols}></AccountingComponent>
+                  }
+                </div>
+              </Tab>
+              <Tab eventKey={2} title="Frame Info">
+                <div className="tabContainer">
+                  {p &&
+                    <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.getActiveGroupIndex()}></FrameInfoComponent>
+                  }
+                </div>
+              </Tab>
+              <Tab eventKey={5} title="Build Config">
+                <div className="tabContainer">
+                  <div className="propertyValue">{frame.config}</div>
+                </div>
+              </Tab>
+              <Tab eventKey={6} title="Tips">
+                <div className="tabContainer">
+                  <ul>
+                    <li>Click anywhere on the image to lock focus and get mode info details.</li>
+                    <li>All analyzer features have keyboard shortcuts, use them.</li>
+                    <li>Toggle between video sequences by using the number keys: 1, 2, 3, etc.</li>
+                  </ul>
+                </div>
+              </Tab>
+            </Tabs>
+          </div>
+        </div>
       }
-
-      let p = this.getParentMIPosition(frame, this.mousePosition);
-      sidePanel = <div id="sidePanel">
-        <div style={{paddingTop: "4px"}}>
-          <ButtonGroup>
-            <OverlayTrigger placement="top" overlay={<Tooltip>Toggle Tools: tab</Tooltip>}>
-              <Button bsSize="small" onClick={this.toggleTools.bind(this)}><span className="glyphicon glyphicon-th"></span></Button>
-            </OverlayTrigger>
-            <OverlayTrigger placement="top" overlay={<Tooltip>Repeat: r</Tooltip>}>
-              <Button bsSize="small" onClick={this.resetLayersAndActiveFrame.bind(this)}><span className="glyphicon glyphicon-repeat"></span></Button>
-            </OverlayTrigger>
-
-            <OverlayTrigger placement="top" overlay={<Tooltip>Previous: ,</Tooltip>}>
-              <Button bsSize="small" onClick={this.advanceFrame.bind(this, -1)}><span className="glyphicon glyphicon-step-backward"></span></Button>
-            </OverlayTrigger>
-
-            <OverlayTrigger placement="top" overlay={<Tooltip>Pause / Play: space</Tooltip>}>
-              <Button bsSize="small" onClick={this.playPause.bind(this)}><span className="glyphicon glyphicon-play"></span></Button>
-            </OverlayTrigger>
-
-            <OverlayTrigger placement="top" overlay={<Tooltip>Next: .</Tooltip>}>
-              <Button bsSize="small" onClick={this.advanceFrame.bind(this, 1)}><span className="glyphicon glyphicon-step-forward"></span></Button>
-            </OverlayTrigger>
-
-            <OverlayTrigger placement="top" overlay={<Tooltip>Zoom Out: [</Tooltip>}>
-              <Button bsSize="small" onClick={this.zoom.bind(this, 1 / 2)}><span className="glyphicon glyphicon-zoom-out"></span></Button>
-            </OverlayTrigger>
-
-            <OverlayTrigger placement="top" overlay={<Tooltip>Zoom In: ]</Tooltip>}>
-              <Button bsSize="small" onClick={this.zoom.bind(this, 2)}><span className="glyphicon glyphicon-zoom-in"></span></Button>
-            </OverlayTrigger>
-          </ButtonGroup>
-        </div>
-        <div style={{paddingTop: "4px"}}>
-          <ButtonGroup>
-            {layerButtons}
-          </ButtonGroup>
-        </div>
-
-        {layerOptions.length ? <div className="sectionHeader">Layer Options</div> : null}
-        {layerOptions}
-
-        <div id="sidePanelScrollArea">
-          <div className="sectionHeader">Histograms</div>
-          <Tabs defaultActiveKey={2} id="uncontrolled-tab-example" bsStyle="pills">
-            <Tab eventKey={1} title="Bits">
-              <div className="tabContainer">
-                <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={512} scale="max"></HistogramComponent>
-              </div>
-            </Tab>
-            <Tab eventKey={2} title="Symbols">
-              <div className="tabContainer">
-                <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
-              </div>
-            </Tab>
-            <Tab eventKey={3} title="Block Size">
-              <div className="tabContainer">
-                <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
-              </div>
-            </Tab>
-            <Tab eventKey={4} title="Tx Size">
-              <div className="tabContainer">
-                <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
-              </div>
-            </Tab>
-            <Tab eventKey={5} title="Tx Type">
-              <div className="tabContainer">
-                <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
-              </div>
-            </Tab>
-            <Tab eventKey={6} title="Prediction Mode">
-              <div className="tabContainer">
-                <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
-              </div>
-            </Tab>
-            <Tab eventKey={7} title="Skip">
-              <div className="tabContainer">
-                <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={512}></HistogramComponent>
-              </div>
-            </Tab>
-          </Tabs>
-
-          {p &&
-            <div>
-              <div className="sectionHeader">Block Symbols</div>
-              <AccountingComponent symbols={this.getActiveFrame().accounting.createBlockSymbols(p.x, p.y)}></AccountingComponent>
-            </div>
-          }
-
-          <div className="sectionHeader">Frame Info</div>
-          <FrameInfoComponent frame={frame} activeFrame={this.state.activeFrame} activeGroup={this.getActiveGroupIndex()}></FrameInfoComponent>
-          {p &&
-            <div>
-              <div className="sectionHeader">Block Info</div>
-              <ModeInfoComponent frame={frame} position={p}></ModeInfoComponent>
-            </div>
-          }
-
-          <div className="sectionHeader">Frame Symbols</div>
-          <AccountingComponent symbols={accounting.frameSymbols}></AccountingComponent>
-
-          <div className="sectionHeader">Build Config</div>
-          <div className="propertyValue">{frame.config}</div>
-
-          <div className="sectionHeader">AV1 Analyzer Tips</div>
-          <ul>
-            <li>Click anywhere on the image to lock focus and get mode info details.</li>
-            <li>All analyzer features have keyboard shortcuts, use them.</li>
-            <li>Toggle between video sequences by using the number keys: 1, 2, 3, etc.</li>
-          </ul>
-        </div>
-      </div>
     }
 
     let activeGroup = this.getActiveGroupIndex();
@@ -1115,7 +1145,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       <div className="toast" ref={(self: any) => this.toast = self}>
         Toast
       </div>
-      { this.state.showFrameComment &&
+      {this.state.showFrameComment &&
         <div id="frameComment">
           <div>
             <div className="sectionHeader">Config</div>
@@ -1123,7 +1153,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             <div className="sectionHeader">Video</div>
             <div className="propertyValue">{groupName}</div>
             <div className="sectionHeader">Group</div>
-            <div className="propertyValue">{activeGroup} - {this.props.groupNames[activeGroup]}</div>
+            <div className="propertyValue">{activeGroup}- {this.props.groupNames[activeGroup]}</div>
             <div className="sectionHeader">Score</div>
             <div className="propertyValue">{this.getActiveGroupScore()}</div>
             <div className="sectionHeader">Frame</div>
@@ -1132,17 +1162,17 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         </div>
       }
       <div className="canvasContainer" ref={(self: any) => this.canvasContainer = self}>
-        <canvas ref={(self: any) => this.displayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 0, imageRendering: "pixelated", backgroundCcolor: "#F5F5F5"}}></canvas>
-        <canvas ref={(self: any) => this.overlayCanvas = self} width="256" height="256" style={{position: "absolute", left: 0, top: 0, zIndex: 1, imageRendering: "pixelated", cursor: "crosshair"}}></canvas>
+        <canvas ref={(self: any) => this.displayCanvas = self} width="256" height="256" style={{ position: "absolute", left: 0, top: 0, zIndex: 0, imageRendering: "pixelated", backgroundCcolor: "#F5F5F5" }}></canvas>
+        <canvas ref={(self: any) => this.overlayCanvas = self} width="256" height="256" style={{ position: "absolute", left: 0, top: 0, zIndex: 1, imageRendering: "pixelated", cursor: "crosshair" }}></canvas>
       </div>
-      { this.state.showTools &&
+      {this.state.showTools &&
         <div>
-          <div style={{paddingTop: "4px"}}>
+          <div style={{ paddingTop: "4px" }}>
             {sidePanel}
           </div>
         </div>
       }
-      <div id="zoomContainer" style={{display: this.state.showTools ? "block" : "none"}}>
+      <div id="zoomContainer" style={{ display: this.state.showTools ? "block" : "none" }}>
         <canvas ref={(self: any) => this.zoomCanvas = self} width="256" height="256"></canvas>
       </div>
     </div>
@@ -1447,18 +1477,18 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           let h = (1 << BLOCK_SIZES[size][1]);
           switch (size) {
             case BLOCK_4X4:
-              visitor(size, c, r, 0, 0, bounds.set(c * S,     r * S,     w, h));
-              visitor(size, c, r, 0, 1, bounds.set(c * S,     r * S + h, w, h));
-              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S,     w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
+              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h));
+              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h));
               visitor(size, c, r, 1, 1, bounds.set(c * S + w, r * S + h, w, h));
               break;
             case BLOCK_8X4:
-              visitor(size, c, r, 0, 0, bounds.set(c * S,     r * S,     w, h));
-              visitor(size, c, r, 0, 1, bounds.set(c * S,     r * S + h, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
+              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h));
               break;
             case BLOCK_4X8:
-              visitor(size, c, r, 0, 0, bounds.set(c * S,     r * S,     w, h));
-              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S,     w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
+              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h));
               break;
           }
         }
@@ -1503,9 +1533,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           let h = (1 << TRANSFORM_SIZES[size][1]);
           switch (size) {
             case TX_4X4:
-              visitor(size, c, r, 0, 0, bounds.set(c * S,     r * S,     w, h));
-              visitor(size, c, r, 0, 1, bounds.set(c * S,     r * S + h, w, h));
-              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S,     w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
+              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h));
+              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h));
               visitor(size, c, r, 1, 1, bounds.set(c * S + w, r * S + h, w, h));
               break;
           }
@@ -1518,7 +1548,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
 }
 
 interface AnalyzerViewCompareComponentProps {
-  decoderVideoUrlPairs: {decoderUrl: string, videoUrl: string, decoderName: string} [];
+  decoderVideoUrlPairs: { decoderUrl: string, videoUrl: string, decoderName: string }[];
   playbackFrameRate?: number;
   layers?: number;
   maxFrames?: number;
@@ -1526,8 +1556,8 @@ interface AnalyzerViewCompareComponentProps {
 }
 
 export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCompareComponentProps, {
-  frames: AnalyzerFrame [][],
-  groupNames: string [],
+  frames: AnalyzerFrame[][],
+  groupNames: string[],
   analyzerFailedToLoad: boolean,
   decodedFrameCount: number,
   loading: "done" | "failed" | "loading",
@@ -1591,7 +1621,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
         this.setState({ status: "Decoding Frames" } as any);
         Promise.all(decoders.map(decoder => this.decodeFrames(decoder, this.props.maxFrames))).then(frames => {
           let playbackFrameRate = Math.min(this.props.playbackFrameRate, decoders[0].frameRate);
-          this.setState({ frames: frames, groupNames: groupNames, loading: "done", playbackFrameRate} as any);
+          this.setState({ frames: frames, groupNames: groupNames, loading: "done", playbackFrameRate } as any);
         });
       }).catch(e => {
         this.setState({ status: "Downloading Files Failed", loading: "error" } as any);
@@ -1602,7 +1632,7 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
   }
 
   decodedFrameCount = 0;
-  decodeFrames(deocder: Decoder, count: number): Promise<AnalyzerFrame[]>  {
+  decodeFrames(deocder: Decoder, count: number): Promise<AnalyzerFrame[]> {
     return new Promise((resolve, reject) => {
       let time = performance.now();
       let decodedFrames = [];
@@ -1646,9 +1676,9 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
 export class LocalAnalyzerComponent extends React.Component<{
 
 }, {
-  show: boolean;
-  group: {decoderUrl: string, videoUrl: string, name: string, decoderName: string} [][]
-}> {
+    show: boolean;
+    group: { decoderUrl: string, videoUrl: string, name: string, decoderName: string }[][]
+  }> {
   constructor() {
     super();
     this.state = {
@@ -1665,7 +1695,7 @@ export class LocalAnalyzerComponent extends React.Component<{
           let localName = i + "_" + file.name;
           console.log("Loading: " + file.name);
           let reader = new FileReader();
-          reader.onload = function() {
+          reader.onload = function () {
             let result;
             if (typeof reader.result == "string") {
               result = reader.result;
@@ -1719,7 +1749,7 @@ export class LocalAnalyzerComponent extends React.Component<{
           alert("Drag at least one .ivf file.");
           return;
         }
-        this.setState({group} as any);
+        this.setState({ group } as any);
       });
     } else {
       throw new Error("Can't read files.");
@@ -1732,7 +1762,7 @@ export class LocalAnalyzerComponent extends React.Component<{
     console.info("drag end");
   }
   analyze() {
-    this.setState({show: true} as any);
+    this.setState({ show: true } as any);
   }
   render() {
     let group = this.state.group;
@@ -1740,31 +1770,31 @@ export class LocalAnalyzerComponent extends React.Component<{
     if (this.state.show) {
       return <AnalyzerViewCompareComponent
         decoderVideoUrlPairs={pairs}
-      />
+        />
     }
     return <div className="panel">
-      <div style={{float: "left"}} className="dropPanel" onDrop={this.onDrop.bind(this, 0)} onDragOver={this.onDragOver.bind(this)} onDragEnd={this.onDragEnd.bind(this)}>
+      <div style={{ float: "left" }} className="dropPanel" onDrop={this.onDrop.bind(this, 0)} onDragOver={this.onDragOver.bind(this)} onDragEnd={this.onDragEnd.bind(this)}>
         {
           group[0].length ?
             group[0].map(pair => pair.name).join(", ")
             : <strong>Drag and drop a decoder and one or more video files ...</strong>
         }
       </div>
-      <div style={{float: "left"}} className="dropPanel" onDrop={this.onDrop.bind(this, 1)} onDragOver={this.onDragOver.bind(this)} onDragEnd={this.onDragEnd.bind(this)}>
+      <div style={{ float: "left" }} className="dropPanel" onDrop={this.onDrop.bind(this, 1)} onDragOver={this.onDragOver.bind(this)} onDragEnd={this.onDragEnd.bind(this)}>
         {
           group[1].length ?
             group[1].map(pair => pair.name).join(", ")
             : <strong>Drag and drop a decoder and one or more video files ...</strong>
         }
       </div>
-      <div style={{float: "left"}} className="dropPanel" onDrop={this.onDrop.bind(this, 2)} onDragOver={this.onDragOver.bind(this)} onDragEnd={this.onDragEnd.bind(this)}>
+      <div style={{ float: "left" }} className="dropPanel" onDrop={this.onDrop.bind(this, 2)} onDragOver={this.onDragOver.bind(this)} onDragEnd={this.onDragEnd.bind(this)}>
         {
           group[2].length ?
             group[2].map(pair => pair.name).join(", ")
             : <strong>Drag and drop a decoder and one or more video files ...</strong>
         }
       </div>
-      <div style={{clear: "left", paddingTop: "8px"}}>
+      <div style={{ clear: "left", paddingTop: "8px" }}>
         <Button onClick={this.analyze.bind(this)} disabled={pairs.length == 0} >Analyze</Button>
       </div>
     </div>
