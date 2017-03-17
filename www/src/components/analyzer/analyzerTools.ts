@@ -1,6 +1,6 @@
 import { Promise } from "es6-promise"
 declare let DecoderModule: any;
-
+declare let TextDecoder: any;
 
 export const COLORS_OLD = [
   "#E85EBE", "#009BFF", "#00FF00", "#0000FF", "#FF0000", "#01FFFE", "#FFA6FE",
@@ -683,7 +683,19 @@ export class Decoder {
           memoryInitializerPrefixURL: "bin/",
           arguments: ['input.ivf', 'output.raw'],
           on_frame_decoded_json: function (json) {
-            Module.lastDecodedFrameJson = JSON.parse("[" + (Module as any).UTF8ToString(json) + "null]");
+            let s = "";
+            if (typeof TextDecoder != "undefined") {
+              let m = (Module as any).HEAP8;
+              let e = json;
+              while (m[e] != 0) {
+                e++;
+              }
+              let textDecoder = new TextDecoder("utf-8");
+              s = textDecoder.decode(m.subarray(json, e));
+            } else {
+              s = (Module as any).UTF8ToString(json);
+            }
+            Module.lastDecodedFrameJson = JSON.parse("[" + s + "null]");
           }
         };
         resolve(new Decoder(Module));
