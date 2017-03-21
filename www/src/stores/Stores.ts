@@ -312,7 +312,7 @@ export class BDRateReport {
 export let metricNames = [
   "PSNR Y", "PSNR HVS", "SSIM", "FAST SSIM", "CIEDE 2000",
   "PSNR Cb", "PSNR Cr", "APSNR Y", "APSNR Cb", "APSNR Cr",
-  "MS SSIM", "Encoding Time", "VMAF"
+  "MS SSIM", "Encoding Time", "VMAF", "Decoding Time"
 ];
 
 export let reportFieldNames = [
