@@ -199,26 +199,6 @@ export class Histogram {
   }
 }
 
-interface Internal {
-  _read_frame(): number;
-  _get_bit_depth(): number;
-  _get_plane(pli: number): number;
-  _get_plane_stride(pli: number): number;
-  _get_plane_width(pli: number): number;
-  _get_plane_height(pli: number): number;
-  _get_mi_cols_and_rows(): number;
-  _get_tile_cols_and_rows_log2(): number;
-  _get_frame_count(): number;
-  _get_frame_width(): number;
-  _get_frame_height(): number;
-  _open_file(): number;
-  _set_layers(layers: number): number;
-  _get_aom_codec_build_config(): number;
-  FS: any;
-  HEAPU8: Uint8Array;
-  UTF8ToString(p: number): string;
-}
-
 export class AnalyzerFrame {
   json: {
     frameType: number;
@@ -510,84 +490,90 @@ export class GridSize {
 }
 
 export class Decoder {
-  file: string;
+  worker: Worker;
+  workerCallbacks = [];
+  workerInfo: any = {};
   decoder: string;
-  nativeModule: {
-    lastDecodedFrameJson: Object;
-  };
-  native: Internal;
-  HEAPU8: Uint8Array;
   buffer: Uint8Array;
-  lastDecodeFrameTime: number = 0;
   frames: AnalyzerFrame[] = [];
-
   frameRate: number = 30;
-  frameSize: Size = null;
-  frameCanvas: HTMLCanvasElement = null;
-  frameContext: CanvasRenderingContext2D = null;
 
   /** Whether to read image data after decoding a frame. */
   shouldReadImageData: boolean = true;
 
-  constructor(nativeModule) {
-    this.nativeModule = nativeModule;
-    this.native = DecoderModule(nativeModule);
-    this.HEAPU8 = this.native.HEAPU8;
+  constructor(nativeModule, worker) {
     this.buffer = new Uint8Array(0);
-  }
-
-  ensureFrameCanvas() {
-    if (this.frameSize) {
-      return;
-    }
-    this.frameSize = new Size(this.native._get_frame_width(), this.native._get_frame_height());
-    this.frameCanvas = document.createElement("canvas");
-    this.frameContext = this.frameCanvas.getContext("2d");
-    this.frameCanvas.width = this.frameSize.w;
-    this.frameCanvas.height = this.frameSize.h;
+    this.worker = worker;
+    this.initWorker();
   }
 
   openFileBytes(buffer: Uint8Array) {
     this.frameRate = buffer[16] | buffer[17] << 24 | buffer[18] << 16 | buffer[19] << 24;
     this.buffer = buffer;
-    this.native.FS.writeFile("/tmp/input.ivf", buffer, { encoding: "binary" });
-    this.native._open_file();
+    this.worker.postMessage({
+      command: "openFileBytes",
+      payload: buffer
+    });
   }
 
-  setLayers(layers) {
-    this.native._set_layers(layers);
+  setLayers(layers: number) {
+    this.worker.postMessage({
+      command: "setLayers",
+      payload: layers
+    });
   }
 
-  getBuildConfig() {
-    if (!this.native._get_aom_codec_build_config) {
-      return "";
-    }
-    return (this.nativeModule as any).UTF8ToString(this.native._get_aom_codec_build_config());
+  initWorker() {
+    this.worker.addEventListener("message", (e) => {
+      if (!e.data.id) {
+        return;
+      }
+      this.workerCallbacks[e.data.id](e);
+      this.workerCallbacks[e.data.id] = null;
+    });
+    let id = String(Math.random());
+    this.addWorkerCallback(id, (e) => {
+      this.workerInfo = e.data.payload;
+    });
+    this.worker.postMessage({
+      command: "readInfo",
+      id: id
+    });
+  }
+
+  addWorkerCallback(id: string, fn: (e: any) => void) {
+    this.workerCallbacks[id] = fn;
   }
 
   readFrame(): Promise<AnalyzerFrame[]> {
-    return Promise.resolve(this.readFrameSync());
-  }
-
-  readFrameSync(): AnalyzerFrame[] {
-    let s = performance.now();
-    if (this.native._read_frame() != 0) {
-      return null;
-    }
-    this.lastDecodeFrameTime = performance.now() - s;
-    let o = this.nativeModule.lastDecodedFrameJson as Object[];
-    let frames: AnalyzerFrame[] = [];
-    for (let i = 0; i < o.length - 1; i++) {
-      let json = o[i];
-      let frame = readFrameFromJson(json);
-      frame.config = this.getBuildConfig();
-      frames.push(frame);
-      this.frames.push(frame);
-    }
-    if (this.shouldReadImageData) {
-      frames[frames.length - 1].image = this.makeCanvas(this.readImage());
-    }
-    return frames;
+    let worker = this.worker;
+    let self = this;
+    let id = String(Math.random());
+    return new Promise((resolve, reject) => {
+      this.addWorkerCallback(id, function (e) {
+        let o = e.data.payload.json as Object[];
+        if (!o) {
+          reject();
+          return;
+        }
+        let frames: AnalyzerFrame[] = [];
+        for (let i = 0; i < o.length - 1; i++) {
+          let json = o[i];
+          let frame = readFrameFromJson(json);
+          frame.config = self.workerInfo.buildConfig;
+          frames.push(frame);
+          self.frames.push(frame);
+        }
+        if (self.shouldReadImageData) {
+          frames[frames.length - 1].image = self.makeCanvas(e.data.payload.image);
+        }
+        resolve(frames);
+      });
+      worker.postMessage({
+        command: "readFrame",
+        id: id
+      });
+    });
   }
 
   makeCanvas(imageData: ImageData): HTMLCanvasElement {
@@ -599,122 +585,15 @@ export class Decoder {
     return canvas;
   }
 
-  readImage(): ImageData {
-    this.ensureFrameCanvas();
-    let Yp = this.native._get_plane(0);
-    let Ys = this.native._get_plane_stride(0);
-    let Up = this.native._get_plane(1);
-    let Us = this.native._get_plane_stride(1);
-    let Vp = this.native._get_plane(2);
-    let Vs = this.native._get_plane_stride(2);
-    let bitDepth = this.native._get_bit_depth();
-    let imageData = this.frameContext.createImageData(this.frameSize.w, this.frameSize.h);
-    this.fillImageData(imageData, this.native.HEAPU8, Yp, Ys, Up, Us, Vp, Vs, bitDepth);
-    return imageData;
-  }
-
-  fillImageData(imageData: ImageData, H: Uint8Array, Yp, Ys, Up, Us, Vp, Vs, bitDepth) {
-    let I = imageData.data;
-    let w = this.frameSize.w;
-    let h = this.frameSize.h;
-
-    let p = 0;
-    let bgr = 0;
-    if (bitDepth == 10) {
-      for (let y = 0; y < h; y++) {
-        let yYs = y * Ys;
-        let yUs = (y >> 1) * Us;
-        let yVs = (y >> 1) * Vs;
-        for (let x = 0; x < w; x++) {
-          p = Yp + yYs + (x << 1);
-          let Y = (H[p] + (H[p + 1] << 8)) >> 2;
-          p = Up + yUs + ((x >> 1) << 1);
-          let U = (H[p] + (H[p + 1] << 8)) >> 2;
-          p = Vp + yVs + ((x >> 1) << 1);
-          let V = (H[p] + (H[p + 1] << 8)) >> 2;
-          bgr = YUV2RGB(Y, U, V);
-          let r = (bgr >> 0) & 0xFF;
-          let g = (bgr >> 8) & 0xFF;
-          let b = (bgr >> 16) & 0xFF;
-          let index = (Math.imul(y, w) + x) << 2;
-          I[index + 0] = r;
-          I[index + 1] = g;
-          I[index + 2] = b;
-          I[index + 3] = 255;
-        }
-      }
-    } else {
-      for (let y = 0; y < h; y++) {
-        let yYs = y * Ys;
-        let yUs = (y >> 1) * Us;
-        let yVs = (y >> 1) * Vs;
-        for (let x = 0; x < w; x++) {
-          let Y = H[Yp + yYs + x];
-          let U = H[Up + yUs + (x >> 1)];
-          let V = H[Vp + yVs + (x >> 1)];
-          bgr = YUV2RGB(Y, U, V);
-          let r = (bgr >> 0) & 0xFF;
-          let g = (bgr >> 8) & 0xFF;
-          let b = (bgr >> 16) & 0xFF;
-          let index = (Math.imul(y, w) + x) << 2;
-          I[index + 0] = r;
-          I[index + 1] = g;
-          I[index + 2] = b;
-          I[index + 3] = 255;
-        }
-      }
-    }
-  }
-
   static loadDecoder(url: string): Promise<Decoder> {
     return new Promise((resolve, reject) => {
-      let s = document.createElement('script');
-      let self = this;
-      s.onload = function () {
-        var aom = null;
-        var Module = {
-          lastDecodedFrameJson: null,
-          noExitRuntime: true,
-          noInitialRun: true,
-          preRun: [],
-          postRun: [function () {
-            console.info(`Loaded Decoder: ${url}.`);
-          }],
-          memoryInitializerPrefixURL: "bin/",
-          arguments: ['input.ivf', 'output.raw'],
-          on_frame_decoded_json: function (json) {
-            let s = "";
-            if (typeof TextDecoder != "undefined") {
-              let m = (Module as any).HEAP8;
-              let e = json;
-              while (m[e] != 0) {
-                e++;
-              }
-              let textDecoder = new TextDecoder("utf-8");
-              s = textDecoder.decode(m.subarray(json, e));
-            } else {
-              s = (Module as any).UTF8ToString(json);
-            }
-            Module.lastDecodedFrameJson = JSON.parse("[" + s + "null]");
-          }
-        };
-        resolve(new Decoder(Module));
-      };
-      s.onerror = function () {
-        reject();
-      };
-      if (url.startsWith(localFileProtocol)) {
-        let localFile = url.substring(localFileProtocol.length);
-        let file = localFiles[localFile];
-        if (!file) {
-          reject(`Local file "${localFile}" does not exist.`);
-          return;
-        }
-        s.textContent = file + ";\ndocument.currentScript.onload();";
-      } else {
-        s.setAttribute('src', url);
-      }
-      document.body.appendChild(s);
+      let worker = new Worker("dist/analyzer_worker.bundle.js");
+      worker.postMessage({
+        command: "importScripts",
+        payload: [url]
+      });
+      worker.postMessage({ command: "load" });
+      resolve(new Decoder(null, worker));
     });
   }
 }

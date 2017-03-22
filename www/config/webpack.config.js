@@ -6,7 +6,8 @@ var RELEASE = JSON.parse(process.env.RELEASE || '0');
 module.exports = {
   entry: {
     index: "./src/index.tsx",
-    analyzer: "./src/analyzerEntry.tsx"
+    analyzer: "./src/analyzerEntry.tsx",
+    analyzer_worker: "./src/components/analyzer/worker.ts"
   },
   output: {
     path: "./dist/",

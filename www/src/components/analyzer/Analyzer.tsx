@@ -285,7 +285,8 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     groups: [],
     groupNames: null,
     playbackFrameRate: 30,
-    blind: 0
+    blind: 0,
+    onDecodeAdditionalFrames: null
   };
 
   activeGroupScore: number[][];
@@ -1054,7 +1055,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
                 </OverlayTrigger>
 
                 <OverlayTrigger placement="top" overlay={<Tooltip>Decode All Remaining Frames</Tooltip>}>
-                  <Button onClick={this.decodeAdditionalFrames.bind(this, 1024)}><span className="glyphicon glyphicon-film"></span></Button>
+                  <Button onClick={this.decodeAdditionalFrames.bind(this, 120)}><span className="glyphicon glyphicon-film"></span></Button>
                 </OverlayTrigger>
               </ButtonGroup>
             </div>
@@ -1620,10 +1621,8 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
     this.setState({ status: "Loading Decoders" } as any);
     Promise.all(decoderPaths.map(path => Decoder.loadDecoder(path))).then(decoders => {
       this.decoders = decoders;
-      console.info(decoders);
       this.setState({ status: "Downloading Files" } as any);
       Promise.all(videoPaths.map(path => downloadFile(path))).then(bytes => {
-        console.info(bytes);
         let decodedFrames = [];
         for (let i = 0; i < decoders.length; i++) {
           let decoder = decoders[i];
@@ -1642,7 +1641,6 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
           groupNames[i] = videoPath;
         }
         this.setState({ status: "Decoding Frames" } as any);
-
         Promise.all(decoders.map(decoder => this.decodeFrames(decoder, this.props.maxFrames))).then(frames => {
           let playbackFrameRate = Math.min(this.props.playbackFrameRate, decoders[0].frameRate);
           this.setState({ frames: frames, groupNames: groupNames, loading: "done", playbackFrameRate } as any);
@@ -1667,29 +1665,30 @@ export class AnalyzerViewCompareComponent extends React.Component<AnalyzerViewCo
 
   decodedFrameCount = 0;
   decodeFrames(decoder: Decoder, count: number): Promise<AnalyzerFrame[]> {
+    decoder.setLayers(0xffffffff);
     return new Promise((resolve, reject) => {
       let time = performance.now();
       let decodedFrames = [];
-      let interval = setInterval(() => {
-        decoder.setLayers(this.props.layers);
-        decoder.readFrame().then((frames) => {
+      let framePromises = [];
+      for (let i = 0; i < count; i++) {
+        framePromises.push(decoder.readFrame());
+      }
+      // Don't swallow all promises if some fail.
+      framePromises = framePromises.map(p => p.then((x) => {
+        if (x) {
+          this.decodedFrameCount += x.length;
           this.setState({ status: `Decoded ${this.decodedFrameCount} Frames ...` } as any);
-          if (!frames) {
-            clearInterval(interval);
-            resolve(decodedFrames);
-            return;
-          }
-          frames.forEach(frame => {
-            decodedFrames.push(frame);
-          });
-          this.decodedFrameCount += frames.length;
-          if (--count <= 0) {
-            clearInterval(interval);
-            console.info(`Decode Time: ${performance.now() - time}`);
-            resolve(decodedFrames);
+        }
+        return x;
+      }).catch(() => undefined));
+      Promise.all(framePromises).then((frames: AnalyzerFrame[][]) => {
+        frames.forEach(f => {
+          if (f) {
+            decodedFrames = decodedFrames.concat(f);
           }
         });
-      }, 16);
+        resolve(decodedFrames);
+      });
     });
   }
   render() {
