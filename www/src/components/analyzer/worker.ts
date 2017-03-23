@@ -43,17 +43,32 @@ buildYUVTable();
 onmessage = function (e) {
   // console.log("Worker: " + e.data.command);
   switch (e.data.command) {
-    case "importScripts":
-      importScripts.apply(self, e.data.payload);
-      break;
     case "load":
-      load();
+      try {
+        importScripts.apply(self, e.data.payload);
+        load();
+        let buildConfig;
+        if (!native._get_aom_codec_build_config) {
+          buildConfig = "N/A";
+        }
+        buildConfig = native.UTF8ToString(native._get_aom_codec_build_config());
+        postMessage({
+          command: "loadResult",
+          payload: {
+            buildConfig
+          },
+          id: e.data.id
+        }, undefined);
+      } catch (x) {
+        postMessage({
+          command: "loadResult",
+          payload: false,
+          id: e.data.id
+        }, undefined);
+      }
       break;
     case "readFrame":
       readFrame(e);
-      break;
-    case "readInfo":
-      readInfo(e);
       break;
     case "setLayers":
       setLayers(e);
@@ -205,21 +220,6 @@ function readFrame(e) {
   postMessage({
     command: "readFrameResult",
     payload: { json: json, image: readImage() },
-    id: e.data.id
-  }, undefined);
-}
-
-function readInfo(e) {
-  let buildConfig;
-  if (!native._get_aom_codec_build_config) {
-    buildConfig = "N/A";
-  }
-  buildConfig = native.UTF8ToString(native._get_aom_codec_build_config());
-  postMessage({
-    command: "readInfoResult",
-    payload: {
-      buildConfig
-    },
     id: e.data.id
   }, undefined);
 }
