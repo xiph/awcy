@@ -507,6 +507,30 @@ export class Decoder {
     this.initWorker();
   }
 
+  load(url): Promise<any> {
+    if (url.indexOf("://") < 0) {
+      url = window.location.origin + '/' + url;
+    }
+    return new Promise((resolve, reject) => {
+      var id = String(Math.random());
+      this.addWorkerCallback(id, (e) => {3
+        if (e.data.payload) {
+          this.workerInfo = {
+            buildConfig: e.data.payload.buildConfig
+          }
+          resolve();
+        } else {
+          reject(`Cannot load decoder, check url: ${url}`);
+        }
+      });
+      this.worker.postMessage({
+        command: "load",
+        payload: [url],
+        id
+      });
+    });
+  }
+
   openFileBytes(buffer: Uint8Array) {
     this.frameRate = buffer[16] | buffer[17] << 24 | buffer[18] << 16 | buffer[19] << 24;
     this.buffer = buffer;
@@ -530,14 +554,6 @@ export class Decoder {
       }
       this.workerCallbacks[e.data.id](e);
       this.workerCallbacks[e.data.id] = null;
-    });
-    let id = String(Math.random());
-    this.addWorkerCallback(id, (e) => {
-      this.workerInfo = e.data.payload;
-    });
-    this.worker.postMessage({
-      command: "readInfo",
-      id: id
     });
   }
 
@@ -571,7 +587,7 @@ export class Decoder {
       });
       worker.postMessage({
         command: "readFrame",
-        id: id
+        id
       });
     });
   }
@@ -588,12 +604,12 @@ export class Decoder {
   static loadDecoder(url: string): Promise<Decoder> {
     return new Promise((resolve, reject) => {
       let worker = new Worker("dist/analyzer_worker.bundle.js");
-      worker.postMessage({
-        command: "importScripts",
-        payload: [url]
+      let decoder = new Decoder(null, worker);
+      decoder.load(url).then(() => {
+        resolve(decoder);
+      }).catch((x) => {
+        reject(x);
       });
-      worker.postMessage({ command: "load" });
-      resolve(new Decoder(null, worker));
     });
   }
 }
