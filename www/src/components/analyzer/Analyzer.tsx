@@ -310,6 +310,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   toastTimeout: any;
   mousePosition: Vector;
   mouseZoomPosition: Vector;
+  downloadLink: HTMLAnchorElement = null;
 
   options = {
     // showY: {
@@ -961,6 +962,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     return s;
   }
 
+  downloadImage() {
+    this.downloadLink.href = this.frameCanvas.toDataURL("image/png");
+    this.downloadLink.download = "frame.png";
+    if (this.downloadLink.href as any != document.location) {
+      this.downloadLink.click();
+    }
+  }
+
   decodeAdditionalFrames(count: number) {
     if (count > 4) {
       alert("This may take a while.");
@@ -1026,6 +1035,11 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
                 <OverlayTrigger placement="top" overlay={<Tooltip>Toggle Tools: tab</Tooltip>}>
                   <Button onClick={this.toggleTools.bind(this)}><span className="icon-h"></span></Button>
                 </OverlayTrigger>
+
+                <OverlayTrigger placement="top" overlay={<Tooltip>Save Image</Tooltip>}>
+                  <Button onClick={this.downloadImage.bind(this)}><span className="glyphicon glyphicon-camera"></span></Button>
+                </OverlayTrigger>
+
                 <OverlayTrigger placement="top" overlay={<Tooltip>Repeat: r</Tooltip>}>
                   <Button onClick={this.resetLayersAndActiveFrame.bind(this)}><span className="glyphicon glyphicon-repeat"></span></Button>
                 </OverlayTrigger>
@@ -1164,6 +1178,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let groupName = this.props.groupNames ? this.props.groupNames[activeGroup] : String(activeGroup);
 
     return <div>
+      <a style={{ display: "none" }} ref={(self: any) => this.downloadLink = self} />
       <div className="toast" ref={(self: any) => this.toast = self}>
         Toast
       </div>
