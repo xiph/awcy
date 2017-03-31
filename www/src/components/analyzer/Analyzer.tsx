@@ -235,7 +235,7 @@ export class ModeInfoComponent extends React.Component<{
       if (!referenceFrame) return "N/A";
       let map = json["referenceFrameMap"];
       let v = referenceFrame[r][c];
-      let a = v[1] >= 0 ? keyForValue(map, v[0]) : "N/A";
+      let a = v[0] >= 0 ? keyForValue(map, v[0]) : "N/A";
       let b = v[1] >= 0 ? keyForValue(map, v[1]) : "N/A";
       return `${a}, ${b}`;
     }
