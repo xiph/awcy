@@ -120,7 +120,7 @@ function drawLine(ctx: CanvasRenderingContext2D, x, y, dx, dy) {
 }
 
 interface BlockVisitor {
-  (size: number, c: number, r: number, sc: number, sr: number, bounds: Rectangle): void;
+  (size: number, c: number, r: number, sc: number, sr: number, bounds: Rectangle, scale: number): void;
 }
 
 interface AnalyzerViewProps {
@@ -249,8 +249,8 @@ export class ModeInfoComponent extends React.Component<{
       <div style={{ float: "left", width: "60%" }}>
         <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
         <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
-        <div><span className="propertyName">Dering:</span> <span className="propertyValue">{getSuperBlockProperty("deringGain")}</span></div>
-        <div><span className="propertyName">CLPF:</span> <span className="propertyValue">{getProperty("clpf")}</span></div>
+        <div><span className="propertyName">CDEF Level:</span> <span className="propertyValue">{getSuperBlockProperty("cdef_level")}</span></div>
+        <div><span className="propertyName">CDEF Strength:</span> <span className="propertyValue">{getSuperBlockProperty("cdef_strength")}</span></div>
         <div><span className="propertyName">Motion Vectors:</span> <span className="propertyValue">{getMotionVector()}</span></div>
         <div><span className="propertyName">Reference Frame:</span> <span className="propertyValue">{getReferenceFrame()}</span></div>
       </div>
@@ -269,8 +269,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   showSuperBlockGrid: boolean;
   showTransformGrid: boolean;
   showSkip: boolean;
-  showDering: boolean;
-  showCLPF: boolean;
+  showCDEF: boolean;
   showMode: boolean;
   showBits: boolean;
   showBitsScale: "frame" | "video" | "videos";
@@ -402,13 +401,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       value: undefined,
       icon: "icon-m"
     },
-    // showDering: {
-    //   key: "d",
-    //   description: "Dering",
-    //   detail: "Display blocks where the deringing filter is applied.",
-    //   default: false,
-    //   value: undefined
-    // },
+    showCDEF: {
+      key: "d",
+      description: "CDEF",
+      detail: "Display blocks where the CDEF filter is applied.",
+      default: false,
+      value: undefined
+    },
     // showCLPF: {
     //   key: "l",
     //   description: "CLFP",
@@ -486,8 +485,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       showSuperBlockGrid: false,
       showTransformGrid: false,
       showSkip: false,
-      showDering: false,
-      showCLPF: false,
+      showCDEF: false,
       showMode: false,
       showBits: false,
       showBitsScale: "frame",
@@ -628,8 +626,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.state.showSkip && this.drawSkip(frame, ctx, src, dst);
     this.state.showMode && this.drawMode(frame, ctx, src, dst);
     this.state.showBits && this.drawBits(frame, ctx, src, dst);
-    this.state.showDering && this.drawDering(frame, ctx, src, dst);
-    this.state.showCLPF && this.drawCLPF(frame, ctx, src, dst);
+    this.state.showCDEF && this.drawCDEF(frame, ctx, src, dst);
     this.state.showTransformType && this.drawTransformType(frame, ctx, src, dst);
     this.state.showMotionVectors && this.drawMotionVectors(frame, ctx, src, dst);
     this.state.showReferenceFrames && this.drawReferenceFrames(frame, ctx, src, dst);
@@ -1227,39 +1224,35 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       return true;
     });
   }
-  drawDering(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
-    let dering = frame.json["deringGain"];
-    if (!dering) {
-      return;
-    }
+  drawCDEF(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
+    let level = frame.json["cdef_level"];
+    let strength = frame.json["cdef_strength"];
+    if (!level) return;
+    if (!strength) return;
+    ctx.globalAlpha = 0.5;
     this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
-      let v = dering[r][c];
+      let v = level[r][c];
       if (!v) {
         return false;
       }
-      ctx.fillStyle = colorScale(v / 3, HEAT_COLORS);
+      ctx.fillStyle = colorScale(v / 63, HEAT_COLORS);
       return true;
     }, "super-block");
-  }
-  drawCLPF(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
-    let clpf = frame.json["clpf"];
-    if (!clpf) {
-      return;
-    }
-    let strengthY = frame.json["clpfStrengthY"];
-    let size = frame.json["clpfSize"];
-    if (!size) {
-      return;
-    }
-    // Size 0 means no block signaling, 1 = 32x32, 2 = 64x64, 3 = 128x128.
-    this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
-      let v = clpf[r][c];
-      if (!v || v < 0) {
+    ctx.globalAlpha = 1;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "white";
+    ctx.font = String(8 * this.ratio) + "pt Courier New";
+    this.drawBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr, bounds, scale) => {
+      let s = strength[r][c];
+      let l = level[r][c];
+      if (!s && !l) {
         return false;
       }
-      ctx.fillStyle = colorScale((v * strengthY) / 4, HEAT_COLORS);
+      let o = bounds.getCenter();
+      ctx.fillText(l + "/" + s, o.x, o.y);
       return true;
-    }, (CLPF_SIZE_LOG2 - MI_SIZE_LOG2) + (size - 1));
+    }, "super-block");
   }
   drawReferenceFrames(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let reference = frame.json["referenceFrame"];
@@ -1455,7 +1448,16 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     });
     ctx.restore();
   }
-
+  drawBlock(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, visitor: BlockVisitor, mode: string | number = "block") {
+    let scale = dst.w / src.w;
+    ctx.save();
+    ctx.translate(-src.x * scale, -src.y * scale);
+    this.visitBlocks(mode, frame, (blockSize, c, r, sc, sr, bounds) => {
+      bounds.multiplyScalar(scale);
+      visitor(blockSize, c, r, sc, sr, bounds, scale);
+    });
+    ctx.restore();
+  }
   visitBlocks(mode: string | number, frame: AnalyzerFrame, visitor: BlockVisitor) {
     let blockSize = frame.json["blockSize"];
     let blockSizeMap = frame.json["blockSizeMap"];
@@ -1472,14 +1474,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       for (let c = 0; c < cols; c += 1 << mode) {
         for (let r = 0; r < rows; r += 1 << mode) {
           let size = blockSize[r][c];
-          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, MI_SIZE << mode, MI_SIZE << mode));
+          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, MI_SIZE << mode, MI_SIZE << mode), 1);
         }
       }
     } else if (mode === "super-block") {
       for (let c = 0; c < cols; c += SUPER_MI_SIZE / MI_SIZE) {
         for (let r = 0; r < rows; r += SUPER_MI_SIZE / MI_SIZE) {
           let size = blockSize[r][c];
-          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, SUPER_MI_SIZE, SUPER_MI_SIZE));
+          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, SUPER_MI_SIZE, SUPER_MI_SIZE), 1);
         }
       }
     } else if (mode === "block") {
@@ -1496,7 +1498,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             let w = (1 << BLOCK_SIZES[size][0]);
             let h = (1 << BLOCK_SIZES[size][1]);
             if (size == i) {
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
             }
           }
         }
@@ -1514,18 +1516,18 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           let h = (1 << BLOCK_SIZES[size][1]);
           switch (size) {
             case BLOCK_4X4:
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
-              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h));
-              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h));
-              visitor(size, c, r, 1, 1, bounds.set(c * S + w, r * S + h, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
+              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h), 1);
+              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h), 1);
+              visitor(size, c, r, 1, 1, bounds.set(c * S + w, r * S + h, w, h), 1);
               break;
             case BLOCK_8X4:
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
-              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
+              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h), 1);
               break;
             case BLOCK_4X8:
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
-              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
+              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h), 1);
               break;
           }
         }
@@ -1553,7 +1555,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             let w = (1 << TRANSFORM_SIZES[size][0]);
             let h = (1 << TRANSFORM_SIZES[size][1]);
             if (size == i) {
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
             }
           }
         }
@@ -1570,10 +1572,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           let h = (1 << TRANSFORM_SIZES[size][1]);
           switch (size) {
             case TX_4X4:
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
-              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h));
-              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h));
-              visitor(size, c, r, 1, 1, bounds.set(c * S + w, r * S + h, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
+              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h), 1);
+              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h), 1);
+              visitor(size, c, r, 1, 1, bounds.set(c * S + w, r * S + h, w, h), 1);
               break;
           }
         }
