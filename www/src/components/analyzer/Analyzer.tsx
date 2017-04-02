@@ -1240,7 +1240,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let strength = frame.json["cdef_strength"];
     if (!level) return;
     if (!strength) return;
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = 0.2;
     this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
       let v = level[r][c];
       if (!v) {
