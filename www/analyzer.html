@@ -460,33 +460,15 @@
       pointer-events: none;
     }
 
-
-
-    #bottomPanel {
-      font-size: 12px;
-      position: fixed;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      z-index: 20;
-      opacity: 1;
-      height: 240px;
-      background-color: rgba(20, 20, 20, 0.9);
-      padding-top: 10px;
-      padding-left: 10px;
-      vertical-align: middle;
-      color: white;
-    }
-
     #sidePanel {
       position: fixed;
-      top: 500px;
+      top: 0;
       bottom: 0;
       right: 0;
       z-index: 20;
       opacity: 1;
       width: 500px;
-      background-color: rgba(20, 20, 20, 0.9);
+      background-color: rgba(20, 20, 20, 1);
       vertical-align: middle;
       color: white;
       padding: 10px;
@@ -530,22 +512,6 @@
       color: white;
     }
 
-
-
-    #zoomContainer {
-      position: fixed;
-      top: 0;
-      right: 0;
-      z-index: 20;
-      opacity: 1;
-      width: 500px;
-      height: 500px;
-      pointer-events: none;
-      background-color: rgba(20, 20, 20, 0.8);
-    }
-
-
-
     .sectionHeader {
       font-size: 12px;
       margin-top: 8px;
@@ -555,8 +521,6 @@
       color: deepskyblue;
       clear: left;
     }
-
-
 
     .propertyName {
       font-size: 11px;
@@ -655,7 +619,8 @@
     }
 
     .nav>li>a {
-      padding: 8px;
+      padding: 4px;
+      border-radius: 0;
     }
   </style>
   <div id="analyzer-app"></div>
