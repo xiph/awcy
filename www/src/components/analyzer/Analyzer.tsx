@@ -15,7 +15,7 @@ const MI_SIZE_LOG2 = 3;
 const MI_SIZE = 1 << MI_SIZE_LOG2;
 const CLPF_SIZE_LOG2 = 5;
 const SUPER_MI_SIZE = MI_SIZE << 3;
-const ZOOM_WIDTH = 500;
+const ZOOM_WIDTH = 480;
 const ZOOM_SOURCE = 64;
 const DEFAULT_CONFIG = "--disable-multithread --disable-runtime-cpu-detect --target=generic-gnu --enable-accounting --enable-analyzer --enable-aom_highbitdepth --extra-cflags=-D_POSIX_SOURCE";
 
@@ -120,7 +120,7 @@ function drawLine(ctx: CanvasRenderingContext2D, x, y, dx, dy) {
 }
 
 interface BlockVisitor {
-  (size: number, c: number, r: number, sc: number, sr: number, bounds: Rectangle): void;
+  (size: number, c: number, r: number, sc: number, sr: number, bounds: Rectangle, scale: number): void;
 }
 
 interface AnalyzerViewProps {
@@ -249,8 +249,8 @@ export class ModeInfoComponent extends React.Component<{
       <div style={{ float: "left", width: "60%" }}>
         <div><span className="propertyName">Mode:</span> <span className="propertyValue">{getProperty("mode")}</span></div>
         <div><span className="propertyName">Skip:</span> <span className="propertyValue">{getProperty("skip")}</span></div>
-        <div><span className="propertyName">Dering:</span> <span className="propertyValue">{getSuperBlockProperty("deringGain")}</span></div>
-        <div><span className="propertyName">CLPF:</span> <span className="propertyValue">{getProperty("clpf")}</span></div>
+        <div><span className="propertyName">CDEF Level:</span> <span className="propertyValue">{getSuperBlockProperty("cdef_level")}</span></div>
+        <div><span className="propertyName">CDEF Strength:</span> <span className="propertyValue">{getSuperBlockProperty("cdef_strength")}</span></div>
         <div><span className="propertyName">Motion Vectors:</span> <span className="propertyValue">{getMotionVector()}</span></div>
         <div><span className="propertyName">Reference Frame:</span> <span className="propertyValue">{getReferenceFrame()}</span></div>
       </div>
@@ -269,8 +269,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   showSuperBlockGrid: boolean;
   showTransformGrid: boolean;
   showSkip: boolean;
-  showDering: boolean;
-  showCLPF: boolean;
+  showCDEF: boolean;
   showMode: boolean;
   showBits: boolean;
   showBitsScale: "frame" | "video" | "videos";
@@ -402,13 +401,13 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       value: undefined,
       icon: "icon-m"
     },
-    // showDering: {
-    //   key: "d",
-    //   description: "Dering",
-    //   detail: "Display blocks where the deringing filter is applied.",
-    //   default: false,
-    //   value: undefined
-    // },
+    showCDEF: {
+      key: "d",
+      description: "CDEF",
+      detail: "Display blocks where the CDEF filter is applied.",
+      default: false,
+      value: undefined
+    },
     // showCLPF: {
     //   key: "l",
     //   description: "CLFP",
@@ -486,8 +485,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       showSuperBlockGrid: false,
       showTransformGrid: false,
       showSkip: false,
-      showDering: false,
-      showCLPF: false,
+      showCDEF: false,
       showMode: false,
       showBits: false,
       showBitsScale: "frame",
@@ -532,6 +530,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.overlayCanvas.height = h * scale * this.ratio;
     this.overlayContext = this.overlayCanvas.getContext("2d");
 
+    this.resetZoomCanvas(null);
+  }
+  resetZoomCanvas(canvas: HTMLCanvasElement) {
+    this.zoomCanvas = canvas;
+    if (!this.zoomCanvas) {
+      this.zoomContext = null;
+      return;
+    }
     this.zoomCanvas.style.width = ZOOM_WIDTH + "px";
     this.zoomCanvas.style.height = ZOOM_WIDTH + "px";
     this.zoomCanvas.width = ZOOM_WIDTH * this.ratio;
@@ -606,6 +612,9 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     }
   }
   drawZoom(group: number, index: number) {
+    if (!this.zoomCanvas) {
+      return;
+    }
     let frame = this.props.groups[group][index];
     let mousePosition = this.mouseZoomPosition.clone().divideScalar(this.state.scale).snap();
     let src = Rectangle.createRectangleCenteredAtPoint(mousePosition, ZOOM_SOURCE, ZOOM_SOURCE);
@@ -628,8 +637,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.state.showSkip && this.drawSkip(frame, ctx, src, dst);
     this.state.showMode && this.drawMode(frame, ctx, src, dst);
     this.state.showBits && this.drawBits(frame, ctx, src, dst);
-    this.state.showDering && this.drawDering(frame, ctx, src, dst);
-    this.state.showCLPF && this.drawCLPF(frame, ctx, src, dst);
+    this.state.showCDEF && this.drawCDEF(frame, ctx, src, dst);
     this.state.showTransformType && this.drawTransformType(frame, ctx, src, dst);
     this.state.showMotionVectors && this.drawMotionVectors(frame, ctx, src, dst);
     this.state.showReferenceFrames && this.drawReferenceFrames(frame, ctx, src, dst);
@@ -986,10 +994,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     for (let name in this.options) {
       let option = this.options[name];
       layerButtons.push(
-        <OverlayTrigger placement="top" overlay={<Tooltip>{option.detail}({option.key})</Tooltip>}>
+        <OverlayTrigger placement="bottom" overlay={<Tooltip>{option.detail}({option.key})</Tooltip>}>
           {option.icon ?
-            <Button bsStyle={this.state[name] ? "primary" : "default"} onClick={this.toggleLayer.bind(this, name)}><span className={option.icon}></span></Button> :
-            <Button bsStyle={this.state[name] ? "primary" : "default"} onClick={this.toggleLayer.bind(this, name)}>{option.description}</Button>
+            <Button bsSize="small" bsStyle={this.state[name] ? "primary" : "default"} onClick={this.toggleLayer.bind(this, name)}><span className={option.icon}></span></Button> :
+            <Button bsSize="small" bsStyle={this.state[name] ? "primary" : "default"} onClick={this.toggleLayer.bind(this, name)}>{option.description}</Button>
           }
         </OverlayTrigger>
       );
@@ -1032,48 +1040,47 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           <div id="sidePanelFixedArea">
             <div style={{ paddingTop: "4px" }}>
               <ButtonGroup>
-                <OverlayTrigger placement="top" overlay={<Tooltip>Toggle Tools: tab</Tooltip>}>
-                  <Button onClick={this.toggleTools.bind(this)}><span className="icon-h"></span></Button>
+                <OverlayTrigger placement="bottom" overlay={<Tooltip>Toggle Tools: tab</Tooltip>}>
+                  <Button bsSize="small" onClick={this.toggleTools.bind(this)}><span className="icon-h"></span></Button>
                 </OverlayTrigger>
 
-                <OverlayTrigger placement="top" overlay={<Tooltip>Save Image</Tooltip>}>
-                  <Button onClick={this.downloadImage.bind(this)}><span className="glyphicon glyphicon-camera"></span></Button>
+                <OverlayTrigger placement="bottom" overlay={<Tooltip>Save Image</Tooltip>}>
+                  <Button bsSize="small" onClick={this.downloadImage.bind(this)}><span className="glyphicon glyphicon-camera"></span></Button>
                 </OverlayTrigger>
 
-                <OverlayTrigger placement="top" overlay={<Tooltip>Repeat: r</Tooltip>}>
-                  <Button onClick={this.resetLayersAndActiveFrame.bind(this)}><span className="glyphicon glyphicon-repeat"></span></Button>
+                <OverlayTrigger placement="bottom" overlay={<Tooltip>Repeat: r</Tooltip>}>
+                  <Button bsSize="small" onClick={this.resetLayersAndActiveFrame.bind(this)}><span className="glyphicon glyphicon-repeat"></span></Button>
                 </OverlayTrigger>
 
-                <OverlayTrigger placement="top" overlay={<Tooltip>Previous: ,</Tooltip>}>
-                  <Button onClick={this.advanceFrame.bind(this, -1)}><span className="glyphicon glyphicon-step-backward"></span></Button>
+                <OverlayTrigger placement="bottom" overlay={<Tooltip>Previous: ,</Tooltip>}>
+                  <Button bsSize="small" onClick={this.advanceFrame.bind(this, -1)}><span className="glyphicon glyphicon-step-backward"></span></Button>
                 </OverlayTrigger>
 
-                <OverlayTrigger placement="top" overlay={<Tooltip>Pause / Play: space</Tooltip>}>
-                  <Button onClick={this.playPause.bind(this)}><span className="glyphicon glyphicon-play"></span></Button>
+                <OverlayTrigger placement="bottom" overlay={<Tooltip>Pause / Play: space</Tooltip>}>
+                  <Button bsSize="small" onClick={this.playPause.bind(this)}><span className="glyphicon glyphicon-play"></span></Button>
                 </OverlayTrigger>
 
-                <OverlayTrigger placement="top" overlay={<Tooltip>Next: .</Tooltip>}>
-                  <Button onClick={this.advanceFrame.bind(this, 1)}><span className="glyphicon glyphicon-step-forward"></span></Button>
+                <OverlayTrigger placement="bottom" overlay={<Tooltip>Next: .</Tooltip>}>
+                  <Button bsSize="small" onClick={this.advanceFrame.bind(this, 1)}><span className="glyphicon glyphicon-step-forward"></span></Button>
                 </OverlayTrigger>
 
-                <OverlayTrigger placement="top" overlay={<Tooltip>Zoom Out: [</Tooltip>}>
-                  <Button onClick={this.zoom.bind(this, 1 / 2)}><span className="glyphicon glyphicon-zoom-out"></span></Button>
+                <OverlayTrigger placement="bottom" overlay={<Tooltip>Zoom Out: [</Tooltip>}>
+                  <Button bsSize="small" onClick={this.zoom.bind(this, 1 / 2)}><span className="glyphicon glyphicon-zoom-out"></span></Button>
                 </OverlayTrigger>
 
-                <OverlayTrigger placement="top" overlay={<Tooltip>Zoom In: ]</Tooltip>}>
-                  <Button onClick={this.zoom.bind(this, 2)}><span className="glyphicon glyphicon-zoom-in"></span></Button>
+                <OverlayTrigger placement="bottom" overlay={<Tooltip>Zoom In: ]</Tooltip>}>
+                  <Button bsSize="small" onClick={this.zoom.bind(this, 2)}><span className="glyphicon glyphicon-zoom-in"></span></Button>
                 </OverlayTrigger>
 
-                <OverlayTrigger placement="top" overlay={<Tooltip>Decode 4 Additional Frames</Tooltip>}>
-                  <Button onClick={this.decodeAdditionalFrames.bind(this, 4)}><span className="glyphicon glyphicon-cog"></span></Button>
+                <OverlayTrigger placement="bottom" overlay={<Tooltip>Decode 4 Additional Frames</Tooltip>}>
+                  <Button bsSize="small" onClick={this.decodeAdditionalFrames.bind(this, 4)}><span className="glyphicon glyphicon-cog"></span></Button>
                 </OverlayTrigger>
 
-                <OverlayTrigger placement="top" overlay={<Tooltip>Decode All Remaining Frames</Tooltip>}>
-                  <Button onClick={this.decodeAdditionalFrames.bind(this, 120)}><span className="glyphicon glyphicon-film"></span></Button>
+                <OverlayTrigger placement="bottom" overlay={<Tooltip>Decode All Remaining Frames</Tooltip>}>
+                  <Button bsSize="small" onClick={this.decodeAdditionalFrames.bind(this, 120)}><span className="glyphicon glyphicon-film"></span></Button>
                 </OverlayTrigger>
               </ButtonGroup>
             </div>
-            <div className="sectionHeader">Layers</div>
             <div style={{ paddingTop: "4px" }}>
               <ButtonGroup>
                 {layerButtons}
@@ -1084,40 +1091,44 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           {layerOptions.length ? <div className="sectionHeader">Layer Options</div> : null}
           {layerOptions}
 
-          <div id="sidePanelScrollArea">
-            <div className="sectionHeader">Histograms</div>
-            <Tabs defaultActiveKey={2} id="uncontrolled-tab-example" bsStyle="pills">
-              <Tab eventKey={1} title="Bits">
+          <div id="sidePanelScrollArea" style={{ paddingTop: "4px" }}>
+            <Tabs defaultActiveKey={1} id="uncontrolled-tab-example" bsStyle="pills">
+              <Tab eventKey={1} title="Zoom">
+                <div className="tabContainer">
+                  <canvas ref={(self: any) => this.resetZoomCanvas(self) } width="256" height="256"></canvas>
+                </div>
+              </Tab>
+              <Tab eventKey={2} title="Bits">
                 <div className="tabContainer">
                   <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={460} scale="max"></HistogramComponent>
                 </div>
               </Tab>
-              <Tab eventKey={2} title="Symbols">
+              <Tab eventKey={3} title="Symbols">
                 <div className="tabContainer">
                   <HistogramComponent histograms={this.getSymbolHist(frames)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
-              <Tab eventKey={3} title="Block Size">
+              <Tab eventKey={4} title="Block Size">
                 <div className="tabContainer">
                   <HistogramComponent histograms={frames.map(x => x.blockSizeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
-              <Tab eventKey={4} title="Tx Size">
+              <Tab eventKey={5} title="Tx Size">
                 <div className="tabContainer">
                   <HistogramComponent histograms={frames.map(x => x.transformSizeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
-              <Tab eventKey={5} title="Tx Type">
+              <Tab eventKey={6} title="Tx Type">
                 <div className="tabContainer">
                   <HistogramComponent histograms={frames.map(x => x.transformTypeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
-              <Tab eventKey={6} title="Prediction Mode">
+              <Tab eventKey={7} title="Prediction Mode">
                 <div className="tabContainer">
                   <HistogramComponent histograms={frames.map(x => x.predictionModeHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
               </Tab>
-              <Tab eventKey={7} title="Skip">
+              <Tab eventKey={8} title="Skip">
                 <div className="tabContainer">
                   <HistogramComponent histograms={frames.map(x => x.skipHist)} highlight={this.state.activeFrame} height={256} width={460}></HistogramComponent>
                 </div>
@@ -1209,9 +1220,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           </div>
         </div>
       }
-      <div id="zoomContainer" style={{ display: this.state.showTools ? "block" : "none" }}>
-        <canvas ref={(self: any) => this.zoomCanvas = self} width="256" height="256"></canvas>
-      </div>
     </div>
   }
 
@@ -1227,39 +1235,35 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       return true;
     });
   }
-  drawDering(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
-    let dering = frame.json["deringGain"];
-    if (!dering) {
-      return;
-    }
+  drawCDEF(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
+    let level = frame.json["cdef_level"];
+    let strength = frame.json["cdef_strength"];
+    if (!level) return;
+    if (!strength) return;
+    ctx.globalAlpha = 0.2;
     this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
-      let v = dering[r][c];
+      let v = level[r][c];
       if (!v) {
         return false;
       }
-      ctx.fillStyle = colorScale(v / 3, HEAT_COLORS);
+      ctx.fillStyle = colorScale(v / 63, HEAT_COLORS);
       return true;
     }, "super-block");
-  }
-  drawCLPF(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
-    let clpf = frame.json["clpf"];
-    if (!clpf) {
-      return;
-    }
-    let strengthY = frame.json["clpfStrengthY"];
-    let size = frame.json["clpfSize"];
-    if (!size) {
-      return;
-    }
-    // Size 0 means no block signaling, 1 = 32x32, 2 = 64x64, 3 = 128x128.
-    this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
-      let v = clpf[r][c];
-      if (!v || v < 0) {
+    ctx.globalAlpha = 1;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "white";
+    ctx.font = String(8 * this.ratio) + "pt Courier New";
+    this.drawBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr, bounds, scale) => {
+      let s = strength[r][c];
+      let l = level[r][c];
+      if (!s && !l) {
         return false;
       }
-      ctx.fillStyle = colorScale((v * strengthY) / 4, HEAT_COLORS);
+      let o = bounds.getCenter();
+      ctx.fillText(l + "/" + s, o.x, o.y);
       return true;
-    }, (CLPF_SIZE_LOG2 - MI_SIZE_LOG2) + (size - 1));
+    }, "super-block");
   }
   drawReferenceFrames(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
     let reference = frame.json["referenceFrame"];
@@ -1455,7 +1459,16 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     });
     ctx.restore();
   }
-
+  drawBlock(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle, visitor: BlockVisitor, mode: string | number = "block") {
+    let scale = dst.w / src.w;
+    ctx.save();
+    ctx.translate(-src.x * scale, -src.y * scale);
+    this.visitBlocks(mode, frame, (blockSize, c, r, sc, sr, bounds) => {
+      bounds.multiplyScalar(scale);
+      visitor(blockSize, c, r, sc, sr, bounds, scale);
+    });
+    ctx.restore();
+  }
   visitBlocks(mode: string | number, frame: AnalyzerFrame, visitor: BlockVisitor) {
     let blockSize = frame.json["blockSize"];
     let blockSizeMap = frame.json["blockSizeMap"];
@@ -1472,14 +1485,14 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       for (let c = 0; c < cols; c += 1 << mode) {
         for (let r = 0; r < rows; r += 1 << mode) {
           let size = blockSize[r][c];
-          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, MI_SIZE << mode, MI_SIZE << mode));
+          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, MI_SIZE << mode, MI_SIZE << mode), 1);
         }
       }
     } else if (mode === "super-block") {
       for (let c = 0; c < cols; c += SUPER_MI_SIZE / MI_SIZE) {
         for (let r = 0; r < rows; r += SUPER_MI_SIZE / MI_SIZE) {
           let size = blockSize[r][c];
-          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, SUPER_MI_SIZE, SUPER_MI_SIZE));
+          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, SUPER_MI_SIZE, SUPER_MI_SIZE), 1);
         }
       }
     } else if (mode === "block") {
@@ -1496,7 +1509,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             let w = (1 << BLOCK_SIZES[size][0]);
             let h = (1 << BLOCK_SIZES[size][1]);
             if (size == i) {
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
             }
           }
         }
@@ -1514,18 +1527,18 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           let h = (1 << BLOCK_SIZES[size][1]);
           switch (size) {
             case BLOCK_4X4:
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
-              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h));
-              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h));
-              visitor(size, c, r, 1, 1, bounds.set(c * S + w, r * S + h, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
+              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h), 1);
+              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h), 1);
+              visitor(size, c, r, 1, 1, bounds.set(c * S + w, r * S + h, w, h), 1);
               break;
             case BLOCK_8X4:
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
-              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
+              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h), 1);
               break;
             case BLOCK_4X8:
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
-              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
+              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h), 1);
               break;
           }
         }
@@ -1553,7 +1566,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             let w = (1 << TRANSFORM_SIZES[size][0]);
             let h = (1 << TRANSFORM_SIZES[size][1]);
             if (size == i) {
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
             }
           }
         }
@@ -1570,10 +1583,10 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           let h = (1 << TRANSFORM_SIZES[size][1]);
           switch (size) {
             case TX_4X4:
-              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h));
-              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h));
-              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h));
-              visitor(size, c, r, 1, 1, bounds.set(c * S + w, r * S + h, w, h));
+              visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, w, h), 1);
+              visitor(size, c, r, 0, 1, bounds.set(c * S, r * S + h, w, h), 1);
+              visitor(size, c, r, 1, 0, bounds.set(c * S + w, r * S, w, h), 1);
+              visitor(size, c, r, 1, 1, bounds.set(c * S + w, r * S + h, w, h), 1);
               break;
           }
         }
