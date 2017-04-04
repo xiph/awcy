@@ -5,6 +5,15 @@ ab_paths.json
 config.json
 list.json
 
+av1/
+av1-rt
+vp10/
+vp9/
+daala/
+daalatool/
+rd_tool/
+thor/
+
 # Logs
 logs
 *.log
