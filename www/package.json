@@ -26,6 +26,7 @@
     "webpack-notifier": "^1.4.1"
   },
   "dependencies": {
+    "argparse": "^1.0.9",
     "d3-scale": "^1.0.3",
     "es6-promise": "^3.2.1",
     "flux": "^2.1.1",
