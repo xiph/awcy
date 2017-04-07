@@ -266,6 +266,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
   showMotionVectors: boolean;
   showReferenceFrames: boolean;
   showBlockGrid: boolean;
+  showTileGrid: boolean;
   showSuperBlockGrid: boolean;
   showTransformGrid: boolean;
   showSkip: boolean;
@@ -378,13 +379,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       value: undefined,
       icon: "glyphicon glyphicon-th"
     },
-    // showTileGrid: {
-    //   key: "l",
-    //   description: "Tile Grid",
-    //   detail: "Display tile grid.",
-    //   default: false,
-    //   value: undefined
-    // },
     showTransformGrid: {
       key: "t",
       description: "Tx Grid",
@@ -401,20 +395,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       value: undefined,
       icon: "icon-m"
     },
-    showCDEF: {
-      key: "d",
-      description: "CDEF",
-      detail: "Display blocks where the CDEF filter is applied.",
-      default: false,
-      value: undefined
-    },
-    // showCLPF: {
-    //   key: "l",
-    //   description: "CLFP",
-    //   detail: "Display blocks where the CLPF filter is applied.",
-    //   default: false,
-    //   value: undefined
-    // },
     showMotionVectors: {
       key: "m",
       description: "Motion Vectors",
@@ -454,6 +434,20 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       default: false,
       value: undefined,
       icon: "icon-t"
+    },
+    showCDEF: {
+      key: "d",
+      description: "CDEF",
+      detail: "Display blocks where the CDEF filter is applied.",
+      default: false,
+      value: undefined
+    },
+    showTileGrid: {
+      key: "l",
+      description: "Tiles",
+      detail: "Display tile grid.",
+      default: false,
+      value: undefined
     }
   };
   constructor(props: AnalyzerViewProps) {
@@ -482,6 +476,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       activeGroup: 0,
       scale: 1,
       showBlockGrid: false,
+      showTileGrid: false,
       showSuperBlockGrid: false,
       showTransformGrid: false,
       showSkip: false,
@@ -645,6 +640,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     this.state.showSuperBlockGrid && this.drawGrid(frame, "super-block", "#87CEEB", ctx, src, dst, 2);
     this.state.showTransformGrid && this.drawGrid(frame, "transform", "yellow", ctx, src, dst);
     this.state.showBlockGrid && this.drawGrid(frame, "block", "white", ctx, src, dst);
+    this.state.showTileGrid && this.drawGrid(frame, "tile", "orange", ctx, src, dst, 5);
     ctx.restore();
 
   }
@@ -991,6 +987,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let groups = this.props.groups;
 
     let layerButtons = [];
+    let layerButtonGroups = [];
     for (let name in this.options) {
       let option = this.options[name];
       layerButtons.push(
@@ -1001,7 +998,16 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           }
         </OverlayTrigger>
       );
+      if (layerButtons.length == 16) {
+        layerButtonGroups.push(<div style={{ paddingTop: "4px" }}><ButtonGroup>
+          {layerButtons}
+        </ButtonGroup></div>);
+        layerButtons = [];
+      }
     }
+    layerButtonGroups.push(<div style={{ paddingTop: "4px" }}><ButtonGroup>
+      {layerButtons}
+    </ButtonGroup></div>);
 
     let sidePanel = null;
     let frames = this.props.groups[this.getActiveGroupIndex()];
@@ -1081,11 +1087,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
                 </OverlayTrigger>
               </ButtonGroup>
             </div>
-            <div style={{ paddingTop: "4px" }}>
-              <ButtonGroup>
-                {layerButtons}
-              </ButtonGroup>
-            </div>
+            {layerButtonGroups}
           </div>
 
           {layerOptions.length ? <div className="sectionHeader">Layer Options</div> : null}
@@ -1201,7 +1203,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             <div className="sectionHeader">Video</div>
             <div className="propertyValue">{groupName}</div>
             <div className="sectionHeader">Group</div>
-            <div className="propertyValue">{activeGroup}- {this.props.groupNames[activeGroup]}</div>
+            <div className="propertyValue">{activeGroup}: {this.props.groupNames[activeGroup]}</div>
             <div className="sectionHeader">Score</div>
             <div className="propertyValue">{this.getActiveGroupScore()}</div>
             <div className="sectionHeader">Frame</div>
@@ -1486,6 +1488,16 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
         for (let r = 0; r < rows; r += 1 << mode) {
           let size = blockSize[r][c];
           visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, MI_SIZE << mode, MI_SIZE << mode), 1);
+        }
+      }
+    } else if (mode === "tile") {
+      let tileCols = frame.json["tileCols"];
+      let tileRows = frame.json["tileRows"];
+      if (!tileCols || !tileRows) return;
+      for (let c = 0; c < cols; c += tileCols) {
+        for (let r = 0; r < rows; r += tileRows) {
+          let size = blockSize[r][c];
+          visitor(size, c, r, 0, 0, bounds.set(c * S, r * S, MI_SIZE * tileCols, MI_SIZE * tileRows), 1);
         }
       }
     } else if (mode === "super-block") {
