@@ -379,13 +379,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       value: undefined,
       icon: "glyphicon glyphicon-th"
     },
-    showTileGrid: {
-      key: "l",
-      description: "Tiles",
-      detail: "Display tile grid.",
-      default: false,
-      value: undefined
-    },
     showTransformGrid: {
       key: "t",
       description: "Tx Grid",
@@ -402,20 +395,6 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       value: undefined,
       icon: "icon-m"
     },
-    showCDEF: {
-      key: "d",
-      description: "CDEF",
-      detail: "Display blocks where the CDEF filter is applied.",
-      default: false,
-      value: undefined
-    },
-    // showCLPF: {
-    //   key: "l",
-    //   description: "CLFP",
-    //   detail: "Display blocks where the CLPF filter is applied.",
-    //   default: false,
-    //   value: undefined
-    // },
     showMotionVectors: {
       key: "m",
       description: "Motion Vectors",
@@ -455,6 +434,20 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
       default: false,
       value: undefined,
       icon: "icon-t"
+    },
+    showCDEF: {
+      key: "d",
+      description: "CDEF",
+      detail: "Display blocks where the CDEF filter is applied.",
+      default: false,
+      value: undefined
+    },
+    showTileGrid: {
+      key: "l",
+      description: "Tiles",
+      detail: "Display tile grid.",
+      default: false,
+      value: undefined
     }
   };
   constructor(props: AnalyzerViewProps) {
@@ -994,6 +987,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     let groups = this.props.groups;
 
     let layerButtons = [];
+    let layerButtonGroups = [];
     for (let name in this.options) {
       let option = this.options[name];
       layerButtons.push(
@@ -1004,7 +998,16 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
           }
         </OverlayTrigger>
       );
+      if (layerButtons.length == 16) {
+        layerButtonGroups.push(<div style={{ paddingTop: "4px" }}><ButtonGroup>
+          {layerButtons}
+        </ButtonGroup></div>);
+        layerButtons = [];
+      }
     }
+    layerButtonGroups.push(<div style={{ paddingTop: "4px" }}><ButtonGroup>
+      {layerButtons}
+    </ButtonGroup></div>);
 
     let sidePanel = null;
     let frames = this.props.groups[this.getActiveGroupIndex()];
@@ -1084,11 +1087,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
                 </OverlayTrigger>
               </ButtonGroup>
             </div>
-            <div style={{ paddingTop: "4px" }}>
-              <ButtonGroup>
-                {layerButtons}
-              </ButtonGroup>
-            </div>
+            {layerButtonGroups}
           </div>
 
           {layerOptions.length ? <div className="sectionHeader">Layer Options</div> : null}
@@ -1204,7 +1203,7 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
             <div className="sectionHeader">Video</div>
             <div className="propertyValue">{groupName}</div>
             <div className="sectionHeader">Group</div>
-            <div className="propertyValue">{activeGroup}- {this.props.groupNames[activeGroup]}</div>
+            <div className="propertyValue">{activeGroup}: {this.props.groupNames[activeGroup]}</div>
             <div className="sectionHeader">Score</div>
             <div className="propertyValue">{this.getActiveGroupScore()}</div>
             <div className="sectionHeader">Frame</div>
