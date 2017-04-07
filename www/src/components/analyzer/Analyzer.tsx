@@ -13,12 +13,12 @@ const DEFAULT_MARGIN = { top: 10, right: 10, bottom: 20, left: 40 };
 const MAX_FRAMES = 128;
 const MI_SIZE_LOG2 = 3;
 const MI_SIZE = 1 << MI_SIZE_LOG2;
-const CLPF_SIZE_LOG2 = 5;
 const SUPER_MI_SIZE = MI_SIZE << 3;
 const ZOOM_WIDTH = 480;
 const ZOOM_SOURCE = 64;
 const DEFAULT_CONFIG = "--disable-multithread --disable-runtime-cpu-detect --target=generic-gnu --enable-accounting --enable-analyzer --enable-aom_highbitdepth --extra-cflags=-D_POSIX_SOURCE";
-
+const DERING_STRENGTHS = 21;
+const CLPF_STRENGTHS = 4;
 
 function colorScale(v, colors) {
   return colors[Math.round(v * (colors.length - 1))];
@@ -1238,17 +1238,39 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     });
   }
   drawCDEF(frame: AnalyzerFrame, ctx: CanvasRenderingContext2D, src: Rectangle, dst: Rectangle) {
+    let skip = frame.json["skip"];
+    if (!skip) return;
+    let rows = skip.length;
+    let cols = skip[0].length;
+    function allSkip(c: number, r: number) {
+      let s = SUPER_MI_SIZE / MI_SIZE;
+      for (let y = 0; y < s; y++) {
+        for (let x = 0; x < s; x++) {
+          if (r + y >= rows || c + x >= cols) {
+            continue;
+          }
+          if (!skip[r + y][c + x]) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
     let level = frame.json["cdef_level"];
     let strength = frame.json["cdef_strength"];
     if (!level) return;
     if (!strength) return;
     ctx.globalAlpha = 0.2;
     this.drawFillBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr) => {
-      let v = level[r][c];
+      if (allSkip(c, r)) {
+        return;
+      }
+      let v = level[r][c] + strength[r][c];
       if (!v) {
         return false;
       }
-      ctx.fillStyle = colorScale(v / 63, HEAT_COLORS);
+      ctx.fillStyle = colorScale(v / (DERING_STRENGTHS + CLPF_STRENGTHS), HEAT_COLORS);
       return true;
     }, "super-block");
     ctx.globalAlpha = 1;
@@ -1257,11 +1279,11 @@ export class AnalyzerView extends React.Component<AnalyzerViewProps, {
     ctx.fillStyle = "white";
     ctx.font = String(8 * this.ratio) + "pt Courier New";
     this.drawBlock(frame, ctx, src, dst, (blockSize, c, r, sc, sr, bounds, scale) => {
+      if (allSkip(c, r)) {
+        return;
+      }
       let s = strength[r][c];
       let l = level[r][c];
-      if (!s && !l) {
-        return false;
-      }
       let o = bounds.getCenter();
       ctx.fillText(l + "/" + s, o.x, o.y);
       return true;
