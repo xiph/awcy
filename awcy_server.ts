@@ -159,7 +159,7 @@ function add_to_run_queue(job) {
 
 express.static.mime.define({'text/plain': ['out']});
 app.use(express.static(__dirname + '/www'));
-app.use('/analyzer',express.static(__dirname + '/aomanalyzer'));
+app.use('/analyzer',express.static(__dirname + '/../aomanalyzer'));
 app.get('/analyzer.html', function(req,res) {
   res.redirect('/analyzer' + req.originalUrl.substr(req.originalUrl.indexOf("?")));
 });
