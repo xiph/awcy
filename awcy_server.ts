@@ -417,4 +417,11 @@ app.post('/submit/setDesiredCapacity',function(req,res) {
   });
 });
 
+app.post('/update/analyzer', function(req,res) {
+  console.log('updating analyzer from webhook');
+  cp.execFile('./update_analyzer.sh',[],function(error,stdout,stderr) {
+    res.send(stderr+stdout);
+  });
+});
+
 app.listen(config.port);
