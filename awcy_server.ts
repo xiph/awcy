@@ -159,6 +159,7 @@ function add_to_run_queue(job) {
 
 express.static.mime.define({'text/plain': ['out']});
 app.use(express.static(__dirname + '/www'));
+app.use('/analyzer',express.static(__dirname + '/aomanalyzer'));
 app.use('/runs',express.static(__dirname + '/runs'));
 app.use('/sets.json',express.static(__dirname + '/rd_tool/sets.json'));
 app.use('/error.txt',express.static(__dirname + '/error.txt'));
