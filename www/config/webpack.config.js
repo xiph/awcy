@@ -5,18 +5,12 @@ var RELEASE = JSON.parse(process.env.RELEASE || '0');
 
 module.exports = {
   entry: {
-    index: "./src/index.tsx",
-    analyzer: "./src/analyzerEntry.tsx",
-    analyzer_worker: "./src/components/analyzer/worker.ts"
+    index: "./src/index.tsx"
   },
   output: {
     path: "./dist/",
     filename: "[name].bundle.js"
   },
-
-  // Enable sourcemaps for debugging webpack's output.
-  // devtool: "source-map",
-  devtool: "source-map",
 
   resolve: {
       // Add '.ts' and '.tsx' as resolvable extensions.
