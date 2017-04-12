@@ -145,7 +145,8 @@ export class AnalyzerLinksComponent extends React.Component<{
     this.modeOptions = [
       { value:  "", label: "Default" },
       { value:  "reference", label: "Compare w/ Reference" },
-      { value:  "blind", label: "Blind Mode" }
+      { value:  "blind", label: "Blind Mode" },
+      { value:  "split", label: "Split Mode" }
     ];
   }
   onMaxFramesChange(option) {
@@ -175,8 +176,9 @@ export class AnalyzerLinksComponent extends React.Component<{
     }
 
     function makeUrl(jobs: Job [], video: string, quality: number): string {
-      let modeOption = mode == "blind" ? "blind=1&" : "";
-      let url = analyzerBaseUrl + `?${modeOption}maxFrames=${maxFrames}&`;
+      let blindOption = mode == "blind" ? "blind=1&" : "";
+      let splitOption = mode == "split" ? "split=4&" : "";
+      let url = analyzerBaseUrl + `?${blindOption}${splitOption}maxFrames=${maxFrames}&`;
       if (mode == "reference") {
         url += makePair(jobs[0], video, qualities[0]) + "&";
       }
