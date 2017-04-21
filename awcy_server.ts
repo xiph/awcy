@@ -10,8 +10,13 @@ import irc = require('irc');
 import AWS = require('aws-sdk');
 import request = require('request');
 import querystring = require('querystring');
+import sqlite3 = require('sqlite3');
 
 const app = express();
+
+var sdb = new sqlite3.Database('subjective.sqlite3');
+
+app.set('trust proxy', 'loopback')
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
@@ -422,6 +427,38 @@ app.post('/update/analyzer', function(req,res) {
   cp.execFile('./update_analyzer.sh',[],function(error,stdout,stderr) {
     res.send(stderr+stdout);
   });
+});
+
+app.use('/subjective/vote', bodyParser.json());
+app.post('/subjective/vote', function(req,res) {
+  console.log('recording vote');
+  console.log(req.body);
+  var decoders: Array<String> = [];
+  const re = /https?:\/\/.*\/(.*\/.*)/g;
+  const video = re.exec(req.body.videos[0].video)[1];
+  var selected = -1;
+  for (var video_idx in req.body.videos) {
+    decoders.push(req.body.videos[video_idx].decoder);
+    if (req.body.videos[video_idx].selected) {
+      selected = parseInt(video_idx);
+    }
+  }
+  sdb.run('INSERT INTO votes VALUES (?, ?, ?, ?, ?, ?, ?)',
+          JSON.stringify(decoders),
+          video,
+          selected,
+          req.body.id,
+          JSON.stringify(req.body.metrics),
+          req.body.voter,
+          req.ip,
+          function(e) {
+            if (e) {
+              console.log(e);
+              res.send(e);
+            } else {
+              res.send('ok');
+            }
+          });
 });
 
 app.listen(config.port);
