@@ -16,7 +16,7 @@ const app = express();
 
 var sdb = new sqlite3.Database('subjective.sqlite3');
 
-app.set('trust proxy', 'true');
+app.enable('trust proxy');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
