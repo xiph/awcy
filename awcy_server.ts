@@ -437,9 +437,18 @@ app.post('/subjective/vote', function(req,res) {
   const re = /https?:\/\/.*\/(.*\/.*)/g;
   const video = re.exec(req.body.videos[0].video)[1];
   var selected = -1;
-  for (var video_idx in req.body.videos) {
-    decoders.push(req.body.videos[video_idx].decoder);
-    if (req.body.videos[video_idx].selected) {
+  const videos = req.body.videos.sort(function(a,b) {
+    if (a.decoder < b.decoder) {
+      return -1;
+    }
+    if (a.decoder > b.decoder) {
+      return 1;
+    }
+    return 0;
+  });
+  for (var video_idx in videos) {
+    decoders.push(videos[video_idx].decoder);
+    if (videos[video_idx].selected) {
       selected = parseInt(video_idx);
     }
   }
