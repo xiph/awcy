@@ -1,6 +1,7 @@
 #!/bin/bash
 cd ../aomanalyzer
 git pull
+npm install
 npm run build-release
 echo Building downloadable analyzers
 npm run package-linux
