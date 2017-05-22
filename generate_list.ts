@@ -2,6 +2,7 @@
 // have to manually implement it.
 import fs = require('fs-extra');
 import path = require('path');
+import glob = require('glob');
 
 const run_to_update = process.argv[2];
 
@@ -61,8 +62,9 @@ if (run_to_update) {
   // full update
   fs.readdirSync('runs').forEach(function(run_id) {
     try {
-      if (erases_old_images(run_id)) return;
+      // if (erases_old_images(run_id)) return;
       const job = create_list_entry(run_id);
+      erase_old_ivf_files(job);
       jobs.push(job);
     } catch (e) {};
   });
@@ -73,6 +75,21 @@ if (run_to_update) {
   const file_structure = read_ab_image_paths('runs');
   fs.writeFile('ab_paths.json', JSON.stringify(file_structure, null, 4));
 
+}
+
+function erase_old_ivf_files(job) {
+  const stat = fs.statSync('runs/' + job.run_id);
+  const age_ms = Date.now().valueOf() - stat.mtime.valueOf();
+  const age_days = age_ms / (1000 * 3600 * 24);
+  // Not old enough to erase files
+  if (age_days < 180) { return false; }
+  const files = glob.sync('runs/' + job.run_id + '/' + job.info.task + '/*.ivf');
+  if (files.length) {
+    console.log('Erasing old IVF files for ',job.run_id);
+    for (let file of files) {
+      fs.unlinkSync(file);
+    }
+  }
 }
 
 // The structure is that each folder contains an array of files.
