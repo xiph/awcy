@@ -4,10 +4,11 @@ This repository contains the arewecompressedyet.com website source code.
 
 Running your own local copy of the website
 ===
-To run a local copy, you will need to install node.js on your computer, create a configuration
-file called `config.json`, and a `secret_key` file which houses a password. The configuration
-file contains only one setting right now, which is the IRC channel that the AWCY bot will join. The
-password allows run submission to awcy. Awcy will run with any password.
+To run a local copy, you will need a copy of node and npm.
+
+First, run the `./setup.sh` script. It will create directories needed for AWCY to run.
+
+Next, create a configuration file called `config.json`.
 
 Here is an example config.json:
 
@@ -19,11 +20,16 @@ Here is an example config.json:
 }
 ```
 
+You will also need a file called `secret_key` which contains the key needed to use the website.
+
+```
+echo 'fake_password_to_compile' > secret_key
+```
+
 These commands will create the configuration files and install the node.js modules that get used by
 awcy. Open a node command line and run the following:
 
 ```
-echo 'fake_password_to_compile' > secret_key
 npm install
 npm start
 ```
