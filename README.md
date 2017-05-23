@@ -14,7 +14,8 @@ Here is an example config.json:
 ```
 { "channel": "#daalatest",
   "have_aws": false,
-  "port": 3000
+  "port": 3000,
+  "rd_server_url": "http://localhost:4000"
 }
 ```
 
@@ -33,6 +34,14 @@ or run the following in your command line:
   node awcy_server.js
 ```
 Now you can open localhost:3000 with your browser to see your local version of the website.
+
+Setting up repositories
+===
+For the website to build codecs, you need local checkouts of every codec. For example:
+```
+git clone https://aomedia.googlesource.com/aom av1
+ln -s av1 av1-rt
+```
 
 Run database format
 ===
