@@ -43,6 +43,21 @@ git clone https://aomedia.googlesource.com/aom av1
 ln -s av1 av1-rt
 ```
 
+Setting up rd_server
+===
+The AWCY web server manages the repositories and runs/ directory, and compiles and builds the codecs. Once this is done, it hands off the job of actually talking to all the AWS machines to rd_server.
+
+To install rd_server, checkout the rd_tool repository in the same directory as awcy:
+```
+git clone https://github.com/tdaede/rd_tool.git
+```
+
+Then start the rd_server.py daemon:
+```
+./rd_server.py
+```
+The rd_server.py daemon listens on port 4000 by default.
+
 Run database format
 ===
 The runs/ directory will contain all of the output files generated from a job. There is a info.json file that specifies what options were used by that particular run. Here is an example of an info.json file:
