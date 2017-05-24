@@ -65,6 +65,8 @@ Then start the rd_server.py daemon:
 ```
 The rd_server.py daemon listens on port 4000 by default.
 
+More documentation on rd_server.py can be found in its README.
+
 Run database format
 ===
 The runs/ directory will contain all of the output files generated from a job. There is a info.json file that specifies what options were used by that particular run. Here is an example of an info.json file:
