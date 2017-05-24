@@ -471,3 +471,4 @@ app.post('/subjective/vote', function(req,res) {
 });
 
 app.listen(config.port);
+console.log('AWCY server started! Open a browser at http://localhost:' + config.port);
