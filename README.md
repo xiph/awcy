@@ -43,7 +43,8 @@ Now you can open localhost:3000 with your browser to see your local version of t
 
 Setting up repositories
 ===
-For the website to build codecs, you need local checkouts of every codec. For example:
+For the website to build codecs, you need local checkouts of every codec. While the `./setup.sh` script
+automatically adds AV1, you can add your own. For example:
 ```
 git clone https://aomedia.googlesource.com/aom av1
 ln -s av1 av1-rt
