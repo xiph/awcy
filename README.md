@@ -6,6 +6,11 @@ Running your own local copy of the website
 ===
 To run a local copy, you will need a copy of node and npm.
 
+You will need node, npm, etc. For Ubuntu:
+```
+sudo apt install nodejs npm nodejs-legacy libicu-dev
+```
+
 First, run the `./setup.sh` script. It will create directories needed for AWCY to run.
 
 Next, create a configuration file called `config.json`.
@@ -30,6 +35,9 @@ These commands will create the configuration files and install the node.js modul
 awcy. Open a node command line and run the following:
 
 ```
+cd www
+npm install
+cd ..
 npm install
 npm start
 ```
