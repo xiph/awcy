@@ -29,10 +29,6 @@ if "check_output" not in dir( subprocess ): # duck punch it in!
         return output
     subprocess.check_output = f
 
-if 'DAALA_ROOT' not in os.environ:
-    print(GetTime(), "Please specify the DAALA_ROOT environment variable to use this tool.")
-    sys.exit(1)
-
 key = None
 with open('secret_key','r') as keyfile:
     key = keyfile.read().strip()
@@ -40,9 +36,6 @@ with open('secret_key','r') as keyfile:
 if key is None:
     print(GetTime(), "Could not open your secret_key file!")
     sys.exit(1)
-
-daala_root = os.environ['DAALA_ROOT']
-os.chdir(daala_root)
 
 parser = argparse.ArgumentParser(description='Submit test to arewecompressedyet.com')
 parser.add_argument('-branch',default=None)

@@ -12,7 +12,7 @@ sudo apt install nodejs npm nodejs-legacy libicu-dev
 ```
 You'll also need tools to build AV1 or other codecs being tested:
 ```
-sudo apt install yasm
+sudo apt install yasm libtool
 ```
 
 First, run the `./setup.sh` script. It will create directories needed for AWCY to run.
