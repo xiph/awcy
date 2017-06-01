@@ -809,6 +809,7 @@ export class AppStore {
           if (!job) return;
           if (job.status != JobStatus.Canceled) {
             job.status = JobStatus.Running;
+            console.log("detected zombie job:",o.run_id);
           }
           job.progress.value = o.completed;
           job.progress.total = o.total;
