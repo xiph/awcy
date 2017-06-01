@@ -807,7 +807,9 @@ export class AppStore {
         json.forEach(o => {
           let job = this.findJob(o.run_id);
           if (!job) return;
-          job.status = JobStatus.Running;
+          if (job.status != JobStatus.Canceled) {
+            job.status = JobStatus.Running;
+          }
           job.progress.value = o.completed;
           job.progress.total = o.total;
           job.loadLog(true);

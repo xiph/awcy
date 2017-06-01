@@ -5,9 +5,12 @@ import scipy.stats
 
 db = sqlite3.connect('subjective.sqlite3')
 
-decoders = "[\"Base-LL\",\"Base-LL-ext_refs\"]"
+#decoders = "[\"Base-LL\",\"Base-LL-ext_refs\"]"
 
-videos = ['objective-1-fast/Netflix_DrivingPOV_1280x720_60fps_8bit_420_60f.y4m-55.ivf','objective-1-fast/Netflix_RollerCoaster_1280x720_60fps_8bit_420_60f.y4m-55.ivf','objective-1-fast/dark70p_60f.y4m-55.ivf']
+#videos = ['objective-1-fast/Netflix_DrivingPOV_1280x720_60fps_8bit_420_60f.y4m-55.ivf','objective-1-fast/Netflix_RollerCoaster_1280x720_60fps_8bit_420_60f.y4m-55.ivf','objective-1-fast/dark70p_60f.y4m-55.ivf']
+decoders = '["https://beta.arewecompressedyet.com/runs/clpf-only-ll@2017-05-15T22:14:20.557Z/js/decoder.js","https://beta.arewecompressedyet.com/runs/master-ll@2017-05-15T22:12:29.122Z/js/decoder.js"]'
+#decoders = '["https://beta.arewecompressedyet.com/runs/clpf-only@2017-05-08T17:19:44.308Z/js/decoder.js","https://beta.arewecompressedyet.com/runs/master@2017-05-02T00:51:52.225Z/js/decoder.js"]'
+videos = ['subjective-wip/MINECRAFT_420_300f.y4m-50.ivf','subjective-wip/Netflix_Crosswalk_1920x1080_30fps_8bit_420_300f.y4m-55.ivf','subjective-wip/Netflix_TunnelFlag_1920x1080_30fps_8bit_420_300f.y4m-55.ivf','subjective-wip/sintel_trailer_cut1.y4m-50.ivf','subjective-wip/vidyo1_720p_30fps_300f.y4m-63.ivf']
 
 cur = db.execute("SELECT * from votes WHERE decoders = ?;",(decoders,))
 
