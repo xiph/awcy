@@ -181,10 +181,11 @@ export function timeSince(date: Date) {
   var oneMinute = 60 * oneSecond;
   var oneHour = 60 * oneMinute;
   var oneDay = 24 * oneHour;
-  let diff = new Date().getTime() - date.getTime();
-  var days = Math.round(Math.abs(diff / oneDay));
-  var hours = Math.round(Math.abs(diff % oneDay) / oneHour);
-  var minutes = Math.round(Math.abs(diff % oneHour) / oneMinute);
+  let diff = Math.abs(new Date().getTime() - date.getTime());
+  var days = Math.floor(diff / oneDay);
+  var hours = Math.floor((diff % oneDay) / oneHour);
+  var minutes = Math.floor((diff % oneHour) / oneMinute);
+  var seconds = Math.floor((diff % oneMinute) / oneSecond);
   let s = [];
   if (days > 0) {
     s.push(`${days} day${days === 1 ? "" : "s"}`);
@@ -194,6 +195,9 @@ export function timeSince(date: Date) {
   }
   if (minutes > 0) {
     s.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+  }
+  if (diff < oneMinute) {
+    s.push(`${seconds} second${seconds === 1 ? "" : "s"}`)
   }
   return s.join(", ") + " ago";
 }
