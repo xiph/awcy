@@ -82,7 +82,7 @@ function erase_old_ivf_files(job) {
   const age_ms = Date.now().valueOf() - stat.mtime.valueOf();
   const age_days = age_ms / (1000 * 3600 * 24);
   // Not old enough to erase files
-  if (age_days < 180) { return false; }
+  if (age_days < 90) { return false; }
   const files = glob.sync('runs/' + job.run_id + '/' + job.info.task + '/*.ivf');
   if (files.length) {
     console.log('Erasing old IVF files for ',job.run_id);
