@@ -593,7 +593,24 @@ export function hashString(s: string) {
   return hash >>> 0;
 }
 
+// MBX's color palette, hopefully nobody picks more than 10 jobs.
+let colorPalette = {
+  "A": "#FF4136",
+  "B": "#0074D9",
+  "C": "#2ECC40",
+  "D": "#FFDC00",
+  "E": "#85144b",
+  "F": "#FF851B",
+  "G": "#001f3f",
+  "H": "#3D9970",
+  "I": "#7FDBFF",
+  "J": "#01FF70"
+}
+
 function getColorForString(s: string): string {
+  if (colorPalette[s]) {
+    return colorPalette[s];
+  }
   let t = hashString(s);
   return colorPool[t % colorPool.length];
 }
@@ -607,7 +624,25 @@ export function getRandomColorForString(s: string): string {
   return randomColorPool[t];
 }
 
-let selectedNamePool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+let alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+
+function aquireSelectedName() {
+  for (let i = 0; i < alphabet.length; i++) {
+    if (alphabet[i].toUpperCase() != alphabet[i]) {
+      alphabet[i] = alphabet[i].toUpperCase();
+      return alphabet[i];
+    }
+  }
+}
+
+function releaseSelectedName(name: string) {
+  for (let i = 0; i < alphabet.length; i++) {
+    if (alphabet[i] == name) {
+      alphabet[i] = name.toLowerCase();
+    }
+  }
+}
+
 export class AppStore {
   jobs: Jobs;
   onChange = new AsyncEvent<string>();
@@ -630,13 +665,13 @@ export class AppStore {
           return;
         }
         job.selected = true;
-        job.selectedName = selectedNamePool.shift();
-        job.color = getColorForString(job.id);
+        job.selectedName = aquireSelectedName();
+        job.color = getColorForString(job.selectedName);
         job.onChange.post("");
         jobs.onChange.post("");
       } else if (action instanceof DeselectJob) {
         let job = action.job;
-        selectedNamePool.unshift(job.selectedName);
+        releaseSelectedName(job.selectedName)
         job.selected = false;
         job.selectedName = "";
         job.color = "";
