@@ -2,6 +2,7 @@
 set -e
 
 echo Building...
+echo $BUILD_OPTIONS
 case $CODEC in
   daala)
     pushd $CODEC
@@ -21,7 +22,7 @@ case $CODEC in
     make
     popd
     ;;
-  x265)
+  x265 | x265-rt)
     pushd x265/build/linux
     cmake -D ENABLE_SHARED=no $BUILD_OPTIONS ../../source/
     make
@@ -48,7 +49,7 @@ case $CODEC in
     mv x86_64/* ./
     popd
     ;;
-  vp9)
+  vp9 | vp9-rt)
     pushd vp9
     ./configure --enable-vp9 $BUILD_OPTIONS
     make
