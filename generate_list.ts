@@ -55,8 +55,9 @@ if (run_to_update) {
   if(!found_job) {
     list.push(new_job);
   }
-  fs.writeFileSync('list.json.new',JSON.stringify(list));
-  fs.renameSync('list.json.new','list.json');
+  const tmpname = 'list.json.' + Math.random().toString(36).slice(2);
+  fs.writeFileSync(tmpname,JSON.stringify(list));
+  fs.renameSync(tmpname,'list.json');
 } else {
   const jobs = [];
   // full update
