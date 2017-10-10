@@ -494,6 +494,7 @@ export class Job {
     "x264": "x264",
     "x265": "x265",
     "x265-rt": "x265 Realtime",
+    "xvc": "xvc",
     "vp8": "VP8",
     "vp9": "VP9",
     "vp10": "VP10",

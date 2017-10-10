@@ -35,6 +35,14 @@ case "${CODEC}" in
     make
     ;;
 
+  xvc)
+    mkdir -p xvc/build
+    pushd xvc/build
+    cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF -DENABLE_ASSERTIONS=OFF $BUILD_OPTIONS ..
+    make -j4
+    popd
+    ;;
+
   vp10 | vp10-rt)
     cd ${CODECS_SRC_DIR}/${CODEC}
     ./configure --enable-vp10 ${BUILD_OPTIONS}

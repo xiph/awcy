@@ -80,6 +80,7 @@ const binaries = {
   'daala':['examples/encoder_example','examples/dump_video'],
   'x264': ['x264'],
   'x265': ['build/linux/x265'],
+  'xvc': ['build/app/xvcenc', 'build/app/xvcdec'],
   'vp8': ['vpxenc','vpxdec'],
   'vp9': ['vpxenc','vpxdec'],
   'vp10': ['vpxenc','vpxdec'],
