@@ -37,10 +37,22 @@ case $CODEC in
   av1 | av1-rt)
     pushd $CODEC
     echo -- Starting x86_64 Build --
-    ./configure --enable-av1 --enable-debug --disable-unit-tests --disable-docs $BUILD_OPTIONS
-    make -j4
-    mkdir -p x86_64
-    mv aomenc aomdec x86_64/
+    if [[ $BUILD_OPTIONS == *"--enable"* ]]; then
+      # legacy configure build
+      ./configure --enable-av1 --enable-debug --disable-unit-tests --disable-docs $BUILD_OPTIONS
+      make -j4
+      mkdir -p x86_64
+      mv aomenc aomdec x86_64/
+    else
+      rm -rf cmake-build || true
+      mkdir cmake-build
+      pushd cmake-build
+      cmake ../ -DCONFIG_UNIT_TESTS=0 -DENABLE_DOCS=0 -DCMAKE_BUILD_TYPE=Debug $BUILD_OPTIONS
+      make -j4
+      popd
+      mkdir -p x86_64
+      mv cmake-build/aomenc cmake-build/aomdec x86_64/
+    fi
     echo -- Finished x86_64 Build --
     echo -- Starting Analyzer Build --
     ../build_av1_analyzer.sh || true
