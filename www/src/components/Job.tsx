@@ -176,7 +176,7 @@ export class JobComponent extends React.Component<JobProps, {
             {job.nick} <span className="tinyGrayJobValue">submitted {date}</span>
           </div>
           {details}
-          { this.state.detailed ? <div className="jobButtons" ><Button bsSize="xsmall" onClick={this.onRerunClick.bind(this)}>Clone</Button></div> : null }
+          { this.state.detailed ? <div className="jobButtons" ><Button bsSize="xsmall" disabled={!appStore.isLoggedIn} onClick={this.onRerunClick.bind(this)}>Clone</Button></div> : null }
         </div>
         <div>
           {cancel}{' '}
