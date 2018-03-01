@@ -67,4 +67,10 @@ case $CODEC in
     make
     popd
     ;;
+  rav1e)
+    pushd rav1e
+    git submodule update --init
+    cargo build --release
+    popd
+    ;;
 esac
