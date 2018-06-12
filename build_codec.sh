@@ -69,6 +69,7 @@ case $CODEC in
     ;;
   rav1e)
     pushd rav1e
+    git submodule sync
     git submodule update --init
     cargo build --release
     popd
