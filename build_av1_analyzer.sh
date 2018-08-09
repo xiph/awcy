@@ -19,7 +19,7 @@ if [[ $BUILD_OPTIONS == *"--enable"* ]]; then
   popd
   cp asm/inspect.js ./aomanalyzer.js
 else
-  cmake ../ -DAOM_TARGET_CPU=generic -DCONFIG_MULTITHREAD=0 -DCONFIG_RUNTIME_CPU_DETECT=0 -DCONFIG_ACCOUNTING=1 -DCONFIG_INSPECTION=1 -DENABLE_DOCS=0 -DCONFIG_WEBM_IO=0 -DCONFIG_UNIT_TESTS=0 -DCMAKE_TOOLCHAIN_FILE=$(em-config EMSCRIPTEN_ROOT)/cmake/Modules/Platform/Emscripten.cmake $BUILD_OPTIONS
+  cmake ../ -DAOM_TARGET_CPU=generic -DCONFIG_MULTITHREAD=0 -DCONFIG_RUNTIME_CPU_DETECT=0 -DCONFIG_ACCOUNTING=1 -DCONFIG_INSPECTION=1 -DENABLE_DOCS=0 -DCONFIG_WEBM_IO=0 -DENABLE_TESTS=0 -DCMAKE_TOOLCHAIN_FILE=$(em-config EMSCRIPTEN_ROOT)/cmake/Modules/Platform/Emscripten.cmake $BUILD_OPTIONS
   emmake make -j4
   popd
   cp asm/examples/inspect.js ./aomanalyzer.js
