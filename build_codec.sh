@@ -18,7 +18,7 @@ case $CODEC in
     ;;
   x264)
     pushd x264/
-    ./configure $BUILD_OPTIONS
+    ./configure $BUILD_OPTIONS --enable-pic
     make
     popd
     ;;
