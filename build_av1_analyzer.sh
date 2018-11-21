@@ -1,6 +1,10 @@
 #!/bin/bash
 
+# exit on failure
 set -e
+
+# exit on unassigned variable
+set -u
 
 echo Building Analyzer
 

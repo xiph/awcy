@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# exit on failure
 set -e
 
+# exit on unassigned variable
+set -u
 COMMIT="$1"
 
 TESTNAME="$2"
