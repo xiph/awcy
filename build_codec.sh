@@ -76,7 +76,7 @@ case "${CODEC}" in
     ;;
   vp9 | vp9-rt)
     pushd vp9
-    ./configure --enable-vp9 ${BUILD_OPTIONS}
+    ./configure --enable-vp9 --disable-vp8 ${BUILD_OPTIONS}
     make
     popd
     ;;
