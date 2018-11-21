@@ -18,29 +18,34 @@ case "${CODEC}" in
     make -j$(nproc)
     popd
     ;;
+
   thor | thor-rt)
     pushd ${CODEC}
     make
     popd
     ;;
+
   x264)
     pushd x264/
     ./configure ${BUILD_OPTIONS} --enable-pic
     make
     popd
     ;;
+
   x265 | x265-rt)
     pushd x265/build/linux
     cmake -D ENABLE_SHARED=no ${BUILD_OPTIONS} ../../source/
     make
     popd
     ;;
+
   vp10 | vp10-rt)
     pushd ${CODEC}
     ./configure --enable-vp10 ${BUILD_OPTIONS}
     make
     popd
     ;;
+
   av1 | av1-rt)
     pushd ${CODEC}
     echo -- Starting x86_64 Build --
@@ -60,6 +65,7 @@ case "${CODEC}" in
       mkdir -p x86_64
       mv cmake-build/aomenc cmake-build/aomdec x86_64/
     fi
+
     echo -- Finished x86_64 Build --
     echo -- Starting Analyzer Build --
     ../build_av1_analyzer.sh || true
@@ -74,6 +80,7 @@ case "${CODEC}" in
     make
     popd
     ;;
+
   rav1e)
     pushd rav1e
     git submodule sync
@@ -81,4 +88,8 @@ case "${CODEC}" in
     cargo build --release
     popd
     ;;
+
+  *)
+    echo "Unknown codec '${CODEC}'" >&2
+    exit 1
 esac
