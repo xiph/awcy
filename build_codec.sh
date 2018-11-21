@@ -6,47 +6,47 @@ set -e
 # exit on unassigned variable
 set -u
 
-echo Building...
-echo $BUILD_OPTIONS
-case $CODEC in
+echo "Building codec '${CODEC}' (using BUILD_OPTIONS '${BUILD_OPTIONS}')"
+
+case "${CODEC}" in
   daala)
-    pushd $CODEC
+    pushd ${CODEC}
     gcc -print-prog-name=cc1
     gcc -print-search-dirs
     ./autogen.sh
-    ./configure --enable-static --disable-shared --disable-player --disable-dump-images --enable-logging --enable-dump-recons $BUILD_OPTIONS
+    ./configure --enable-static --disable-shared --disable-player --disable-dump-images --enable-logging --enable-dump-recons ${BUILD_OPTIONS}
     make -j$(nproc)
     popd
     ;;
   thor | thor-rt)
-    pushd $CODEC
+    pushd ${CODEC}
     make
     popd
     ;;
   x264)
     pushd x264/
-    ./configure $BUILD_OPTIONS --enable-pic
+    ./configure ${BUILD_OPTIONS} --enable-pic
     make
     popd
     ;;
   x265 | x265-rt)
     pushd x265/build/linux
-    cmake -D ENABLE_SHARED=no $BUILD_OPTIONS ../../source/
+    cmake -D ENABLE_SHARED=no ${BUILD_OPTIONS} ../../source/
     make
     popd
     ;;
   vp10 | vp10-rt)
-    pushd $CODEC
-    ./configure --enable-vp10 $BUILD_OPTIONS
+    pushd ${CODEC}
+    ./configure --enable-vp10 ${BUILD_OPTIONS}
     make
     popd
     ;;
   av1 | av1-rt)
-    pushd $CODEC
+    pushd ${CODEC}
     echo -- Starting x86_64 Build --
-    if [[ $BUILD_OPTIONS == *"--enable"* ]]; then
+    if [[ "${BUILD_OPTIONS}" == *"--enable"* ]]; then
       # legacy configure build
-      ./configure --enable-av1 --enable-debug --disable-unit-tests --disable-docs $BUILD_OPTIONS
+      ./configure --enable-av1 --enable-debug --disable-unit-tests --disable-docs ${BUILD_OPTIONS}
       make -j$(nproc)
       mkdir -p x86_64
       mv aomenc aomdec x86_64/
@@ -54,7 +54,7 @@ case $CODEC in
       rm -rf cmake-build || true
       mkdir cmake-build
       pushd cmake-build
-      cmake ../ -DCONFIG_UNIT_TESTS=0 -DENABLE_DOCS=0 -DCMAKE_BUILD_TYPE=Release -DAOM_EXTRA_C_FLAGS=-UNDEBUG -DAOM_EXTRA_CXX_FLAGS=-UNDEBUG $BUILD_OPTIONS
+      cmake ../ -DCONFIG_UNIT_TESTS=0 -DENABLE_DOCS=0 -DCMAKE_BUILD_TYPE=Release -DAOM_EXTRA_C_FLAGS=-UNDEBUG -DAOM_EXTRA_CXX_FLAGS=-UNDEBUG ${BUILD_OPTIONS}
       make -j$(nproc)
       popd
       mkdir -p x86_64
@@ -70,7 +70,7 @@ case $CODEC in
     ;;
   vp9 | vp9-rt)
     pushd vp9
-    ./configure --enable-vp9 $BUILD_OPTIONS
+    ./configure --enable-vp9 ${BUILD_OPTIONS}
     make
     popd
     ;;
