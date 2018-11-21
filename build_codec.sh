@@ -74,6 +74,14 @@ case "${CODEC}" in
     mv x86_64/* ./
     popd
     ;;
+
+  vp8 | vp8-rt)
+    pushd vp8
+    ./configure --enable-vp8 --disable-vp9 ${BUILD_OPTIONS}
+    make
+    popd
+    ;;
+
   vp9 | vp9-rt)
     pushd vp9
     ./configure --enable-vp9 --disable-vp8 ${BUILD_OPTIONS}
