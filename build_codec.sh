@@ -8,7 +8,9 @@ case $CODEC in
     pushd $CODEC
     gcc -print-prog-name=cc1
     gcc -print-search-dirs
-    ./autogen.sh; ./configure --enable-static --disable-shared --disable-player --disable-dump-images --enable-logging --enable-dump-recons $BUILD_OPTIONS; make -j4
+    ./autogen.sh
+    ./configure --enable-static --disable-shared --disable-player --disable-dump-images --enable-logging --enable-dump-recons $BUILD_OPTIONS
+    make -j$(nproc)
     popd
     ;;
   thor | thor-rt)
@@ -40,7 +42,7 @@ case $CODEC in
     if [[ $BUILD_OPTIONS == *"--enable"* ]]; then
       # legacy configure build
       ./configure --enable-av1 --enable-debug --disable-unit-tests --disable-docs $BUILD_OPTIONS
-      make -j4
+      make -j$(nproc)
       mkdir -p x86_64
       mv aomenc aomdec x86_64/
     else
@@ -48,7 +50,7 @@ case $CODEC in
       mkdir cmake-build
       pushd cmake-build
       cmake ../ -DCONFIG_UNIT_TESTS=0 -DENABLE_DOCS=0 -DCMAKE_BUILD_TYPE=Release -DAOM_EXTRA_C_FLAGS=-UNDEBUG -DAOM_EXTRA_CXX_FLAGS=-UNDEBUG $BUILD_OPTIONS
-      make -j4
+      make -j$(nproc)
       popd
       mkdir -p x86_64
       mv cmake-build/aomenc cmake-build/aomdec x86_64/
