@@ -132,7 +132,7 @@ function process_build_queue() {
         try {
           for (const binary of binaries[build_job.codec]) {
             fs.mkdirsSync(runs_dst_dir+'/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
-            fs.copySync(build_job.codec+'/'+binary,runs_dst_dir+'/'+build_job.run_id+'/x86_64/'+binary);
+            fs.copySync(codecs_src_dir+'/'+build_job.codec+'/'+binary,runs_dst_dir+'/'+build_job.run_id+'/x86_64/'+binary);
           }
         } catch (e) {
           console.log(e);
@@ -141,7 +141,7 @@ function process_build_queue() {
         }
         try {
           fs.mkdirSync(runs_dst_dir+'/'+build_job.run_id+'/js');
-          fs.copySync(build_job.codec+'/aomanalyzer.js',runs_dst_dir+'/'+build_job.run_id+'/js/decoder.js');
+          fs.copySync(codecs_src_dir+'/'+build_job.codec+'/aomanalyzer.js',runs_dst_dir+'/'+build_job.run_id+'/js/decoder.js');
         } catch (e) {
           /* no analyzer */
         }
