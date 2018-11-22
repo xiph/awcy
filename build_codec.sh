@@ -43,7 +43,7 @@ case "${CODEC}" in
 
   av1 | av1-rt)
     cd ${CODECS_SRC_DIR}/${CODEC}
-    echo -- Starting x86_64 Build --
+    echo "-- Starting x86_64 Build --"
     if [[ "${BUILD_OPTIONS}" == *"--enable"* ]]; then
       # legacy configure build
       ./configure --enable-av1 --enable-debug --disable-unit-tests --disable-docs ${BUILD_OPTIONS}
@@ -61,11 +61,11 @@ case "${CODEC}" in
       mv cmake-build/aomenc cmake-build/aomdec x86_64/
     fi
 
-    echo -- Finished x86_64 Build --
-    echo -- Starting Analyzer Build --
-    echo -- Finished Analyzer Build --
-    echo Note: Analyzer errors will not prevent the run from completing.
+    echo "-- Finished x86_64 Build --"
+    echo "-- Starting Analyzer Build --"
     ${APP_DIR}/build_av1_analyzer.sh || true
+    echo "-- Finished Analyzer Build --"
+    echo "Note: Analyzer errors will not prevent the run from completing."
     mv x86_64/* ./
     ;;
 

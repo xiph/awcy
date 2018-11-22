@@ -6,7 +6,7 @@ set -e
 # exit on unassigned variable
 set -u
 
-echo Building Analyzer
+echo "Building Analyzer"
 
 cd ${CODECS_SRC_DIR}/${CODEC}
 
