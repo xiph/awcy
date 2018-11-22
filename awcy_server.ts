@@ -14,7 +14,12 @@ import sqlite3 = require('sqlite3');
 
 const app = express();
 
-var sdb = new sqlite3.Database('subjective.sqlite3');
+let app_dir = process.env['APP_DIR'] || process.env['PWD'];
+let config_dir = process.env['CONFIG_DIR'] || process.env['PWD'];
+let codecs_src_dir = process.env['CODECS_SRC_DIR'] || process.env['PWD'];
+let runs_dst_dir = process.env['RUNS_DST_DIR'] || process.env['PWD']+'/runs';
+
+var sdb = new sqlite3.Database(config_dir+'/subjective.sqlite3');
 
 app.enable('trust proxy');
 
@@ -28,7 +33,7 @@ var allowCrossDomain = function(req, res, next) {
 };
 app.use(allowCrossDomain);
 
-const config = require('./config.json');
+const config = require(config_dir+'/config.json');
 
 const channel = config.channel;
 
@@ -41,7 +46,7 @@ ircclient.addListener('error', function(message) {
     console.log('error: ', message);
 });
 
-const key = fs.readFileSync('secret_key', {encoding: 'utf8'}).trim();
+const key = fs.readFileSync(config_dir+'/secret_key', {encoding: 'utf8'}).trim();
 
 const last_job_completed_time = Date.now();
 
@@ -97,7 +102,7 @@ function process_build_queue() {
     build_job_in_progress = true;
     build_job = build_job_queue.shift();
     console.log('Starting build_job '+build_job.run_id);
-    fs.writeFile('runs/'+build_job.run_id+'/status.txt','building');
+    fs.writeFile(runs_dst_dir+'/'+build_job.run_id+'/status.txt','building');
     const env = {};
     for (var i in process.env) {
       env[i] = process.env[i];
@@ -107,39 +112,42 @@ function process_build_queue() {
     env['EXTRA_OPTIONS'] = build_job.extra_options;
     env['BUILD_OPTIONS'] = build_job.build_options;
     env['RUN_ID'] = build_job.run_id;
+    env['APP_DIR'] = app_dir;
+    env['CODECS_SRC_DIR'] = codecs_src_dir;
+    env['RUNS_DST_DIR'] = runs_dst_dir;
     build_job_child_process = cp.spawn('./create_test_branch.sh',
       [build_job.commit, build_job.run_id, build_job.codec],
       { env: env });
     const job_log = ''
     build_job_child_process.stdout.on('data', function(data) {
       console.log(data.toString());
-      fs.appendFile('runs/'+build_job.run_id+'/output.txt',data);
+      fs.appendFile(runs_dst_dir+'/'+build_job.run_id+'/output.txt',data);
     });
     build_job_child_process.stderr.on('data', function(data) {
       console.log(data.toString());
-      fs.appendFile('runs/'+build_job.run_id+'/output.txt',data);
+      fs.appendFile(runs_dst_dir+'/'+build_job.run_id+'/output.txt',data);
     });
     build_job_child_process.on('close', function(error) {
       if (error == 0) {
         try {
           for (const binary of binaries[build_job.codec]) {
-            fs.mkdirsSync('runs/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
-            fs.copySync(build_job.codec+'/'+binary,'runs/'+build_job.run_id+'/x86_64/'+binary);
+            fs.mkdirsSync(runs_dst_dir+'/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
+            fs.copySync(build_job.codec+'/'+binary,runs_dst_dir+'/'+build_job.run_id+'/x86_64/'+binary);
           }
         } catch (e) {
           console.log(e);
-          fs.appendFile('runs/'+build_job.run_id+'/output.txt',e);
+          fs.appendFile(runs_dst_dir+'/'+build_job.run_id+'/output.txt',e);
           error = 1;
         }
         try {
-          fs.mkdirSync('runs/'+build_job.run_id+'/js');
-          fs.copySync(build_job.codec+'/aomanalyzer.js','runs/'+build_job.run_id+'/js/decoder.js');
+          fs.mkdirSync(runs_dst_dir+'/'+build_job.run_id+'/js');
+          fs.copySync(build_job.codec+'/aomanalyzer.js',runs_dst_dir+'/'+build_job.run_id+'/js/decoder.js');
         } catch (e) {
           /* no analyzer */
         }
       }
       if (error) {
-        fs.writeFile('runs/'+build_job.run_id+'/status.txt','buildfailed');
+        fs.writeFile(runs_dst_dir+'/'+build_job.run_id+'/status.txt','buildfailed');
         ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
                       ' '+config.base_url+'/runs/'+build_job.run_id+'/output.txt');
         generate_list(build_job.run_id);
@@ -159,7 +167,7 @@ function add_to_run_queue(job) {
     console.log(error);
     console.log(body);
   });
-  fs.writeFile('runs/'+job.run_id+'/status.txt','waiting');
+  fs.writeFile(runs_dst_dir+'/'+job.run_id+'/status.txt','waiting');
   generate_list(job.run_id);
 }
 
@@ -169,7 +177,7 @@ app.use('/analyzer',express.static(__dirname + '/../aomanalyzer'));
 app.get('/analyzer.html', function(req,res) {
   res.redirect('/analyzer' + req.originalUrl.substr(req.originalUrl.indexOf("?")));
 });
-app.use('/runs',express.static(__dirname + '/runs'));
+app.use('/runs',express.static(runs_dst_dir));
 app.use('/sets.json',express.static(__dirname + '/rd_tool/sets.json'));
 app.use('/error.txt',express.static(__dirname + '/error.txt'));
 app.use('/list.json',express.static(__dirname + '/list.json'));
@@ -178,7 +186,7 @@ app.use('/time_series.json',express.static(__dirname + '/time_series.json'));
 app.use('/watermark.json',express.static(__dirname + '/watermark.json'));
 
 app.get('/run_list.json',function(req,res) {
-  fs.readdir('runs',function(err,files) {
+  fs.readdir(runs_dst_dir,function(err,files) {
     res.send(files);
   });
 });
@@ -281,8 +289,8 @@ app.get('/bd_rate',function(req,res) {
   const metric_score = req.query['metric_score'];
   const file = path.basename(req.query['file']);
   const set = path.basename(req.query['set']);
-  const a_file = __dirname+'/runs/'+a+'/'+set+'/'+file;
-  const b_file = __dirname+'/runs/'+b+'/'+set+'/'+file;
+  const a_file = runs_dst_dir+'/'+a+'/'+set+'/'+file;
+  const b_file = runs_dst_dir+'/'+b+'/'+set+'/'+file;
   if (req.query['method'] == 'jm') {
     cp.execFile('./bd_rate_jm.m',[a_file,b_file],
                 {},
@@ -290,7 +298,7 @@ app.get('/bd_rate',function(req,res) {
       res.send(stdout);
     });
   } else if (req.query['method'] == 'report') {
-    cp.execFile('./bd_rate_report.py',[__dirname+'/runs/'+a,__dirname+'/runs/'+b,'--anchordir',__dirname+'/runs/','--suffix=-daala.out'],
+    cp.execFile('./bd_rate_report.py',[runs_dst_dir+'/'+a,runs_dst_dir+'/'+b,'--anchordir',runs_dst_dir+'/','--suffix=-daala.out'],
                 {},
                 function(error,stdout,stderr) {
       if (error) {
@@ -300,7 +308,7 @@ app.get('/bd_rate',function(req,res) {
       }
     });
   } else if (req.query['method'] == 'report-overlap') {
-    const parameters = [__dirname+'/runs/'+a,__dirname+'/runs/'+b,'--anchordir',__dirname+'/runs/','--suffix=-daala.out','--overlap'];
+    const parameters = [runs_dst_dir+'/'+a,runs_dst_dir+'/'+b,'--anchordir',runs_dst_dir+'/','--suffix=-daala.out','--overlap'];
     if (req.query['format'] == 'json') {
       res.contentType('application/json');
       parameters.push('--format=json');
@@ -375,14 +383,14 @@ app.post('/submit/job',function(req,res) {
   if (job.run_id.length > 256) {
     res.status(400).send('Choose a shorter run id, silly.\n');
   }
-  if (fs.existsSync('runs/'+job.run_id)) {
+  if (fs.existsSync(runs_dst_dir+'/'+job.run_id)) {
     res.status(400).send('ID is not unique! Choose another.\n');
     return;
   }
 
-  fs.mkdirSync('runs/'+job.run_id);
-  fs.writeFile('runs/'+job.run_id+'/info.json',JSON.stringify(job));
-  fs.writeFile('runs/'+job.run_id+'/status.txt','new');
+  fs.mkdirSync(runs_dst_dir+'/'+job.run_id);
+  fs.writeFile(runs_dst_dir+'/'+job.run_id+'/info.json',JSON.stringify(job));
+  fs.writeFile(runs_dst_dir+'/'+job.run_id+'/status.txt','new');
   build_job_queue.push(job);
   process_build_queue();
   generate_list(job.run_id);
@@ -403,7 +411,7 @@ app.post('/submit/cancel',function(req,res) {
   request(config.rd_server_url+'/cancel?'+querystring.stringify({run_id: run_id}), function (error, response, body) {
     res.send('ok');
   });
-  fs.writeFile('runs/'+run_id+'/status.txt','cancelled');
+  fs.writeFile(runs_dst_dir+'/'+run_id+'/status.txt','cancelled');
   generate_list(run_id);
 });
 
@@ -473,3 +481,9 @@ app.post('/subjective/vote', function(req,res) {
 
 app.listen(config.port);
 console.log('AWCY server started! Open a browser at http://localhost:' + config.port);
+
+// show directories
+console.log('AWCY server directory: '+app_dir);
+console.log('Configuration directory: '+config_dir);
+console.log('Codecs git repositories location: '+codecs_src_dir);
+console.log('Runs output directory: '+runs_dst_dir);

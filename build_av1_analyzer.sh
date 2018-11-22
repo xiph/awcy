@@ -8,9 +8,12 @@ set -u
 
 echo Building Analyzer
 
+cd ${CODECS_SRC_DIR}/${CODEC}
+
 rm -rf asm/
 mkdir -p asm
 pushd asm
+
 if [[ "${BUILD_OPTIONS}" == *"--enable"* ]]; then
   #legacy configure
   popd

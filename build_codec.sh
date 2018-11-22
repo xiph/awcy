@@ -10,44 +10,39 @@ echo "Building codec '${CODEC}' (using BUILD_OPTIONS '${BUILD_OPTIONS}')"
 
 case "${CODEC}" in
   daala)
-    pushd ${CODEC}
+    cd ${CODECS_SRC_DIR}/${CODEC}
     gcc -print-prog-name=cc1
     gcc -print-search-dirs
     ./autogen.sh
     ./configure --enable-static --disable-shared --disable-player --disable-dump-images --enable-logging --enable-dump-recons ${BUILD_OPTIONS}
     make -j$(nproc)
-    popd
     ;;
 
   thor | thor-rt)
-    pushd ${CODEC}
+    cd ${CODECS_SRC_DIR}/${CODEC}
     make
-    popd
     ;;
 
   x264)
-    pushd x264/
+    cd ${CODECS_SRC_DIR}/x264
     ./configure ${BUILD_OPTIONS} --enable-pic
     make
-    popd
     ;;
 
   x265 | x265-rt)
-    pushd x265/build/linux
+    cd ${CODECS_SRC_DIR}/build/linux
     cmake -D ENABLE_SHARED=no ${BUILD_OPTIONS} ../../source/
     make
-    popd
     ;;
 
   vp10 | vp10-rt)
-    pushd ${CODEC}
+    cd ${CODECS_SRC_DIR}/${CODEC}
     ./configure --enable-vp10 ${BUILD_OPTIONS}
     make
-    popd
     ;;
 
   av1 | av1-rt)
-    pushd ${CODEC}
+    cd ${CODECS_SRC_DIR}/${CODEC}
     echo -- Starting x86_64 Build --
     if [[ "${BUILD_OPTIONS}" == *"--enable"* ]]; then
       # legacy configure build
@@ -68,33 +63,29 @@ case "${CODEC}" in
 
     echo -- Finished x86_64 Build --
     echo -- Starting Analyzer Build --
-    ../build_av1_analyzer.sh || true
     echo -- Finished Analyzer Build --
     echo Note: Analyzer errors will not prevent the run from completing.
+    ${APP_DIR}/build_av1_analyzer.sh || true
     mv x86_64/* ./
-    popd
     ;;
 
   vp8 | vp8-rt)
-    pushd vp8
+    cd ${CODECS_SRC_DIR}/vp8
     ./configure --enable-vp8 --disable-vp9 ${BUILD_OPTIONS}
     make
-    popd
     ;;
 
   vp9 | vp9-rt)
-    pushd vp9
+    cd ${CODECS_SRC_DIR}/vp9
     ./configure --enable-vp9 --disable-vp8 ${BUILD_OPTIONS}
     make
-    popd
     ;;
 
   rav1e)
-    pushd rav1e
+    cd ${CODECS_SRC_DIR}/rav1e
     git submodule sync
     git submodule update --init
     cargo build --release
-    popd
     ;;
 
   *)
