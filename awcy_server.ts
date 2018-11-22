@@ -388,6 +388,12 @@ app.post('/submit/job',function(req,res) {
     return;
   }
 
+  // create runs root directory if not exists
+  if (!fs.existsSync(runs_dst_dir)) {
+    console.log("Creating 'runs' root directory")
+    fs.mkdirSync(runs_dst_dir);
+  }
+
   fs.mkdirSync(runs_dst_dir+'/'+job.run_id);
   fs.writeFile(runs_dst_dir+'/'+job.run_id+'/info.json',JSON.stringify(job));
   fs.writeFile(runs_dst_dir+'/'+job.run_id+'/status.txt','new');
