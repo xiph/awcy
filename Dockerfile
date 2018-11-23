@@ -125,6 +125,16 @@ RUN \
 	printf '#!/usr/bin/env python\nimport os, sys\nexecfile(os.getenv("HOME")+"/.emscripten")\nprint eval(sys.argv[1])\n' >/usr/local/bin/em-config && \
 	chmod a+x /usr/local/bin/em-config
 
+# install tini
+RUN \
+	TINI_VERSION=v0.18.0 && \
+	http_proxy='' gpg --keyserver ipv4.pool.sks-keyservers.net --recv-keys 0527A9B7 && \
+	wget -O/usr/bin/tini     "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini" && \
+	wget -O/usr/bin/tini.asc "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc" && \
+	gpg --verify /usr/bin/tini.asc && \
+	rm -f /usr/bin/tini.asc && \
+	chmod a+x /usr/bin/tini
+
 # add code
 ADD package.json *.ts tsconfig.json ${APP_DIR}/
 ADD www ${APP_DIR}/www
