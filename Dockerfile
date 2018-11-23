@@ -49,6 +49,7 @@ RUN \
 		nasm \
 		netcat-openbsd \
 		net-tools \
+		openjdk-8-jdk-headless \
 		openssl \
 		pkg-config \
 		procps \
@@ -108,6 +109,20 @@ RUN \
 	tar xJf "node-v${NODE_VERSION}-linux-${ARCH}.tar.xz" -C /usr --strip-components=1 --no-same-owner && \
 	rm -vf "node-v${NODE_VERSION}-linux-${ARCH}.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt && \
 	ln -s /usr/bin/node /usr/bin/nodejs
+
+# install emscripten
+RUN \
+	EMSDK_VERSION=sdk-1.38.20-64bit && \
+	mkdir -p /opt/emsdk && \
+	curl -sSL https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz | tar zxf - -C /opt/emsdk --strip-components=1 && \
+	cd /opt/emsdk && \
+	./emsdk update && \
+	./emsdk install ${EMSDK_VERSION} && \
+	./emsdk activate ${EMSDK_VERSION} && \
+	echo "hack emscript config getter (em-config)" && \
+	cp /root/.emscripten /home/${APP_USER}/.emscripten && \
+	printf '#!/usr/bin/env python\nimport os, sys\nexecfile(os.getenv("HOME")+"/.emscripten")\nprint eval(sys.argv[1])\n' >/usr/local/bin/em-config && \
+	chmod a+x /usr/local/bin/em-config
 
 # add code
 ADD package.json *.ts tsconfig.json ${APP_DIR}/
