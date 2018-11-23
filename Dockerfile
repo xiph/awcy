@@ -135,6 +135,16 @@ RUN \
 	rm -f /usr/bin/tini.asc && \
 	chmod a+x /usr/bin/tini
 
+# install gosu
+RUN \
+	GOSU_VERSION=1.11 && \
+	http_proxy='' gpg --keyserver ipv4.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && \
+	wget -O/usr/bin/gosu     "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" && \
+	wget -O/usr/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64.asc" && \
+	gpg --verify /usr/bin/gosu.asc && \
+	rm -f /usr/bin/gosu.asc && \
+	chmod a+x /usr/bin/gosu
+
 # add code
 ADD package.json *.ts tsconfig.json ${APP_DIR}/
 ADD www ${APP_DIR}/www
