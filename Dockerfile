@@ -69,6 +69,21 @@ RUN \
 # set working directory
 WORKDIR ${APP_DIR}
 
+# prepare rust installation
+ENV \
+	RUSTUP_HOME=/usr/local/rustup \
+	CARGO_HOME=/usr/local/cargo \
+	PATH=/usr/local/cargo/bin:${PATH}
+
+# install rust
+RUN \
+	RUST_VERSION=1.30.1 && \
+	curl -sSf --output /tmp/rustup-init https://static.rust-lang.org/rustup/archive/1.14.0/x86_64-unknown-linux-gnu/rustup-init && \
+	chmod +x /tmp/rustup-init && \
+	/tmp/rustup-init -y --no-modify-path --default-toolchain ${RUST_VERSION} && \
+	rm -vf /tmp/rustup-init && \
+	chmod -R a+w ${RUSTUP_HOME} ${CARGO_HOME}
+
 # install node 8.x
 RUN \
 	NODE_VERSION=8.12.0 && \
