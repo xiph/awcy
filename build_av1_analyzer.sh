@@ -8,6 +8,9 @@ set -u
 
 echo "Building Analyzer"
 
+# add emscripten tools to PATH
+export PATH=${PATH}:$(em-config EMSCRIPTEN_ROOT):$(em-config LLVM_ROOT)
+
 cd ${CODECS_SRC_DIR}/${CODEC}
 
 rm -rf asm/
