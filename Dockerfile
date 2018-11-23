@@ -56,6 +56,7 @@ RUN \
 		psmisc \
 		python2.7 \
 		rsync \
+		runit \
 		strace \
 		tcpdump \
 		tzdata \
