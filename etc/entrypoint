@@ -90,3 +90,6 @@ if [ ! -d "${CODECS_SRC_DIR}/libvpx" ]; then
 	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp9-rt
 	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvpx-rt
 fi
+
+# run runit services
+exec tini -g -- /usr/bin/runsvdir -P /etc/service
