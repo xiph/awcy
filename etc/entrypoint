@@ -21,6 +21,11 @@ for dir in \
 	chown ${APP_USER}:${APP_USER} ${dir}
 done
 
+# detect main IP external address if not set/forced
+net_iface=$(awk '{ if ($2 == "00000000") { print $1; exit; } }' /proc/net/route)
+net_ip_addr=$(ip addr show dev ${net_iface} | awk -F'[ \t/]+' '/inet / { print $3; exit; }')
+export EXTERNAL_ADDR=${EXTERNAL_ADDR:-${net_ip_addr}}
+
 # prepare awcy server configuration if needed
 if [ ! -f "${CONFIG_DIR}/config.json" ]; then
 	cat >${CONFIG_DIR}/config.json <<-EOF
@@ -28,7 +33,7 @@ if [ ! -f "${CONFIG_DIR}/config.json" ]; then
 		"channel": "${IRC_CHANNEL}",
 		"have_aws": false,
 		"port": ${AWCY_SERVER_PORT},
-		"rd_server_url": "http://xiph-scheduler:${RD_SERVER_PORT}"
+		"rd_server_url": "http://${EXTERNAL_ADDR}:${RD_SERVER_PORT}"
 	}
 	EOF
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/config.json
