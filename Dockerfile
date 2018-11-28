@@ -165,9 +165,6 @@ ADD *.m *.sh *.py ${APP_DIR}/
 # add sets
 ADD sets.json ${APP_DIR}/rd_tool/
 
-
-# start application
-CMD [ "sh", "-c", "node awcy_server.js"]
 # environment variables
 ENV \
 	CONFIG_DIR=/data/conf \
