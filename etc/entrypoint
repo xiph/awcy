@@ -102,5 +102,13 @@ if [ ! -f "${CONFIG_DIR}/machines.json" ]; then
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/machines.json
 fi
 
+# configure ssh authentication
+if [ ! -f "${CONFIG_DIR}/awcy.pem" ]; then
+	gosu ${APP_USER}:${APP_USER} ssh-keygen -t rsa -f ${CONFIG_DIR}/awcy.pem -P ''
+	gosu ${APP_USER}:${APP_USER} cp ${CONFIG_DIR}/awcy.pem /home/${APP_USER}/.ssh/authorized_keys
+	chmod 0600 ${CONFIG_DIR}/awcy.pem
+	mv ${CONFIG_DIR}/awcy.pem.pub ${CONFIG_DIR}/awcy.pub
+fi
+
 # run runit services
 exec tini -g -- /usr/bin/runsvdir -P /etc/service

@@ -153,7 +153,8 @@ RUN \
 	apt-get update && \
 	apt-get install -y --no-install-recommends \
 		python3-boto3 \
-		python3-tornado && \
+		python3-tornado \
+		ssh && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists && \
 	mkdir -p ${RD_TOOL_DIR} && \
