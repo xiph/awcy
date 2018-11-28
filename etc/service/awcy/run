@@ -6,6 +6,9 @@ set -e
 # exit on unassigned variable
 set -u
 
+# show log message
+echo "STARTING AWCY SERVICE"
+
 # enter working directory
 cd ${APP_DIR}
 

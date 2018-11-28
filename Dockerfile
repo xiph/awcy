@@ -145,6 +145,21 @@ RUN \
 	rm -f /usr/bin/gosu.asc && \
 	chmod a+x /usr/bin/gosu
 
+# install rd_tool
+ENV \
+	RD_TOOL_DIR=/opt/rd_tool
+
+RUN \
+	apt-get update && \
+	apt-get install -y --no-install-recommends \
+		python3-boto3 \
+		python3-tornado && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists && \
+	mkdir -p ${RD_TOOL_DIR} && \
+	curl -sSL https://github.com/lionelnicolas/rd_tool/tarball/master | tar zxf - -C ${RD_TOOL_DIR} --strip-components=1 && \
+	ln -sf ${RD_TOOL_DIR}/sets.json ${APP_DIR}/sets.json
+
 # add code
 ADD package.json *.ts tsconfig.json ${APP_DIR}/
 ADD www ${APP_DIR}/www
@@ -161,9 +176,6 @@ RUN \
 
 # add scripts
 ADD *.m *.sh *.py ${APP_DIR}/
-
-# add sets
-ADD sets.json ${APP_DIR}/rd_tool/
 
 # environment variables
 ENV \

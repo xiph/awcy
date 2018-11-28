@@ -96,5 +96,11 @@ if [ ! -d "${CODECS_SRC_DIR}/libvpx" ]; then
 	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvpx-rt
 fi
 
+# configure rd_tools
+if [ ! -f "${CONFIG_DIR}/machines.json" ]; then
+	echo "[]" >${CONFIG_DIR}/machines.json
+	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/machines.json
+fi
+
 # run runit services
 exec tini -g -- /usr/bin/runsvdir -P /etc/service

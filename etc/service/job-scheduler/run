@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# exit on failure
+set -e
+
+# exit on unassigned variable
+set -u
+
+# show log message
+echo "STARTING RDTOOL SERVICE"
+
+# enter working directory
+cd ${RD_TOOL_DIR}
+
+# start awcy server
+exec gosu ${APP_USER}:${APP_USER} python3 ./rd_server.py \
+	-machineconf ${CONFIG_DIR}/machines.json \
+	-port ${RD_SERVER_PORT} \
