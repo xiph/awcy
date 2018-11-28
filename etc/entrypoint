@@ -102,6 +102,19 @@ if [ ! -f "${CONFIG_DIR}/machines.json" ]; then
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/machines.json
 fi
 
+# configure ssh client
+if [ ! -f "/home/${APP_USER}/.ssh/config" ]; then
+	mkdir -p /home/${APP_USER}/.ssh
+	cat >/home/${APP_USER}/.ssh/config <<-EOF
+	Host *
+		UserKnownHostsFile /dev/null
+		StrictHostKeyChecking no
+		LogLevel quiet
+		Port 22
+	EOF
+	chown -R ${APP_USER}:${APP_USER} /home/${APP_USER}/.ssh
+fi
+
 # configure ssh authentication
 if [ ! -f "${CONFIG_DIR}/awcy.pem" ]; then
 	gosu ${APP_USER}:${APP_USER} ssh-keygen -t rsa -f ${CONFIG_DIR}/awcy.pem -P ''
