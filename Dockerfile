@@ -165,18 +165,21 @@ ADD *.m *.sh *.py ${APP_DIR}/
 # add sets
 ADD sets.json ${APP_DIR}/rd_tool/
 
-# configure workdir
-RUN \
-	mkdir runs && \
-	touch ${APP_DIR}/subjective.sqlite3 && \
-	chown ${APP_USER}:${APP_USER} ${APP_DIR}/subjective.sqlite3 runs && \
-	echo '[]' >list.json && \
-	chown ${APP_USER}:${APP_USER} ${APP_DIR} ${APP_DIR}/list.json
-
-# configure application
-RUN \
-	echo '{ "channel": "#daalatest", "have_aws": false, "port": 3000, "rd_server_url": "http://xiph-scheduler:4000" }' >config.json && \
-	echo 'awcy_api_key' >secret_key
 
 # start application
 CMD [ "sh", "-c", "node awcy_server.js"]
+# environment variables
+ENV \
+	CONFIG_DIR=/data/conf \
+	CODECS_SRC_DIR=/data/src \
+	RUNS_DST_DIR=/data/runs \
+	IRC_CHANNEL=#daalatest \
+	AWCY_API_KEY=awcy_api_key \
+	AWCY_SERVER_PORT=3000 \
+	RD_SERVER_PORT=4000
+
+# set entrypoint
+ENTRYPOINT [ "/etc/entrypoint" ]
+
+# add configuration scripts
+ADD etc /etc

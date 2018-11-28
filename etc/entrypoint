@@ -1,0 +1,92 @@
+#!/bin/sh
+
+# exit on failure
+set -e
+
+# exit on unassigned variable
+set -u
+
+# run command if specified (and script the rest of this script)
+if [ -n "${1:-}" ]; then
+	exec "$@"
+fi
+
+# create data directories
+for dir in \
+	"${CONFIG_DIR}" \
+	"${CODECS_SRC_DIR}" \
+	"${RUNS_DST_DIR}" \
+; do
+	mkdir -p ${dir}
+	chown ${APP_USER}:${APP_USER} ${dir}
+done
+
+# prepare awcy server configuration if needed
+if [ ! -f "${CONFIG_DIR}/config.json" ]; then
+	cat >${CONFIG_DIR}/config.json <<-EOF
+	{
+		"channel": "${IRC_CHANNEL}",
+		"have_aws": false,
+		"port": ${AWCY_SERVER_PORT},
+		"rd_server_url": "http://xiph-scheduler:${RD_SERVER_PORT}"
+	}
+	EOF
+	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/config.json
+fi
+
+# prepare awcy key file if needed
+if [ ! -f "${CONFIG_DIR}/secret_key" ]; then
+	echo "${AWCY_API_KEY}" >${CONFIG_DIR}/secret_key
+	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/secret_key
+fi
+
+# prepare awcy sqlite if needed
+if [ ! -f "${CONFIG_DIR}/subjective.sqlite3" ]; then
+	touch ${CONFIG_DIR}/subjective.sqlite3
+	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/subjective.sqlite3
+fi
+
+# prepare awcy list file if needed
+if [ ! -f "${CONFIG_DIR}/list.json" ]; then
+	echo "[]" >${CONFIG_DIR}/list.json
+	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/list.json
+	rm -f ${APP_DIR}/list.json
+	ln -sf ${CONFIG_DIR}/list.json ${APP_DIR}/list.json
+fi
+
+# download sources if needed
+if [ ! -d "${CODECS_SRC_DIR}/av1" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://aomedia.googlesource.com/aom ${CODECS_SRC_DIR}/av1
+	ln -s ${CODECS_SRC_DIR}/av1 ${CODECS_SRC_DIR}/av1-rt
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/daala" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/xiph/daala.git ${CODECS_SRC_DIR}/daala
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/rav1e" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/xiph/rav1e.git ${CODECS_SRC_DIR}/rav1e
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/thor" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/cisco/thor.git ${CODECS_SRC_DIR}/thor
+	ln -s ${CODECS_SRC_DIR}/thor ${CODECS_SRC_DIR}/thor-rt
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/x264" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/mirror/x264.git ${CODECS_SRC_DIR}/x264
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/x265" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/videolan/x265.git ${CODECS_SRC_DIR}/x265
+	ln -s ${CODECS_SRC_DIR}/x265 ${CODECS_SRC_DIR}/x265-rt
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/libvpx" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/webmproject/libvpx.git ${CODECS_SRC_DIR}/libvpx
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp8
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp8-rt
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp9
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp9-rt
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvpx-rt
+fi
