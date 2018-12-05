@@ -20,7 +20,7 @@
     "@types/es6-promise": "0.0.31",
     "@types/d3-scale": "^1.0.4",
     "ts-loader": "^0.8.2",
-    "typescript": "^2.1.0-dev.20160903",
+    "typescript": "2.1.6",
     "webpack": "^1.13.2",
     "webpack-dev-server": "^1.15.1",
     "webpack-notifier": "^1.4.1"
@@ -28,11 +28,11 @@
   "dependencies": {
     "d3-scale": "^1.0.3",
     "es6-promise": "^3.2.1",
-    "flux": "^2.1.1",
+    "flux": "2.1.1",
     "react": "^15.3.1",
     "react-bootstrap": "^0.30.3",
     "react-dom": "^15.3.1",
-    "react-select": "^1.0.0-rc.1",
+    "react-select": "1.0.0-rc.1",
     "source-map-loader": "^0.1.5",
     "ts-events": "^3.1.1"
   }

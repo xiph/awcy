@@ -108,7 +108,7 @@ export class JobComponent extends React.Component<JobProps, {
     }
     let hasAnalyzer = null;
     if (this.state.hasAnalyzer !== undefined) {
-      if (this.state.hasAnalyzer === false) {
+      if (this.state.hasAnalyzer === false && job.codec == 'av1') {
         hasAnalyzer = <div className="jobWarning">Analyzer failed to build.</div>
       }
     }
