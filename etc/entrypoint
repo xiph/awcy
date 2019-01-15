@@ -45,13 +45,15 @@ if [ ! -f "${CONFIG_DIR}/secret_key" ]; then
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/secret_key
 fi
 
-# prepare awcy sqlite if needed
+# prepare awcy sqlite database if needed
+# FIXME: create a real database
 if [ ! -f "${CONFIG_DIR}/subjective.sqlite3" ]; then
 	touch ${CONFIG_DIR}/subjective.sqlite3
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/subjective.sqlite3
 fi
 
 # prepare awcy list file if needed
+# FIXME: change list.json path
 if [ ! -f "${CONFIG_DIR}/list.json" ]; then
 	echo "[]" >${CONFIG_DIR}/list.json
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/list.json
@@ -98,7 +100,24 @@ fi
 
 # configure rd_tools
 if [ ! -f "${CONFIG_DIR}/machines.json" ]; then
-	echo "[]" >${CONFIG_DIR}/machines.json
+	if [ "${START_LOCAL_WORKER:-false}" != "true" ]; then
+		echo "[]" >${CONFIG_DIR}/machines.json
+
+	else
+		cat >${CONFIG_DIR}/machines.json <<-EOF
+		[
+			{
+				"host": "127.0.0.1",
+				"user": "${APP_USER}",
+				"cores": $(nproc),
+				"port": 22,
+				"work_root": "/opt/work",
+				"media_path": "/opt/media"
+			}
+		]
+		EOF
+	fi
+
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/machines.json
 fi
 
@@ -121,6 +140,20 @@ if [ ! -f "${CONFIG_DIR}/awcy.pem" ]; then
 	gosu ${APP_USER}:${APP_USER} cp ${CONFIG_DIR}/awcy.pem /home/${APP_USER}/.ssh/authorized_keys
 	chmod 0600 ${CONFIG_DIR}/awcy.pem
 	mv ${CONFIG_DIR}/awcy.pem.pub ${CONFIG_DIR}/awcy.pub
+fi
+
+# configure local worker services if needed
+if [ "${START_LOCAL_WORKER:-false}" = "true" ]; then
+	mkdir -p /var/run/sshd
+	mkdir -p /etc/service/sshd
+
+	cat >/etc/service/sshd/run <<-EOF
+	#!/bin/sh
+	echo "STARTING SSHD SERVICE"
+	exec /usr/sbin/sshd -D
+	EOF
+
+	chmod a+x /etc/service/sshd/run
 fi
 
 # run runit services

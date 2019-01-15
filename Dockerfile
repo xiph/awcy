@@ -183,6 +183,7 @@ ENV \
 	CONFIG_DIR=/data/conf \
 	CODECS_SRC_DIR=/data/src \
 	RUNS_DST_DIR=/data/runs \
+	START_LOCAL_WORKER=false \
 	IRC_CHANNEL=#daalatest \
 	AWCY_API_KEY=awcy_api_key \
 	AWCY_SERVER_PORT=3000 \
