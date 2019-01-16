@@ -173,5 +173,10 @@ if [ "${LOCAL_WORKER_ENABLED:-false}" = "true" ]; then
 	chmod a+x /etc/service/sshd/run
 fi
 
+# specify generated SSH private key if none set
+if [ -z "${SSH_PRIVKEY_FILE:-}" ]; then
+	export SSH_PRIVKEY_FILE=${CONFIG_DIR}/awcy.pem
+fi
+
 # run runit services
 exec tini -g -- /usr/bin/runsvdir -P /etc/service
