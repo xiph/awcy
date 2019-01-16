@@ -145,6 +145,12 @@ if [ ! -f "/home/${APP_USER}/.ssh/config" ]; then
 	chown -R ${APP_USER}:${APP_USER} /home/${APP_USER}/.ssh
 fi
 
+# create SSH host keys if none exist
+if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+	echo "Generating SSH host keys"
+	dpkg-reconfigure openssh-server >/dev/null 2>&1
+fi
+
 # configure ssh authentication
 if [ ! -f "${CONFIG_DIR}/awcy.pem" ]; then
 	gosu ${APP_USER}:${APP_USER} ssh-keygen -t rsa -f ${CONFIG_DIR}/awcy.pem -P ''
