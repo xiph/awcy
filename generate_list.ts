@@ -6,24 +6,25 @@ import glob = require('glob');
 
 const run_to_update = process.argv[2];
 const config_dir = process.env['CONFIG_DIR'] || process.env['PWD'];
+const runs_dst_dir = process.env['RUNS_DST_DIR'] || process.env['PWD']+'/runs';
 const listfile = config_dir + '/list.json';
 
 function create_list_entry(run_id) {
   // TODO: define a typescript interface for info.json
   let info: any = {};
 
-  const infoFile = fs.readFileSync('runs/'+run_id+'/info.json').toString();
+  const infoFile = fs.readFileSync(runs_dst_dir+'/'+run_id+'/info.json').toString();
   info = JSON.parse(infoFile);
 
-  const stat = fs.statSync('runs/'+run_id);
+  const stat = fs.statSync(runs_dst_dir+'/'+run_id);
   let failed = false;
   let status = 'completed';
   try {
-    const statusFile = fs.readFileSync('runs/'+run_id+'/status.txt','utf8');
+    const statusFile = fs.readFileSync(runs_dst_dir+'/'+run_id+'/status.txt','utf8');
     status = statusFile.trim();
   } catch (e) {
     try {
-      const total_stat = fs.statSync('runs/'+run_id+'/'+info['task']);
+      const total_stat = fs.statSync(runs_dst_dir+'/'+run_id+'/'+info['task']);
     } catch(e) {
       failed = true;
       status = 'failed';
@@ -32,7 +33,7 @@ function create_list_entry(run_id) {
 
   const job = {
     'run_id': run_id,
-    'tasks': fs.readdirSync('runs/'+run_id),
+    'tasks': fs.readdirSync(runs_dst_dir+'/'+run_id),
     'date': stat.mtime,
     'info': info,
     'status': status,
@@ -63,7 +64,7 @@ if (run_to_update) {
 } else {
   const jobs = [];
   // full update
-  fs.readdirSync('runs').forEach(function(run_id) {
+  fs.readdirSync(runs_dst_dir).forEach(function(run_id) {
     try {
       // if (erases_old_images(run_id)) return;
       const job = create_list_entry(run_id);
@@ -75,18 +76,18 @@ if (run_to_update) {
   fs.writeFileSync(listfile + '.new',JSON.stringify(jobs));
   fs.renameSync(listfile + '.new', listfile);
 
-  const file_structure = read_ab_image_paths('runs');
+  const file_structure = read_ab_image_paths(runs_dst_dir);
   fs.writeFile('ab_paths.json', JSON.stringify(file_structure, null, 4));
 
 }
 
 function erase_old_ivf_files(job) {
-  const stat = fs.statSync('runs/' + job.run_id);
+  const stat = fs.statSync(runs_dst_dir+'/' + job.run_id);
   const age_ms = Date.now().valueOf() - stat.mtime.valueOf();
   const age_days = age_ms / (1000 * 3600 * 24);
   // Not old enough to erase files
   if (age_days < 90) { return false; }
-  const files = glob.sync('runs/' + job.run_id + '/' + job.info.task + '/*.ivf');
+  const files = glob.sync(runs_dst_dir+'/' + job.run_id + '/' + job.info.task + '/*.ivf');
   if (files.length) {
     console.log('Erasing old IVF files for ',job.run_id);
     for (let file of files) {
@@ -126,12 +127,12 @@ function read_ab_image_paths(outer_path) {
 }
 
 function erases_old_images(run_id) {
-    const stat = fs.statSync('runs/' + run_id);
+    const stat = fs.statSync(runs_dst_dir+'/' + run_id);
 
     // TODO: define a typescript interface for info.json
     let info: any = {};
     try {
-        const infoFile = fs.readFileSync('runs/'+run_id+'/info.json').toString();
+        const infoFile = fs.readFileSync(runs_dst_dir+'/'+run_id+'/info.json').toString();
         info = JSON.parse(infoFile);
     } catch (e) {};
 
@@ -144,7 +145,7 @@ function erases_old_images(run_id) {
     // Not old enough to erase files.
     if (age_days < 30) { return false; }
 
-    const run_path = 'runs/' + run_id;
+    const run_path = runs_dst_dir+'/' + run_id;
     let removed_images = false;
 
     // Remove images in the sets folder if it finds some.
