@@ -6,7 +6,7 @@ set -e
 # exit on unassigned variable
 set -u
 
-# run command if specified (and script the rest of this script)
+# run command if specified (and skip the rest of this script)
 if [ -n "${1:-}" ]; then
 	exec "$@"
 fi
@@ -71,15 +71,6 @@ if [ ! -f "${CONFIG_DIR}/list.json" ]; then
 	echo "[]" >${CONFIG_DIR}/list.json
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/list.json
 fi
-
-# (re-)create symlinks (this is a hack until making that configurable in rd_server/rd_tool)
-rm -f ${RD_TOOL_DIR}/../runs && ln -sf ${RUNS_DST_DIR} ${RD_TOOL_DIR}/../runs
-rm -f ${WORK_DIR}/daalatool && ln -sf ${DAALATOOL_DIR} ${WORK_DIR}/daalatool
-for filepath in sets.json list.json; do
-	rm -f ${RD_TOOL_DIR}/${filepath} ${APP_DIR}/${filepath}
-	ln -sf ${CONFIG_DIR}/${filepath} ${RD_TOOL_DIR}/${filepath}
-	ln -sf ${CONFIG_DIR}/${filepath} ${APP_DIR}/${filepath}
-done
 
 # download sources if needed
 if [ ! -d "${CODECS_SRC_DIR}/av1" ]; then
@@ -158,7 +149,6 @@ fi
 if [ ! -f "${CONFIG_DIR}/awcy.pem" ]; then
 	gosu ${APP_USER}:${APP_USER} ssh-keygen -t rsa -f ${CONFIG_DIR}/awcy.pem -P ''
 	gosu ${APP_USER}:${APP_USER} cat ${CONFIG_DIR}/awcy.pem.pub >>/home/${APP_USER}/.ssh/authorized_keys
-	ln -sf ${CONFIG_DIR}/awcy.pem ${RD_TOOL_DIR}/daala.pem
 	chmod 0600 ${CONFIG_DIR}/awcy.pem
 	mv ${CONFIG_DIR}/awcy.pem.pub ${CONFIG_DIR}/awcy.pub
 fi

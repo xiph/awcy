@@ -156,8 +156,7 @@ RUN \
 	cd ${DAALATOOL_DIR} && \
 	./autogen.sh && \
 	./configure --disable-player && \
-	make tools -j4 && \
-	echo chown -R ${APP_USER}:${APP_USER} ${DAALATOOL_DIR}
+	make tools -j4
 
 # install rd_tool and dependencies
 ENV \
@@ -177,7 +176,7 @@ RUN \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists && \
 	mkdir -p ${RD_TOOL_DIR} && \
-	curl -sSL https://github.com/lionelnicolas/rd_tool/tarball/master | tar zxf - -C ${RD_TOOL_DIR} --strip-components=1
+	curl -sSL https://github.com/lionelnicolas/rd_tool/tarball/configuration-improvements | tar zxf - -C ${RD_TOOL_DIR} --strip-components=1
 
 # add code
 ADD package.json *.ts tsconfig.json ${APP_DIR}/
