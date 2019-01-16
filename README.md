@@ -94,7 +94,7 @@ Docker support
 
 AWCY can be started as a docker container for local usage or development.
 
-Build
+Build (server)
 ----
 
 The docker image is pretty large (3.3 GB), as it includes:
@@ -111,7 +111,18 @@ To build the image:
 docker build --tag xiph/awcy:latest .
 ```
 
-Run
+Build (worker)
+----
+
+Another dockerfile (`Dockerfile.worker`) is available to create worker nodes.
+
+To build the worker image:
+
+```sh
+docker build --file Dockerfile.worker --tag xiph/awcy-worker:latest .
+```
+
+Run (all-in-one)
 ----
 
 You can run an all-in-one container which will start:
@@ -131,7 +142,7 @@ Configuration is driven by a few environment variables (with their default value
  * `MEDIAS_SRC_DIR=/data/media`: directory containing media files ( get them from https://people.xiph.org/~tdaede/sets/ )
  * `LOCAL_WORKER_ENABLED=false`: if a local worker need to be started and configured
  * `LOCAL_WORKER_SLOTS=$(nproc)`: number of slots for the local worker
- * `IRC_CHANNEL=#daalatest`: IRC notifications target channel
+ * `IRC_CHANNEL=none`: IRC notifications target channel (`none` means disabled)
  * `AWCY_API_KEY=awcy_api_key`: WebUI/API key
  * `AWCY_SERVER_PORT=3000`: awcy server listening port
  * `RD_SERVER_PORT=4000`: rd_server listening port
@@ -143,6 +154,7 @@ docker run \
 	-it \
 	--rm \
 	--name xiph-awcy \
+	--publish 3000:3000 \
 	--volume /tmp/awcy:/data \
 	--volume ${HOME}/xiph-media-files:/media \
 	--env MEDIAS_SRC_DIR=/media \
@@ -155,6 +167,17 @@ docker run \
 Output:
 
 ```
+--2019-01-16 22:46:11--  https://people.xiph.org/~tdaede/sets/subset1-monochrome/Claudette_14_july_2003_1920Z.y4m
+Resolving people.xiph.org (people.xiph.org)... 140.211.15.28, 2001:470:eb26:54::1
+Connecting to people.xiph.org (people.xiph.org)|140.211.15.28|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1485050 (1.4M) [application/octet-stream]
+Saving to: ‘/media/acwy-builder-quicktest/test_frame.y4m’
+
+/media/acwy-builder-quicktest/test_frame.y4m         100%[=====================================================================================================================>]   1.42M  1.14MB/s    in 1.2s
+
+2019-01-16 22:46:13 (1.14 MB/s) - ‘/media/acwy-builder-quicktest/test_frame.y4m’ saved [1485050/1485050]
+
 Cloning into '/data/src/av1'...
 remote: Sending approximately 132.14 MiB ...
 remote: Counting objects: 8, done
@@ -177,6 +200,7 @@ Cloning into '/data/src/thor'...
 
 (...)
 
+Generating SSH host keys
 Generating public/private rsa key pair.
 Your identification has been saved in /data/conf/awcy.pem.
 Your public key has been saved in /data/conf/awcy.pem.pub.
@@ -205,7 +229,96 @@ Media samples directory: /media
 Runs output directory: /data/runs
 ```
 
-As said in the output, if you open your browser at http://172.20.0.12:3000, you should see the AWCY WebUI.
+If you open your browser at http://localhost:3000 (or the one in the container output), you should see the AWCY WebUI.
+
+On initial startup, the following configuration files are generated:
+
+```
+/tmp/awcy/conf/awcy.pem
+/tmp/awcy/conf/awcy.pub
+/tmp/awcy/conf/config.json
+/tmp/awcy/conf/list.json
+/tmp/awcy/conf/machines.json
+/tmp/awcy/conf/secret_key
+/tmp/awcy/conf/sets.json
+/tmp/awcy/conf/subjective.sqlite3
+```
+
+Run (with workers)
+----
+
+You first need to start an AWCY server instance using the [all-in-one instructions](#run-all-in-one), but setting `LOCAL_WORKER_ENABLED` to false.
+
+In a second terminal, start one or more worker instances:
+
+```sh
+docker run \
+	-it \
+	--detach \
+	--name xiph-awcy-worker-1 \
+	--volume ${HOME}/xiph-media-files:/media \
+	--env SSH_PUBKEY="$(cat /tmp/awcy/conf/awcy.pub)"
+	xiph/awcy-worker:latest
+
+docker run \
+	-it \
+	--detach \
+	--name xiph-awcy-worker-2 \
+	--volume ${HOME}/xiph-media-files:/media \
+	--env SSH_PUBKEY="$(cat /tmp/awcy/conf/awcy.pub)"
+	xiph/awcy-worker:latest
+
+...
+```
+
+Note that the given public key is the server-generated one.
+
+Then stop the server instance by hitting `CTRL+C` in its terminal.
+
+Get IP addresses of your worker nodes:
+
+```sh
+docker inspect xiph-awcy-worker-1 | jq -r '.[].NetworkSettings.IPAddress'
+172.20.0.12
+
+docker inspect xiph-awcy-worker-2 | jq -r '.[].NetworkSettings.IPAddress'
+172.20.0.13
+...
+```
+
+You can now edit the /tmp/awcy/conf/machines.json (paths should be left as-is):
+
+```
+cat >/tmp/awcy/conf/machines.json <<EOF
+[
+  {
+    "host": "172.20.0.12",
+    "user": "xiph",
+    "cores": 8,
+    "port": 22,
+    "work_root": "/data/work",
+    "media_path": "/media"
+  },
+  {
+    "host": "172.20.0.13",
+    "user": "xiph",
+    "cores": 8,
+    "port": 22,
+    "work_root": "/data/work",
+    "media_path": "/media"
+  }
+]
+EOF
+```
+
+Then start the server again using the previously used command.
+
+You should now have two (or more) workers accessible.
+
+Samples
+----
+
+To make sure that everything is working properly, you can try a run using the `acwy-builder-quicktest` set, which runs in one minute or so.
 
 Cleanup
 ----
