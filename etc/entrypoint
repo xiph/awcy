@@ -52,13 +52,20 @@ if [ ! -f "${CONFIG_DIR}/subjective.sqlite3" ]; then
 fi
 
 # prepare awcy list file if needed
-# FIXME: change list.json path
 if [ ! -f "${CONFIG_DIR}/list.json" ]; then
 	echo "[]" >${CONFIG_DIR}/list.json
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/list.json
-	rm -f ${APP_DIR}/list.json
-	ln -sf ${CONFIG_DIR}/list.json ${APP_DIR}/list.json
 fi
+
+# (re-)create symlinks (this is a hack until making that configurable in rd_server/rd_tool)
+rm -f ${RD_TOOL_DIR}/../runs && ln -sf ${RUNS_DST_DIR} ${RD_TOOL_DIR}/../runs
+rm -f ${APP_DIR}/runs && ln -sf ${RUNS_DST_DIR} ${APP_DIR}/runs
+rm -f ${WORK_DIR}/daalatool && ln -sf ${DAALATOOL_DIR} ${WORK_DIR}/daalatool
+for filepath in sets.json list.json daala.pem; do
+	rm -f ${RD_TOOL_DIR}/${filepath} ${APP_DIR}/${filepath}
+	ln -sf ${CONFIG_DIR}/${filepath} ${RD_TOOL_DIR}/${filepath}
+	ln -sf ${CONFIG_DIR}/${filepath} ${APP_DIR}/${filepath}
+done
 
 # download sources if needed
 if [ ! -d "${CODECS_SRC_DIR}/av1" ]; then
