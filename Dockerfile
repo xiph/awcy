@@ -197,6 +197,7 @@ ENV \
 	CONFIG_DIR=/data/conf \
 	CODECS_SRC_DIR=/data/src \
 	RUNS_DST_DIR=/data/runs \
+	MEDIAS_SRC_DIR=/data/media \
 	START_LOCAL_WORKER=false \
 	IRC_CHANNEL=#daalatest \
 	AWCY_API_KEY=awcy_api_key \

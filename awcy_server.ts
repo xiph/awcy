@@ -17,6 +17,7 @@ const app = express();
 let app_dir = process.env['APP_DIR'] || process.env['PWD'];
 let config_dir = process.env['CONFIG_DIR'] || process.env['PWD'];
 let codecs_src_dir = process.env['CODECS_SRC_DIR'] || process.env['PWD'];
+let medias_src_dir = process.env['MEDIAS_SRC_DIR'] || process.env['PWD'];
 let runs_dst_dir = process.env['RUNS_DST_DIR'] || process.env['PWD']+'/runs';
 let external_addr = process.env['EXTERNAL_ADDR'] || 'localhost';
 
@@ -116,6 +117,7 @@ function process_build_queue() {
     env['RUN_ID'] = build_job.run_id;
     env['APP_DIR'] = app_dir;
     env['CODECS_SRC_DIR'] = codecs_src_dir;
+    env['MEDIAS_SRC_DIR'] = medias_src_dir;
     env['RUNS_DST_DIR'] = runs_dst_dir;
     build_job_child_process = cp.spawn('./create_test_branch.sh',
       [build_job.commit, build_job.run_id, build_job.codec],
@@ -494,4 +496,5 @@ console.log('AWCY server started! Open a browser at http://'+external_addr+':' +
 console.log('AWCY server directory: '+app_dir);
 console.log('Configuration directory: '+config_dir);
 console.log('Codecs git repositories location: '+codecs_src_dir);
+console.log('Media samples directory: '+medias_src_dir);
 console.log('Runs output directory: '+runs_dst_dir);

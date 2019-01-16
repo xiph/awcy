@@ -16,6 +16,7 @@ for dir in \
 	"${CONFIG_DIR}" \
 	"${CODECS_SRC_DIR}" \
 	"${RUNS_DST_DIR}" \
+	"${MEDIAS_SRC_DIR}" \
 ; do
 	mkdir -p ${dir}
 	chown ${APP_USER}:${APP_USER} ${dir}
@@ -127,7 +128,7 @@ if [ ! -f "${CONFIG_DIR}/machines.json" ]; then
 				"cores": $(nproc),
 				"port": 22,
 				"work_root": "/opt/work",
-				"media_path": "/opt/media"
+				"media_path": "${MEDIAS_SRC_DIR}"
 			}
 		]
 		EOF
