@@ -5,6 +5,8 @@ import path = require('path');
 import glob = require('glob');
 
 const run_to_update = process.argv[2];
+const config_dir = process.env['CONFIG_DIR'] || process.env['PWD'];
+const listfile = config_dir + '/list.json';
 
 function create_list_entry(run_id) {
   // TODO: define a typescript interface for info.json
@@ -43,7 +45,7 @@ function create_list_entry(run_id) {
 if (run_to_update) {
   // incremental update
   console.log('Performing incremental update on',run_to_update);
-  const list = JSON.parse(fs.readFileSync('list.json').toString());
+  const list = JSON.parse(fs.readFileSync(listfile).toString());
   const new_job = create_list_entry(run_to_update);
   var found_job = false;
   for (var job_num in list) {
@@ -55,9 +57,9 @@ if (run_to_update) {
   if(!found_job) {
     list.push(new_job);
   }
-  const tmpname = 'list.json.' + Math.random().toString(36).slice(2);
+  const tmpname = listfile + '.' + Math.random().toString(36).slice(2);
   fs.writeFileSync(tmpname,JSON.stringify(list));
-  fs.renameSync(tmpname,'list.json');
+  fs.renameSync(tmpname, listfile);
 } else {
   const jobs = [];
   // full update
@@ -70,8 +72,8 @@ if (run_to_update) {
     } catch (e) {};
   });
 
-  fs.writeFileSync('list.json.new',JSON.stringify(jobs));
-  fs.renameSync('list.json.new','list.json');
+  fs.writeFileSync(listfile + '.new',JSON.stringify(jobs));
+  fs.renameSync(listfile + '.new', listfile);
 
   const file_structure = read_ab_image_paths('runs');
   fs.writeFile('ab_paths.json', JSON.stringify(file_structure, null, 4));
