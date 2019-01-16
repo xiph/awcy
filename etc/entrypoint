@@ -51,6 +51,15 @@ if [ ! -f "${CONFIG_DIR}/subjective.sqlite3" ]; then
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/subjective.sqlite3
 fi
 
+# prepare awcy sets file if needed (and inject a quicktest set for scheduling testing)
+if [ ! -f "${CONFIG_DIR}/sets.json" ]; then
+	mv ${RD_TOOL_DIR}/sets.json ${RD_TOOL_DIR}/sets.dist.json
+
+	rm -f ${MEDIAS_SRC_DIR}/acwy-builder-quicktest
+	ln -sf ${MEDIAS_SRC_DIR}/subset1 ${MEDIAS_SRC_DIR}/acwy-builder-quicktest
+	jq '. + {"acwy-builder-quicktest": {"type": "image", "sources": ["08-2011._Panthera_tigris_tigris_-_Texas_Park_-_Lanzarote_-TP04.y4m"]}}' ${RD_TOOL_DIR}/sets.dist.json >${CONFIG_DIR}/sets.json
+fi
+
 # prepare awcy list file if needed
 if [ ! -f "${CONFIG_DIR}/list.json" ]; then
 	echo "[]" >${CONFIG_DIR}/list.json
