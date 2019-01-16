@@ -126,7 +126,7 @@ if [ ! -f "${CONFIG_DIR}/machines.json" ]; then
 			{
 				"host": "127.0.0.1",
 				"user": "${APP_USER}",
-				"cores": $(nproc),
+				"cores": ${LOCAL_WORKER_SLOTS:-$(nproc)},
 				"port": 22,
 				"work_root": "${WORK_DIR}",
 				"media_path": "${MEDIAS_SRC_DIR}"
