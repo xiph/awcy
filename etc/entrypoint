@@ -72,7 +72,7 @@ fi
 rm -f ${RD_TOOL_DIR}/../runs && ln -sf ${RUNS_DST_DIR} ${RD_TOOL_DIR}/../runs
 rm -f ${APP_DIR}/runs && ln -sf ${RUNS_DST_DIR} ${APP_DIR}/runs
 rm -f ${WORK_DIR}/daalatool && ln -sf ${DAALATOOL_DIR} ${WORK_DIR}/daalatool
-for filepath in sets.json list.json daala.pem; do
+for filepath in sets.json list.json; do
 	rm -f ${RD_TOOL_DIR}/${filepath} ${APP_DIR}/${filepath}
 	ln -sf ${CONFIG_DIR}/${filepath} ${RD_TOOL_DIR}/${filepath}
 	ln -sf ${CONFIG_DIR}/${filepath} ${APP_DIR}/${filepath}
