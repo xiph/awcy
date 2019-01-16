@@ -117,7 +117,7 @@ fi
 
 # configure rd_tools
 if [ ! -f "${CONFIG_DIR}/machines.json" ]; then
-	if [ "${START_LOCAL_WORKER:-false}" != "true" ]; then
+	if [ "${LOCAL_WORKER_ENABLED:-false}" != "true" ]; then
 		echo "[]" >${CONFIG_DIR}/machines.json
 
 	else
@@ -161,7 +161,7 @@ if [ ! -f "${CONFIG_DIR}/awcy.pem" ]; then
 fi
 
 # configure local worker services if needed
-if [ "${START_LOCAL_WORKER:-false}" = "true" ]; then
+if [ "${LOCAL_WORKER_ENABLED:-false}" = "true" ]; then
 	mkdir -p /var/run/sshd
 	mkdir -p /etc/service/sshd
 
