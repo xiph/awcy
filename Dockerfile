@@ -204,7 +204,7 @@ ENV \
 	WORK_DIR=/data/work \
 	MEDIAS_SRC_DIR=/data/media \
 	LOCAL_WORKER_ENABLED=false \
-	IRC_CHANNEL=#daalatest \
+	IRC_CHANNEL=none \
 	AWCY_API_KEY=awcy_api_key \
 	AWCY_SERVER_PORT=3000 \
 	RD_SERVER_PORT=4000

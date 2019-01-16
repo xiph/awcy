@@ -41,12 +41,15 @@ const channel = config.channel;
 
 AWS.config.update({region: 'us-west-2'});
 
-const ircclient = new irc.Client('irc.freenode.net', 'XiphAWCY', {
-    channels: [channel],
-});
-ircclient.addListener('error', function(message) {
-    console.log('error: ', message);
-});
+var ircclient = null;
+if (channel != "none") {
+  ircclient = new irc.Client('irc.freenode.net', 'XiphAWCY', {
+      channels: [channel],
+  });
+  ircclient.addListener('error', function(message) {
+      console.log('error: ', message);
+  });
+}
 
 const key = fs.readFileSync(config_dir+'/secret_key', {encoding: 'utf8'}).trim();
 
@@ -152,8 +155,10 @@ function process_build_queue() {
       }
       if (error) {
         fs.writeFile(runs_dst_dir+'/'+build_job.run_id+'/status.txt','buildfailed');
-        ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
+        if (ircclient) {
+          ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
                       ' '+config.base_url+'/runs/'+build_job.run_id+'/output.txt');
+        }
         generate_list(build_job.run_id);
       } else {
         add_to_run_queue(build_job);
@@ -166,7 +171,9 @@ function process_build_queue() {
 };
 
 function add_to_run_queue(job) {
-  ircclient.say(channel,job.nick+': Starting '+job.run_id);
+  if (ircclient) {
+    ircclient.say(channel,job.nick+': Starting '+job.run_id);
+  }
   request(config.rd_server_url+'/submit?'+querystring.stringify({run_id: job.run_id}), function (error, response, body) {
     console.log(error);
     console.log(body);
@@ -270,7 +277,9 @@ function check_for_completed_runs() {
       for (let runid in last_runs) {
         if (!(runid in current_runs)) {
           list_updated = true;
-          ircclient.say(channel,last_runs[runid]['info']['nick']+': Finished '+runid);
+          if (ircclient) {
+            ircclient.say(channel,last_runs[runid]['info']['nick']+': Finished '+runid);
+          }
         }
       }
       if (list_updated) generate_list(null);
@@ -491,6 +500,7 @@ app.post('/subjective/vote', function(req,res) {
 
 app.listen(config.port);
 console.log('AWCY server started! Open a browser at http://'+external_addr+':' + config.port);
+console.log('')
 
 // show directories
 console.log('AWCY server directory: '+app_dir);
@@ -498,3 +508,10 @@ console.log('Configuration directory: '+config_dir);
 console.log('Codecs git repositories location: '+codecs_src_dir);
 console.log('Media samples directory: '+medias_src_dir);
 console.log('Runs output directory: '+runs_dst_dir);
+console.log('')
+
+if (ircclient) {
+  console.log('IRC notifications will be sent to channel '+channel);
+} else {
+  console.log('IRC notifications are disable as channel is set to "none"');
+}
