@@ -146,7 +146,20 @@ RUN \
 	rm -f /usr/bin/gosu.asc && \
 	chmod a+x /usr/bin/gosu
 
-# install rd_tool
+# install daalatool
+ENV \
+	DAALATOOL_DIR=/opt/daalatool
+
+RUN \
+	mkdir -p $(dirname ${DAALATOOL_DIR}) && \
+	git clone https://github.com/xiph/daala.git ${DAALATOOL_DIR} && \
+	cd ${DAALATOOL_DIR} && \
+	./autogen.sh && \
+	./configure --disable-player && \
+	make tools -j4 && \
+	echo chown -R ${APP_USER}:${APP_USER} ${DAALATOOL_DIR}
+
+# install rd_tool and dependencies
 ENV \
 	RD_TOOL_DIR=/opt/rd_tool
 
