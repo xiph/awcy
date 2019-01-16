@@ -57,6 +57,7 @@ RUN \
 		python2.7 \
 		rsync \
 		runit \
+		sqlite3 \
 		strace \
 		tcpdump \
 		tzdata \

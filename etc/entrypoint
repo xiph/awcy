@@ -46,9 +46,8 @@ if [ ! -f "${CONFIG_DIR}/secret_key" ]; then
 fi
 
 # prepare awcy sqlite database if needed
-# FIXME: create a real database
 if [ ! -f "${CONFIG_DIR}/subjective.sqlite3" ]; then
-	touch ${CONFIG_DIR}/subjective.sqlite3
+	cat /etc/awcy.sql | sqlite3 ${CONFIG_DIR}/subjective.sqlite3
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/subjective.sqlite3
 fi
 
