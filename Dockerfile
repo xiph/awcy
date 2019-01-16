@@ -166,14 +166,18 @@ ENV \
 RUN \
 	apt-get update && \
 	apt-get install -y --no-install-recommends \
+		bc \
 		python3-boto3 \
+		python3-numpy \
+		python3-scipy \
 		python3-tornado \
-		ssh && \
+		ssh \
+		time \
+		&& \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists && \
 	mkdir -p ${RD_TOOL_DIR} && \
-	curl -sSL https://github.com/lionelnicolas/rd_tool/tarball/master | tar zxf - -C ${RD_TOOL_DIR} --strip-components=1 && \
-	ln -sf ${RD_TOOL_DIR}/sets.json ${APP_DIR}/sets.json
+	curl -sSL https://github.com/lionelnicolas/rd_tool/tarball/master | tar zxf - -C ${RD_TOOL_DIR} --strip-components=1
 
 # add code
 ADD package.json *.ts tsconfig.json ${APP_DIR}/
