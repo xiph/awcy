@@ -177,7 +177,7 @@ RUN \
 	rm -rf /var/lib/apt/lists && \
 	mkdir -p ${RD_TOOL_DIR} && \
 	rm -vf /etc/ssh/ssh_host_* && \
-	curl -sSL https://github.com/lionelnicolas/rd_tool/tarball/configuration-improvements | tar zxf - -C ${RD_TOOL_DIR} --strip-components=1
+	curl -sSL https://github.com/tdaede/rd_tool/tarball/master | tar zxf - -C ${RD_TOOL_DIR} --strip-components=1
 
 # add code
 ADD package.json *.ts tsconfig.json ${APP_DIR}/
