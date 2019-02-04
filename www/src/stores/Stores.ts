@@ -506,7 +506,8 @@ export class Job {
     "av1-rt": "AV1 (Low Latency CQP)",
     "thor": "Thor",
     "thor-rt": "Thor Realtime",
-    "rav1e": "rav1e"
+    "rav1e": "rav1e",
+    "svt-av1": "SVT-AV1"
   };
 
   static sets = {};

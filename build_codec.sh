@@ -88,6 +88,12 @@ case "${CODEC}" in
     cargo build --release
     ;;
 
+  svt-av1)
+    cd ${CODECS_SRC_DIR}/svt-av1
+    cd Build/linux
+    ./build.sh
+    ;;
+
   *)
     echo "Unknown codec '${CODEC}'" >&2
     exit 1

@@ -84,7 +84,8 @@ const binaries = {
   'av1-rt': ['aomenc','aomdec'],
   'thor': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt'],
   'thor-rt': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt'],
-  'rav1e': ['target/release/rav1e']
+  'rav1e': ['target/release/rav1e'],
+  'svt-av1': ['Bin/Release/SvtAv1EncApp']
 };
 
 /* The build queue. Only one job can be built at a time. */
