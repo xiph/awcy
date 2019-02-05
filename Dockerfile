@@ -65,7 +65,9 @@ RUN \
 		uuid \
 		vim \
 		wget \
-		xz-utils && \
+		xz-utils \
+		yasm \
+		&& \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists
 
