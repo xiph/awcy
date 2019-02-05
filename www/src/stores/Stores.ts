@@ -418,7 +418,11 @@ export class Job {
   }
 
   decocerUrl(): string {
-    return baseUrl + `runs/${this.id}/js/decoder.js`;
+    if (this.codec == 'rav1e') {
+      return 'https://people.xiph.org/~mbebenita/analyzer/inspect.js';
+    } else {
+      return baseUrl + `runs/${this.id}/js/decoder.js`;
+    }
   }
 
   ivfUrlPrefix() {
