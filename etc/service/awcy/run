@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# exit on failure
+set -e
+
+# exit on unassigned variable
+set -u
+
+# show log message
+echo "STARTING AWCY SERVICE"
+
+# enter working directory
+cd ${APP_DIR}
+
+# start awcy server
+exec gosu ${APP_USER}:${APP_USER} node awcy_server.js

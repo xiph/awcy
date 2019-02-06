@@ -1,0 +1,188 @@
+#!/bin/sh
+
+# exit on failure
+set -e
+
+# exit on unassigned variable
+set -u
+
+# run command if specified (and skip the rest of this script)
+if [ -n "${1:-}" ]; then
+	exec "$@"
+fi
+
+# create data directories
+for dir in \
+	"${CONFIG_DIR}" \
+	"${CODECS_SRC_DIR}" \
+	"${RUNS_DST_DIR}" \
+	"${WORK_DIR}" \
+	"${MEDIAS_SRC_DIR}" \
+; do
+	mkdir -p ${dir}
+	chown ${APP_USER}:${APP_USER} ${dir}
+done
+
+# detect main IP external address if not set/forced
+net_iface=$(awk '{ if ($2 == "00000000") { print $1; exit; } }' /proc/net/route)
+net_ip_addr=$(ip addr show dev ${net_iface} | awk -F'[ \t/]+' '/inet / { print $3; exit; }')
+export EXTERNAL_ADDR=${EXTERNAL_ADDR:-${net_ip_addr}}
+
+# prepare awcy server configuration if needed
+if [ ! -f "${CONFIG_DIR}/config.json" ]; then
+	cat >${CONFIG_DIR}/config.json <<-EOF
+	{
+		"channel": "${IRC_CHANNEL}",
+		"have_aws": false,
+		"port": ${AWCY_SERVER_PORT},
+		"rd_server_url": "http://${EXTERNAL_ADDR}:${RD_SERVER_PORT}"
+	}
+	EOF
+	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/config.json
+fi
+
+# prepare awcy key file if needed
+if [ ! -f "${CONFIG_DIR}/secret_key" ]; then
+	echo "${AWCY_API_KEY}" >${CONFIG_DIR}/secret_key
+	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/secret_key
+fi
+
+# prepare awcy sqlite database if needed
+if [ ! -f "${CONFIG_DIR}/subjective.sqlite3" ]; then
+	cat /etc/awcy.sql | sqlite3 ${CONFIG_DIR}/subjective.sqlite3
+	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/subjective.sqlite3
+fi
+
+# prepare awcy sets file if needed (and inject a quicktest set for scheduling testing)
+if [ ! -f "${CONFIG_DIR}/sets.json" ]; then
+	mv ${RD_TOOL_DIR}/sets.json ${RD_TOOL_DIR}/sets.dist.json
+
+	# create fast set for testing
+	set_name=acwy-builder-quicktest
+	rm -rf ${MEDIAS_SRC_DIR}/${set_name}
+	mkdir -p ${MEDIAS_SRC_DIR}/${set_name}
+	wget --output-document ${MEDIAS_SRC_DIR}/${set_name}/test_frame.y4m https://people.xiph.org/~tdaede/sets/subset1-monochrome/Claudette_14_july_2003_1920Z.y4m
+	jq '. + {"'${set_name}'": {"type": "image", "sources": ["test_frame.y4m"]}}' ${RD_TOOL_DIR}/sets.dist.json >${CONFIG_DIR}/sets.json
+	chown -R ${APP_USER}:${APP_USER} ${MEDIAS_SRC_DIR}/${set_name}
+fi
+
+# prepare awcy list file if needed
+if [ ! -f "${CONFIG_DIR}/list.json" ]; then
+	echo "[]" >${CONFIG_DIR}/list.json
+	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/list.json
+fi
+
+# download sources if needed
+if [ ! -d "${CODECS_SRC_DIR}/av1" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://aomedia.googlesource.com/aom ${CODECS_SRC_DIR}/av1
+	ln -s ${CODECS_SRC_DIR}/av1 ${CODECS_SRC_DIR}/av1-rt
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/daala" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/xiph/daala.git ${CODECS_SRC_DIR}/daala
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/rav1e" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/xiph/rav1e.git ${CODECS_SRC_DIR}/rav1e
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/svt-av1" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/OpenVisualCloud/SVT-AV1.git ${CODECS_SRC_DIR}/svt-av1
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/thor" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/cisco/thor.git ${CODECS_SRC_DIR}/thor
+	ln -s ${CODECS_SRC_DIR}/thor ${CODECS_SRC_DIR}/thor-rt
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/x264" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/mirror/x264.git ${CODECS_SRC_DIR}/x264
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/x265" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/videolan/x265.git ${CODECS_SRC_DIR}/x265
+	ln -s ${CODECS_SRC_DIR}/x265 ${CODECS_SRC_DIR}/x265-rt
+fi
+
+if [ ! -d "${CODECS_SRC_DIR}/libvpx" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/webmproject/libvpx.git ${CODECS_SRC_DIR}/libvpx
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp8
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp8-rt
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp9
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp9-rt
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvpx-rt
+fi
+
+# configure rd_tools
+if [ ! -f "${CONFIG_DIR}/machines.json" ]; then
+	if [ "${LOCAL_WORKER_ENABLED:-false}" != "true" ]; then
+		echo "[]" >${CONFIG_DIR}/machines.json
+
+	else
+		cat >${CONFIG_DIR}/machines.json <<-EOF
+		[
+			{
+				"host": "127.0.0.1",
+				"user": "${APP_USER}",
+				"cores": ${LOCAL_WORKER_SLOTS:-$(nproc)},
+				"port": 22,
+				"work_root": "${WORK_DIR}",
+				"media_path": "${MEDIAS_SRC_DIR}"
+			}
+		]
+		EOF
+	fi
+
+	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/machines.json
+fi
+
+# configure ssh client
+if [ ! -f "/home/${APP_USER}/.ssh/config" ]; then
+	mkdir -p /home/${APP_USER}/.ssh
+	cat >/home/${APP_USER}/.ssh/config <<-EOF
+	Host *
+		UserKnownHostsFile /dev/null
+		StrictHostKeyChecking no
+		LogLevel quiet
+		Port 22
+	EOF
+	chown -R ${APP_USER}:${APP_USER} /home/${APP_USER}/.ssh
+fi
+
+# create SSH host keys if none exist
+if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+	echo "Generating SSH host keys"
+	dpkg-reconfigure openssh-server >/dev/null 2>&1
+fi
+
+# configure ssh authentication
+if [ ! -f "${CONFIG_DIR}/awcy.pem" ]; then
+	gosu ${APP_USER}:${APP_USER} ssh-keygen -t rsa -f ${CONFIG_DIR}/awcy.pem -P ''
+	chmod 0600 ${CONFIG_DIR}/awcy.pem
+	mv ${CONFIG_DIR}/awcy.pem.pub ${CONFIG_DIR}/awcy.pub
+fi
+if [ ! -f "/home/${APP_USER}/.ssh/authorized_keys" ]; then
+	gosu ${APP_USER}:${APP_USER} cp ${CONFIG_DIR}/awcy.pub /home/${APP_USER}/.ssh/authorized_keys
+fi
+
+# configure local worker services if needed
+if [ "${LOCAL_WORKER_ENABLED:-false}" = "true" ]; then
+	mkdir -p /var/run/sshd
+	mkdir -p /etc/service/sshd
+
+	cat >/etc/service/sshd/run <<-EOF
+	#!/bin/sh
+	echo "STARTING SSHD SERVICE"
+	exec /usr/sbin/sshd -D
+	EOF
+
+	chmod a+x /etc/service/sshd/run
+fi
+
+# specify generated SSH private key if none set
+if [ -z "${SSH_PRIVKEY_FILE:-}" ]; then
+	export SSH_PRIVKEY_FILE=${CONFIG_DIR}/awcy.pem
+fi
+
+# run runit services
+exec tini -g -- /usr/bin/runsvdir -P /etc/service

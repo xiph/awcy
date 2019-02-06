@@ -119,7 +119,7 @@ except FileNotFoundError:
     info_data = None
 
 if info_data:
-    sets = json.load(open("rd_tool/sets.json"))
+    sets = json.load(open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.json")))
     videos = sets[task]["sources"]
 else:
     if not args.anchor and not args.overlap:

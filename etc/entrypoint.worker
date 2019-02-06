@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# exit on failure
+set -e
+
+# exit on unassigned variable
+set -u
+
+# run command if specified (and skip the rest of this script)
+if [ -n "${1:-}" ]; then
+	exec "$@"
+fi
+
+# create data directories
+for dir in \
+	"${WORK_DIR}" \
+	"/home/${APP_USER}/.ssh" \
+; do
+	mkdir -p ${dir}
+	chown ${APP_USER}:${APP_USER} ${dir}
+done
+
+# configure sshd
+mkdir -p /var/run/sshd
+if [ -n "${SSH_PUBKEY:-}" -a ! -f /home/${APP_USER}/.ssh/authorized_keys ]; then
+	echo "${SSH_PUBKEY}" >/home/${APP_USER}/.ssh/authorized_keys
+	chown ${APP_USER}:${APP_USER} /home/${APP_USER}/.ssh/authorized_keys
+fi
+
+# create SSH host keys if none exist
+if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+	echo "Generating SSH host keys"
+	dpkg-reconfigure openssh-server >/dev/null 2>&1
+fi
+
+# start sshd
+/usr/sbin/sshd -De
