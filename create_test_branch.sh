@@ -11,7 +11,7 @@ TESTNAME="$2"
 CODEC="$3"
 BRANCH=t-$(echo "${TESTNAME}" | sed "s/:/_/g")
 
-cd ${CODECS_SRC_DIR}/${CODEC}
+mkdir -p ${CODECS_SRC_DIR}/${CODEC} && cd ${CODECS_SRC_DIR}/${CODEC}
 git reset --hard
 if git checkout ${COMMIT}; then
     echo "Commit found, skipping fetch."
