@@ -14,11 +14,11 @@ import sqlite3 = require('sqlite3');
 
 const app = express();
 
-let app_dir = process.env['APP_DIR'] || process.env['PWD'];
-let config_dir = process.env['CONFIG_DIR'] || process.env['PWD'];
-let codecs_src_dir = process.env['CODECS_SRC_DIR'] || process.env['PWD'];
-let medias_src_dir = process.env['MEDIAS_SRC_DIR'] || process.env['PWD'];
-let runs_dst_dir = process.env['RUNS_DST_DIR'] || process.env['PWD']+'/runs';
+let app_dir = process.env['APP_DIR'] || __dirname;
+let config_dir = process.env['CONFIG_DIR'] || __dirname;
+let codecs_src_dir = process.env['CODECS_SRC_DIR'] || __dirname;
+let medias_src_dir = process.env['MEDIAS_SRC_DIR'] || __dirname;
+let runs_dst_dir = process.env['RUNS_DST_DIR'] || __dirname+'/runs';
 let external_addr = process.env['EXTERNAL_ADDR'] || 'localhost';
 
 var sdb = new sqlite3.Database(config_dir+'/subjective.sqlite3');
