@@ -73,8 +73,9 @@ if (run_to_update) {
     } catch (e) {};
   });
 
-  fs.writeFileSync(listfile + '.new',JSON.stringify(jobs));
-  fs.renameSync(listfile + '.new', listfile);
+  const tmpname = listfile + '.' + Math.random().toString(36).slice(2);
+  fs.writeFileSync(tmpname, JSON.stringify(jobs));
+  fs.renameSync(tmpname, listfile);
 
   const file_structure = read_ab_image_paths(runs_dst_dir);
   fs.writeFile('ab_paths.json', JSON.stringify(file_structure, null, 4));
