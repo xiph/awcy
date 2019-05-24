@@ -90,6 +90,10 @@ if [ ! -d "${CODECS_SRC_DIR}/svt-av1" ]; then
 	gosu ${APP_USER}:${APP_USER} git clone https://github.com/OpenVisualCloud/SVT-AV1.git ${CODECS_SRC_DIR}/svt-av1
 fi
 
+if [ ! -d "${CODECS_SRC_DIR}/vvcsoftware_vtm" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://vcgit.hhi.fraunhofer.de/jvet/VVCSoftware_VTM.git ${CODECS_SRC_DIR}/vvcsoftware_vtm
+fi
+
 if [ ! -d "${CODECS_SRC_DIR}/thor" ]; then
 	gosu ${APP_USER}:${APP_USER} git clone https://github.com/cisco/thor.git ${CODECS_SRC_DIR}/thor
 	ln -s ${CODECS_SRC_DIR}/thor ${CODECS_SRC_DIR}/thor-rt
