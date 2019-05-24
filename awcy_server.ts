@@ -89,7 +89,8 @@ const binaries = {
   'thor': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt'],
   'thor-rt': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt'],
   'rav1e': ['target/release/rav1e'],
-  'svt-av1': ['Bin/Release/SvtAv1EncApp', 'Bin/Release/libSvtAv1Enc.so']
+  'svt-av1': ['Bin/Release/SvtAv1EncApp', 'Bin/Release/libSvtAv1Enc.so'],
+  'vvc-vtm': ['bin/EncoderAppStatic']
 };
 
 /* The build queue. Only one job can be built at a time. */

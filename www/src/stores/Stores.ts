@@ -512,6 +512,7 @@ export class Job {
     "thor-rt": "Thor Realtime",
     "rav1e": "rav1e",
     "svt-av1": "SVT-AV1"
+    "vvc-vtm": "VVC VTM"
   };
 
   static sets = {};
