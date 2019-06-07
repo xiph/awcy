@@ -109,10 +109,7 @@ function process_build_queue() {
     build_job = build_job_queue.shift();
     console.log('Starting build_job '+build_job.run_id);
     fs.writeFile(runs_dst_dir+'/'+build_job.run_id+'/status.txt','building');
-    const env = {};
-    for (var i in process.env) {
-      env[i] = process.env[i];
-    }
+    const env = {...process.env};
     env['LANG'] = 'en_US.UTF-8';
     env['CODEC'] = build_job.codec;
     env['EXTRA_OPTIONS'] = build_job.extra_options;
