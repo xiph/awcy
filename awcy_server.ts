@@ -121,7 +121,7 @@ function process_build_queue() {
     env['RUNS_DST_DIR'] = runs_dst_dir;
     build_job_child_process = cp.spawn('./create_test_branch.sh',
       [build_job.commit, build_job.run_id, build_job.codec],
-      { env: env });
+      { env: env, shell: true });
     const job_log = ''
     build_job_child_process.stdout.on('data', function(data) {
       console.log(data.toString());
