@@ -7,7 +7,8 @@ ENV \
 	LC_ALL=C.UTF-8 \
 	LANG=C.UTF-8 \
 	LANGUAGE=C.UTF-8 \
-	DEBIAN_FRONTEND=noninteractive
+	DEBIAN_FRONTEND=noninteractive \
+	GPG_SERVERS="ha.pool.sks-keyservers.net hkp://p80.pool.sks-keyservers.net:80 keyserver.ubuntu.com hkp://keyserver.ubuntu.com:80 pgp.mit.edu"
 
 # add runtime user
 RUN \
@@ -104,7 +105,9 @@ RUN \
 		77984A986EBC2AA786BC0F66B01FBB92821C587A \
 		8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
 	; do \
-		http_proxy= gpg --keyserver hkp://ipv4.pool.sks-keyservers.net:80 --recv-keys "${key}"; \
+		for server in $(shuf -e ${GPG_SERVERS}) ; do \
+			http_proxy= gpg --keyserver "$server" --recv-keys "${key}" && break || : ; \
+		done ; \
 	done && \
 	curl -fSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${ARCH}.tar.xz" && \
 	curl -fSLO "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt.asc" && \
@@ -131,7 +134,9 @@ RUN \
 # install tini
 RUN \
 	TINI_VERSION=v0.18.0 && \
-	http_proxy='' gpg --keyserver ipv4.pool.sks-keyservers.net --recv-keys 0527A9B7 && \
+	for server in $(shuf -e ${GPG_SERVERS}) ; do \
+		http_proxy= gpg --keyserver "$server" --recv-keys 0527A9B7 && break || : ; \
+	done && \
 	wget -O/usr/bin/tini     "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini" && \
 	wget -O/usr/bin/tini.asc "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc" && \
 	gpg --verify /usr/bin/tini.asc && \
@@ -141,7 +146,9 @@ RUN \
 # install gosu
 RUN \
 	GOSU_VERSION=1.11 && \
-	http_proxy='' gpg --keyserver ipv4.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && \
+	for server in $(shuf -e ${GPG_SERVERS}); do \
+		http_proxy= gpg --keyserver "$server" --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && break || : ; \
+	done && \
 	wget -O/usr/bin/gosu     "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" && \
 	wget -O/usr/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64.asc" && \
 	gpg --verify /usr/bin/gosu.asc && \
