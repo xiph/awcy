@@ -168,7 +168,7 @@ export class SubmitJobFormComponent extends React.Component<{
 
       <FormGroup validationState={this.getValidationState("codec")}>
         <ControlLabel>Codec</ControlLabel>
-        <Select clearable={false} placeholder="Codec" value={this.state.codec} options={codecOptions} onChange={this.onChangeCodec.bind(this)} />
+        <Select clearable={false} placeholder="Encoder" value={this.state.codec} options={codecOptions} onChange={this.onChangeCodec.bind(this)} />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("set")}>
