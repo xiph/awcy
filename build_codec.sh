@@ -98,7 +98,7 @@ case "${CODEC}" in
     cd ${CODECS_SRC_DIR}/vvc-vtm
     cmake . -DCMAKE_BUILD_TYPE=Release
     make -j
-
+    ;;
   *)
     echo "Unknown codec '${CODEC}'" >&2
     exit 1
