@@ -30,7 +30,7 @@ case "${CODEC}" in
     ;;
 
   x265 | x265-rt)
-    cd ${CODECS_SRC_DIR}/build/linux
+    cd ${CODECS_SRC_DIR}/x265/build/linux
     cmake -D ENABLE_SHARED=no ${BUILD_OPTIONS} ../../source/
     make
     ;;
