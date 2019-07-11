@@ -4,7 +4,7 @@ import { loadXHR, baseUrl, AppDispatcher, CancelJob, SubmitJob, SelectJob, Desel
 import { JobComponent } from "./Job";
 import { JobLogComponent } from "./JobLog";
 
-export class DebugComponent extends React.Component<void, {
+export class DebugComponent extends React.Component<{}, {
   log: string
 }> {
   constructor() {

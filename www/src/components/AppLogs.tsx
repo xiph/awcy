@@ -4,7 +4,7 @@ import { appStore, Job, Jobs, timeSince, daysSince, JobStatus} from "../stores/S
 import { JobComponent } from "./Job";
 import { JobLogComponent } from "./JobLog";
 
-export class AppLogsComponent extends React.Component<void, void> {
+export class AppLogsComponent extends React.Component<{}, void> {
   onChange: any;
   constructor() {
     super();

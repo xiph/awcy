@@ -95,7 +95,7 @@ export class AnalyzerVideoSelectorComponent extends React.Component<AnalyzerProp
   }
 }
 
-export class ShareComponent extends React.Component<void, void> {
+export class ShareComponent extends React.Component<{}, void> {
   constructor() {
     super();
   }
@@ -108,7 +108,7 @@ export class ShareComponent extends React.Component<void, void> {
   }
 }
 
-export class LoginComponent extends React.Component<void, {
+export class LoginComponent extends React.Component<{}, {
   password: string;
 }> {
   check: Promise<boolean>

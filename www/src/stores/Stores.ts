@@ -83,8 +83,8 @@ export function postXHR(path: string, o: any): Promise<boolean> {
   });
 }
 
-export function loadXHR2<T>(path: string, type = "json"): Promise<T> {
-  return new Promise((resolve, reject) => {
+export function loadXHR2<T>(path: string, type = "json"): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
     let xhr = new XMLHttpRequest();
     let self = this;
     xhr.open("GET", path, true);
@@ -99,14 +99,6 @@ export function loadXHR2<T>(path: string, type = "json"): Promise<T> {
       }
       console.info("Loaded XHR: " + path);
       let response = this.responseText;
-      if (type === "json") {
-        response = response.replace(/NaN/g, "null");
-        try {
-          response = response ? JSON.parse(response) : null;
-        } catch (x) {
-          reject();
-        }
-      }
       resolve(response);
     });
   });

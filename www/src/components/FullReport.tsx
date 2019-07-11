@@ -18,7 +18,7 @@ declare var require: any;
 let Select = require('react-select');
 
 
-export class FullReportComponent extends React.Component<void, {
+export class FullReportComponent extends React.Component<{}, {
     metric: string,
     video: string,
     fit: boolean;

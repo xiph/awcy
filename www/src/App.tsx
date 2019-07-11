@@ -17,7 +17,7 @@ import { appStore, AppStore, Job, JobStatus, SelectJob, AppDispatcher } from "./
 
 import { ShareComponent, LoginComponent } from "./components/Widgets"
 
-export class App extends React.Component<void, void> {
+export class App extends React.Component<{}, void> {
   constructor() {
     super();
     appStore.onChange.attach(() => {

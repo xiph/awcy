@@ -4,7 +4,7 @@ import { shallowEquals, appStore, Job, Jobs, timeSince, secondsSince, daysSince,
 import { JobComponent } from "./Job";
 import { JobLogComponent } from "./JobLog";
 
-export class RefreshComponent extends React.Component<void, void> {
+export class RefreshComponent extends React.Component<{}, void> {
   timer: any = null
   componentDidMount() {
     this.timer = setInterval(() => {
@@ -18,7 +18,7 @@ export class RefreshComponent extends React.Component<void, void> {
     return <Panel>Last updated: {secondsSince(appStore.lastPoll)} seconds ago.</Panel>;
   }
 }
-export class AppStatusComponent extends React.Component<void, {
+export class AppStatusComponent extends React.Component<{}, {
     aws: any;
   }> {
   constructor() {
