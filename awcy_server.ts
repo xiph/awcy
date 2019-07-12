@@ -371,6 +371,9 @@ app.post('/submit/job',function(req,res) {
   if (!req.body.build_options) {
     req.body.build_options = ''
   }
+  if (!req.body.save_encode) {
+    req.body.save_encode = true
+  }
   const job = {
     'codec': req.body.codec,
     'commit': req.body.commit,
