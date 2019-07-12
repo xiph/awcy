@@ -9,7 +9,7 @@ export class RefreshComponent extends React.Component<{}, void> {
   componentDidMount() {
     this.timer = setInterval(() => {
       this.forceUpdate();
-    });
+    }, 1000);
   }
   componentWillUnmount() {
     clearInterval(this.timer);
