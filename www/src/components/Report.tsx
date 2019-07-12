@@ -25,6 +25,14 @@ function makeTableCell(key: any, v: number, color: boolean = false, formatter = 
   return <td key={key} className={className}>{formatter(v)}</td>
 }
 
+function defaultQualities(codec: string) {
+  if (codec == "rav1e") {
+    return "80 128 172 220 252";
+  } else {
+    return "20 32 43 55 63";
+  }
+}
+
 interface VideoReportProps {
   name?: string;
   job: Job;
@@ -159,7 +167,7 @@ export class AnalyzerLinksComponent extends React.Component<{
     let jobs = this.props.jobs;
     let mode = this.state.mode;
     let maxFrames = this.state.maxFrames;
-    let qualities = (jobs[0].qualities || "20 32 43 55 63").split(" ").map(x => parseInt(x));
+    let qualities = (jobs[0].qualities || defaultQualities(jobs[0].codec)).split(" ").map(x => parseInt(x));
     let report = this.props.jobs[0].report;
     let videoRows = [];
     let qualityRows = [];
