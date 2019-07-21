@@ -410,7 +410,7 @@ export class Job {
   }
 
   decocerUrl(): string {
-    if (this.codec == 'rav1e') {
+    if (this.codec == 'rav1e' || this.codec == 'svt-av1') {
       return 'https://people.xiph.org/~mbebenita/analyzer/inspect.js';
     } else {
       return baseUrl + `runs/${this.id}/js/decoder.js`;
