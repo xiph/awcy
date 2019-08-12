@@ -187,7 +187,7 @@ app.get('/analyzer.html', function(req,res) {
   res.redirect('/analyzer' + req.originalUrl.substr(req.originalUrl.indexOf("?")));
 });
 app.use('/runs',express.static(runs_dst_dir));
-app.use('/sets.json',express.static(__dirname + 'rd_tool/sets.json'));
+app.use('/sets.json',express.static(__dirname + '/rd_tool/sets.json'));
 app.use('/error.txt',express.static(__dirname + '/error.txt'));
 app.use('/list.json',express.static(config_dir + '/list.json'));
 app.use('/ab_paths.json',express.static(__dirname + '/ab_paths.json'));
