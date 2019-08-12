@@ -89,7 +89,7 @@ const binaries = {
   'thor': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt'],
   'thor-rt': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt'],
   'rav1e': ['target/release/rav1e'],
-  'svt-av1': ['Bin/Release/SvtAv1EncApp', 'Bin/Release/libSvtAv1Enc.so'],
+  'svt-av1': ['Bin/Release/SvtAv1EncApp', 'Bin/Release/libSvtAv1Enc.so.0'],
   'vvc-vtm': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic']
 };
 
@@ -187,7 +187,7 @@ app.get('/analyzer.html', function(req,res) {
   res.redirect('/analyzer' + req.originalUrl.substr(req.originalUrl.indexOf("?")));
 });
 app.use('/runs',express.static(runs_dst_dir));
-app.use('/sets.json',express.static(config_dir + '/sets.json'));
+app.use('/sets.json',express.static(__dirname + 'rd_tool/sets.json'));
 app.use('/error.txt',express.static(__dirname + '/error.txt'));
 app.use('/list.json',express.static(config_dir + '/list.json'));
 app.use('/ab_paths.json',express.static(__dirname + '/ab_paths.json'));
