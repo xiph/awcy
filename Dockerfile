@@ -119,9 +119,10 @@ RUN \
 
 # install emscripten
 RUN \
-	EMSDK_VERSION=sdk-1.38.20-64bit && \
+	EMSDK_VERSION=1.39.2 && \
+	EMSDK_HASH=04d13b99d0630496139fa8f424c62aad65588c7b && \
 	mkdir -p /opt/emsdk && \
-	curl -sSL https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz | tar zxf - -C /opt/emsdk --strip-components=1 && \
+	curl -sSL https://github.com/emscripten-core/emsdk/archive/${EMSDK_HASH}.tar.gz | tar zxf - -C /opt/emsdk --strip-components=1 && \
 	cd /opt/emsdk && \
 	./emsdk update && \
 	./emsdk install ${EMSDK_VERSION} && \
