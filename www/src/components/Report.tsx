@@ -40,7 +40,7 @@ interface VideoReportProps {
   filterQualities?: number [];
 }
 
-let displayedBDRateMetrics = ['PSNR', 'PSNR HVS', 'SSIM', 'CIEDE 2000', 'PSNR Cb', 'PSNR Cr', 'APSNR', 'APSNR Cb', 'APSNR Cr', 'MS SSIM', 'VMAF'];
+let displayedBDRateMetrics = ['PSNR', 'PSNR HVS', 'SSIM', 'CIEDE 2000', 'APSNR', 'MS SSIM', 'VMAF'];
 
 export class VideoReportComponent extends React.Component<VideoReportProps, {
   jobReport: Report;
