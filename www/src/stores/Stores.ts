@@ -220,11 +220,7 @@ export enum ReportField {
   SSIM,
   FAST_SSIM,
   CIEDE_2000,
-  PSNR_Cb,
-  PSNR_Cr,
   APSNR_Y,
-  APSNR_Cb,
-  APSNR_Cr,
   MSSSIM,
   Time
 }
@@ -307,8 +303,7 @@ export class BDRateReport {
 
 export let metricNames = [
   "PSNR Y", "PSNR HVS", "SSIM", "FAST SSIM", "CIEDE 2000",
-  "PSNR Cb", "PSNR Cr", "APSNR Y", "APSNR Cb", "APSNR Cr",
-  "MS SSIM", "Encoding Time", "VMAF", "Decoding Time"
+  "APSNR Y", "MS SSIM", "Encoding Time", "VMAF", "Decoding Time"
 ];
 
 export let reportFieldNames = [
