@@ -100,7 +100,7 @@ if [ ! -d "${CODECS_SRC_DIR}/thor" ]; then
 fi
 
 if [ ! -d "${CODECS_SRC_DIR}/x264" ]; then
-	gosu ${APP_USER}:${APP_USER} git clone https://github.com/mirror/x264.git ${CODECS_SRC_DIR}/x264
+	gosu ${APP_USER}:${APP_USER} git clone https://code.videolan.org/videolan/x264.git ${CODECS_SRC_DIR}/x264
 fi
 
 if [ ! -d "${CODECS_SRC_DIR}/x265" ]; then
