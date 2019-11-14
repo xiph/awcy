@@ -162,7 +162,7 @@ ENV \
 
 RUN \
 	mkdir -p $(dirname ${DAALATOOL_DIR}) && \
-	git clone https://github.com/xiph/daala.git ${DAALATOOL_DIR} && \
+	git clone https://git.xiph.org/daala.git ${DAALATOOL_DIR} && \
 	cd ${DAALATOOL_DIR} && \
 	./autogen.sh && \
 	./configure --disable-player && \
