@@ -69,7 +69,7 @@ export class SubmitJobFormComponent extends React.Component<{
         break;
       case "commit":
         let commit = job.commit.toLowerCase().trim();
-        if (commit.length == 40) {
+        if (commit.length >= 7 && commit.length <= 40) {
           for (let i = 0; i < commit.length; i++) {
             if ("abcdef0123456789".indexOf(commit[i]) < 0) {
               return "error";
