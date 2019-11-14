@@ -58,7 +58,7 @@ if [ ! -f "${CONFIG_DIR}/sets.json" ]; then
 	mv ${RD_TOOL_DIR}/sets.json ${RD_TOOL_DIR}/sets.dist.json
 
 	# create fast set for testing
-	set_name=acwy-builder-quicktest
+	set_name=awcy-builder-quicktest
 	rm -rf ${MEDIAS_SRC_DIR}/${set_name}
 	mkdir -p ${MEDIAS_SRC_DIR}/${set_name}
 	wget --output-document ${MEDIAS_SRC_DIR}/${set_name}/test_frame.y4m https://people.xiph.org/~tdaede/sets/subset1-monochrome/Claudette_14_july_2003_1920Z.y4m

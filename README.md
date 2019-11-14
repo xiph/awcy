@@ -172,11 +172,11 @@ Resolving people.xiph.org (people.xiph.org)... 140.211.15.28, 2001:470:eb26:54::
 Connecting to people.xiph.org (people.xiph.org)|140.211.15.28|:443... connected.
 HTTP request sent, awaiting response... 200 OK
 Length: 1485050 (1.4M) [application/octet-stream]
-Saving to: ‘/media/acwy-builder-quicktest/test_frame.y4m’
+Saving to: ‘/media/awcy-builder-quicktest/test_frame.y4m’
 
-/media/acwy-builder-quicktest/test_frame.y4m         100%[=====================================================================================================================>]   1.42M  1.14MB/s    in 1.2s
+/media/awcy-builder-quicktest/test_frame.y4m         100%[=====================================================================================================================>]   1.42M  1.14MB/s    in 1.2s
 
-2019-01-16 22:46:13 (1.14 MB/s) - ‘/media/acwy-builder-quicktest/test_frame.y4m’ saved [1485050/1485050]
+2019-01-16 22:46:13 (1.14 MB/s) - ‘/media/awcy-builder-quicktest/test_frame.y4m’ saved [1485050/1485050]
 
 Cloning into '/data/src/av1'...
 remote: Sending approximately 132.14 MiB ...
@@ -318,7 +318,7 @@ You should now have two (or more) workers accessible.
 Samples
 ----
 
-To make sure that everything is working properly, you can try a run using the `acwy-builder-quicktest` set, which runs in one minute or so.
+To make sure that everything is working properly, you can try a run using the `awcy-builder-quicktest` set, which runs in one minute or so.
 
 Cleanup
 ----
