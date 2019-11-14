@@ -1,4 +1,4 @@
-FROM ubuntu:bionic-20181204
+FROM ubuntu:bionic-20191029
 
 # environment variables
 ENV \
