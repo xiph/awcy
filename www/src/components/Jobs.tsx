@@ -106,7 +106,7 @@ export class JobsComponent extends React.Component<JobsProps, {
       <div style={{ display: "table", width: "100%" }}>
         <div style={{ display: "table-row" }}>
           <div style={{ display: "table-cell", paddingRight: "5px" }}>
-            <Select placeholder="Codec" value={this.state.codec} options={codecOptions} onChange={this.onChangeCodec.bind(this)} />
+            <Select placeholder="Encoder" value={this.state.codec} options={codecOptions} onChange={this.onChangeCodec.bind(this)} />
           </div>
           <div style={{ display: "table-cell", paddingLeft: "5px", paddingRight: "5px" }}>
             <Select placeholder="Set" value={this.state.set} options={setOptions} onChange={this.onChangeSet.bind(this)} />
