@@ -170,6 +170,16 @@ RUN \
 	./configure --disable-player && \
 	make tools -j4
 
+# install ciede2000
+ENV \
+	CIEDE2000_DIR=/opt/dump_ciede2000
+
+RUN \
+	mkdir -p $(dirname ${CIEDE2000_DIR}) && \
+	git clone https://github.com/KyleSiefring/dump_ciede2000.git ${CIEDE2000_DIR} && \
+	cd ${CIEDE2000_DIR} && \
+	cargo build --release
+
 # install rd_tool and dependencies
 ENV \
 	RD_TOOL_DIR=/opt/rd_tool
