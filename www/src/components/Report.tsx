@@ -180,7 +180,7 @@ export class AnalyzerLinksComponent extends React.Component<{
     }
 
     function makePair(job: Job, video: string, quality: number): string {
-      return `decoder=${job.decocerUrl()}&decoderName=${encodeURIComponent(job.id)}&file=${job.ivfUrl(video, quality)}`;
+      return `decoder=${job.decoderUrl()}&decoderName=${encodeURIComponent(job.id)}&file=${job.ivfUrl(video, quality)}`;
     }
 
     function makeUrl(jobs: Job [], video: string, quality: number): string {
