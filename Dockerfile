@@ -1,4 +1,4 @@
-FROM ubuntu:bionic-20191029
+FROM ubuntu:disco
 
 # environment variables
 ENV \
@@ -17,9 +17,9 @@ RUN \
 
 # install base build dependencies and useful packages
 RUN \
-	echo "deb http://archive.ubuntu.com/ubuntu/ bionic main restricted universe multiverse"           >/etc/apt/sources.list && \
-	echo "deb http://security.ubuntu.com/ubuntu bionic-security main restricted universe multiverse" >>/etc/apt/sources.list && \
-	echo "deb http://archive.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse"  >>/etc/apt/sources.list && \
+	echo "deb http://archive.ubuntu.com/ubuntu/ disco main restricted universe multiverse"           >/etc/apt/sources.list && \
+	echo "deb http://security.ubuntu.com/ubuntu disco-security main restricted universe multiverse" >>/etc/apt/sources.list && \
+	echo "deb http://archive.ubuntu.com/ubuntu/ disco-updates main restricted universe multiverse"  >>/etc/apt/sources.list && \
 	apt-get update && \
 	apt-get install -y --no-install-recommends \
 		autoconf \
