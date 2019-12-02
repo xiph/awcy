@@ -195,11 +195,26 @@ RUN \
 		ssh \
 		time \
 		&& \
-	apt-get clean && \
-	rm -rf /var/lib/apt/lists && \
 	mkdir -p ${RD_TOOL_DIR} && \
 	rm -vf /etc/ssh/ssh_host_* && \
 	curl -sSL https://github.com/xiph/rd_tool/tarball/master | tar zxf - -C ${RD_TOOL_DIR} --strip-components=1
+
+# install dav1d and dependencies
+ENV \
+	DAV1D_DIR=/opt/dav1d
+
+RUN \
+	apt-get install -y meson && \
+	git clone https://code.videolan.org/videolan/dav1d.git ${DAV1D_DIR} && \
+	cd ${DAV1D_DIR} && \
+	mkdir build && cd build && \
+	meson .. && \
+	ninja
+
+# clear package manager cache
+RUN \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists
 
 # add code
 ADD package.json *.ts tsconfig.json ${APP_DIR}/
