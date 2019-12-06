@@ -87,8 +87,7 @@ RUN \
 	curl -sSf --output /tmp/rustup-init https://static.rust-lang.org/rustup/archive/1.14.0/x86_64-unknown-linux-gnu/rustup-init && \
 	chmod +x /tmp/rustup-init && \
 	/tmp/rustup-init -y --no-modify-path --default-toolchain ${RUST_VERSION} && \
-	rm -vf /tmp/rustup-init && \
-	chmod -R a+w ${RUSTUP_HOME} ${CARGO_HOME}
+	rm -vf /tmp/rustup-init
 
 # install node 12.x
 RUN \
