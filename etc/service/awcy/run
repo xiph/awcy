@@ -12,5 +12,9 @@ echo "STARTING AWCY SERVICE"
 # enter working directory
 cd ${APP_DIR}
 
+# set env variables
+export HOME=/home/${APP_USER}
+export CARGO_HOME=/home/${APP_USER}/.cargo/
+
 # start awcy server
 exec gosu ${APP_USER}:${APP_USER} node awcy_server.js
