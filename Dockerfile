@@ -210,17 +210,32 @@ RUN \
 	rm -vf /etc/ssh/ssh_host_* && \
 	curl -sSL https://github.com/xiph/rd_tool/tarball/master | tar zxf - -C ${RD_TOOL_DIR} --strip-components=1
 
+# install meson
+RUN \
+	apt-get install -y python3 python3-pip python3-setuptools python3-wheel ninja-build && \
+	pip3 install meson
+
 # install dav1d and dependencies
 ENV \
 	DAV1D_DIR=/opt/dav1d
 
 RUN \
-	apt-get install -y meson && \
 	git clone https://code.videolan.org/videolan/dav1d.git ${DAV1D_DIR} && \
 	cd ${DAV1D_DIR} && \
 	mkdir build && cd build && \
 	meson .. && \
 	ninja
+
+# install VMAF
+ENV \
+	VMAF_DIR=/opt/vmaf
+
+RUN \
+	git clone https://github.com/Netflix/vmaf.git ${VMAF_DIR} && \
+	cd ${VMAF_DIR}/libvmaf && \
+	meson build --buildtype release && \
+	ninja -C build && \
+	ninja -C build install
 
 # clear package manager cache
 RUN \
