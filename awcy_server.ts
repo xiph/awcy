@@ -325,6 +325,9 @@ app.get('/bd_rate',function(req,res) {
       res.contentType('application/json');
       parameters.push('--format=json');
     }
+    if (req.query['range'] == 'fullrange') {
+      parameters.push('--fullrange')
+    }
     cp.execFile('./bd_rate_report.py',parameters,
                 {},
                 function(error,stdout,stderr) {

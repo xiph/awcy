@@ -16,6 +16,7 @@ parser.add_argument('--overlap',action='store_true',help='Use traditional overla
 parser.add_argument('--anchordir',nargs=1,help='Folder to find anchor runs')
 parser.add_argument('--suffix',help='Metric data suffix (default is .out)',default='.out')
 parser.add_argument('--format',help='Format of output',default='text')
+parser.add_argument('--fullrange',action='store_true',help='Use full range of QPs instead of 20-55')
 args = parser.parse_args()
 
 met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000', 'PSNR Cb', 'PSNR Cr', 'APSNR', 'APSNR Cb', 'APSNR Cr', 'MSSSIM', 'Time', 'VMAF']
@@ -25,7 +26,7 @@ q_not_found = False
 
 error_strings = []
 
-def bdrate(file1, file2, anchorfile):
+def bdrate(file1, file2, anchorfile, fullrange):
     if anchorfile:
         anchor = flipud(loadtxt(anchorfile));
     a = loadtxt(file1)
@@ -60,6 +61,9 @@ def bdrate(file1, file2, anchorfile):
                 minq = 20
                 maxq = 55
                 try:
+                    if fullrange:
+                        # bypass finding 20 and 55 and use the full range
+                        raise ValueError
                     # path if quantizers 20 and 55 are in set
                     minqa_index = qa.tolist().index(minq)
                     maxqa_index = qa.tolist().index(maxq)
@@ -136,12 +140,12 @@ if info_data and not args.overlap:
 if info_data:
     for video in videos:
         if args.overlap:
-            metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,None)
+            metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,None,args.fullrange)
         else:
-            metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,args.anchordir[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+args.suffix)
+            metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,args.anchordir[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+args.suffix,args.fullrange)
 else:
     for video in videos:
-        metric_data[video] = bdrate(args.run[0]+'/'+video,args.run[1]+'/'+video,args.anchor+'/'+video)
+        metric_data[video] = bdrate(args.run[0]+'/'+video,args.run[1]+'/'+video,args.anchor+'/'+video,args.fullrange)
 
 filename_len = 40
 
