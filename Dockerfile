@@ -47,7 +47,6 @@ RUN \
 		libpng-dev \
 		libtool \
 		locales \
-		nasm \
 		netcat-openbsd \
 		net-tools \
 		openjdk-8-jdk-headless \
@@ -71,6 +70,20 @@ RUN \
 		&& \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists
+
+# install nasm
+RUN \
+	DIR=/tmp/nasm && \
+	NASM_URL=http://debian-archive.trafficmanager.net/debian/pool/main/n/nasm && \
+	NASM_VERSION=2.14.02-1 && \
+	NASM_DEB=nasm_${NASM_VERSION}_amd64.deb && \
+	NASM_SUM=5225d0654783134ae616f56ce8649e4df09cba191d612a0300cfd0494bb5a3ef && \
+	mkdir -p ${DIR} && \
+	cd ${DIR} && \
+	curl -O ${NASM_URL}/${NASM_DEB} && \
+	echo ${NASM_SUM} ${NASM_DEB} | sha256sum --check && \
+	dpkg -i ${NASM_DEB} && \
+	rm -rf ${DIR}
 
 # set working directory
 WORKDIR ${APP_DIR}
