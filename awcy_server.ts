@@ -328,6 +328,9 @@ app.get('/bd_rate',function(req,res) {
     if (req.query['range'] == 'fullrange') {
       parameters.push('--fullrange')
     }
+    if (req.query['interpolation'] == 'pchip-old') {
+      parameters.push('--old-pchip')
+    }
     cp.execFile('./bd_rate_report.py',parameters,
                 {},
                 function(error,stdout,stderr) {

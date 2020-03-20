@@ -1,13 +1,190 @@
 #!/usr/bin/env python3
 
+from __future__ import print_function
+
 from numpy import *
+import numpy as np
 from scipy import *
 from scipy.interpolate import interp1d
 from scipy.interpolate import pchip
+from scipy.interpolate import BPoly
+from scipy._lib._util import _asarray_validated
 import sys
 import os
 import argparse
 import json
+
+# The following implementations of pchip are copied from scipy.
+
+"""
+Copyright © 2001, 2002 Enthought, Inc.
+All rights reserved.
+
+Copyright © 2003-2019 SciPy Developers.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+    Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+    Neither the name of Enthought nor the names of the SciPy Developers may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+
+class PchipInterpolator_new(BPoly):
+    def __init__(self, x, y, axis=0, extrapolate=None):
+        x = _asarray_validated(x, check_finite=False, as_inexact=True)
+        y = _asarray_validated(y, check_finite=False, as_inexact=True)
+
+        axis = axis % y.ndim
+
+        xp = x.reshape((x.shape[0],) + (1,)*(y.ndim-1))
+        yp = np.rollaxis(y, axis)
+
+        dk = self._find_derivatives(xp, yp)
+        data = np.hstack((yp[:, None, ...], dk[:, None, ...]))
+
+        _b = BPoly.from_derivatives(x, data, orders=None)
+        super(PchipInterpolator_new, self).__init__(_b.c, _b.x,
+                                                extrapolate=extrapolate)
+        self.axis = axis
+
+    def roots(self):
+        """
+        Return the roots of the interpolated function.
+        """
+        return (PPoly.from_bernstein_basis(self._bpoly)).roots()
+
+    @staticmethod
+    def _edge_case(h0, h1, m0, m1):
+        # one-sided three-point estimate for the derivative
+        d = ((2*h0 + h1)*m0 - h0*m1) / (h0 + h1)
+
+        # try to preserve shape
+        mask = np.sign(d) != np.sign(m0)
+        mask2 = (np.sign(m0) != np.sign(m1)) & (np.abs(d) > 3.*np.abs(m0))
+        mmm = (~mask) & mask2
+
+        d[mask] = 0.
+        d[mmm] = 3.*m0[mmm]
+
+        return d
+
+
+    @staticmethod
+    def _find_derivatives(x, y):
+        # Determine the derivatives at the points y_k, d_k, by using
+        #  PCHIP algorithm is:
+        # We choose the derivatives at the point x_k by
+        # Let m_k be the slope of the kth segment (between k and k+1)
+        # If m_k=0 or m_{k-1}=0 or sgn(m_k) != sgn(m_{k-1}) then d_k == 0
+        # else use weighted harmonic mean:
+        #   w_1 = 2h_k + h_{k-1}, w_2 = h_k + 2h_{k-1}
+        #   1/d_k = 1/(w_1 + w_2)*(w_1 / m_k + w_2 / m_{k-1})
+        #   where h_k is the spacing between x_k and x_{k+1}
+        y_shape = y.shape
+        if y.ndim == 1:
+            # So that _edge_case doesn't end up assigning to scalars
+            x = x[:, None]
+            y = y[:, None]
+
+        hk = x[1:] - x[:-1]
+        mk = (y[1:] - y[:-1]) / hk
+        smk = np.sign(mk)
+        condition = (smk[1:] != smk[:-1]) | (mk[1:] == 0) | (mk[:-1] == 0)
+
+        w1 = 2*hk[1:] + hk[:-1]
+        w2 = hk[1:] + 2*hk[:-1]
+
+        # values where division by zero occurs will be excluded
+        # by 'condition' afterwards
+        with np.errstate(divide='ignore'):
+            whmean = (w1/mk[:-1] + w2/mk[1:]) / (w1 + w2)
+
+        dk = np.zeros_like(y)
+        dk[1:-1][condition] = 0.0
+        dk[1:-1][~condition] = 1.0 / whmean[~condition]
+
+        # special case endpoints, as suggested in 
+        # Cleve Moler, Numerical Computing with MATLAB, Chap 3.4
+        dk[0] = PchipInterpolator_new._edge_case(hk[0], hk[1], mk[0], mk[1])
+        dk[-1] = PchipInterpolator_new._edge_case(hk[-1], hk[-2], mk[-1], mk[-2])
+
+        return dk.reshape(y_shape)
+
+class PchipInterpolator_old(BPoly):
+    def __init__(self, x, y, axis=0, extrapolate=None):
+        x = _asarray_validated(x, check_finite=False, as_inexact=True)
+        y = _asarray_validated(y, check_finite=False, as_inexact=True)
+
+        axis = axis % y.ndim
+
+        xp = x.reshape((x.shape[0],) + (1,)*(y.ndim-1))
+        yp = np.rollaxis(y, axis)
+
+        dk = self._find_derivatives(xp, yp)
+        data = np.hstack((yp[:, None, ...], dk[:, None, ...]))
+
+        _b = BPoly.from_derivatives(x, data, orders=None)
+        super(PchipInterpolator_old, self).__init__(_b.c, _b.x,
+                                                extrapolate=extrapolate)
+        self.axis = axis
+
+    def roots(self):
+        """
+        Return the roots of the interpolated function.
+        """
+        return (PPoly.from_bernstein_basis(self._bpoly)).roots()
+
+    @staticmethod
+    def _edge_case(m0, d1, out):
+        m0 = np.atleast_1d(m0)
+        d1 = np.atleast_1d(d1)
+        mask = (d1 != 0) & (m0 != 0)
+        out[mask] = 1.0/(1.0/m0[mask]+1.0/d1[mask])
+
+    @staticmethod
+    def _find_derivatives(x, y):
+        # Determine the derivatives at the points y_k, d_k, by using
+        #  PCHIP algorithm is:
+        # We choose the derivatives at the point x_k by
+        # Let m_k be the slope of the kth segment (between k and k+1)
+        # If m_k=0 or m_{k-1}=0 or sgn(m_k) != sgn(m_{k-1}) then d_k == 0
+        # else use weighted harmonic mean:
+        #   w_1 = 2h_k + h_{k-1}, w_2 = h_k + 2h_{k-1}
+        #   1/d_k = 1/(w_1 + w_2)*(w_1 / m_k + w_2 / m_{k-1})
+        #   where h_k is the spacing between x_k and x_{k+1}
+        y_shape = y.shape
+        if y.ndim == 1:
+            # So that _edge_case doesn't end up assigning to scalars
+            x = x[:, None]
+            y = y[:, None]
+
+        hk = x[1:] - x[:-1]
+        mk = (y[1:] - y[:-1]) / hk
+        smk = np.sign(mk)
+        condition = ((smk[1:] != smk[:-1]) | (mk[1:] == 0) | (mk[:-1] == 0))
+
+        w1 = 2*hk[1:] + hk[:-1]
+        w2 = hk[1:] + 2*hk[:-1]
+        # values where division by zero occurs will be excluded
+        # by 'condition' afterwards
+        with np.errstate(divide='ignore'):
+            whmean = 1.0/(w1+w2)*(w1/mk[1:] + w2/mk[:-1])
+        dk = np.zeros_like(y)
+        dk[1:-1][condition] = 0.0
+        dk[1:-1][~condition] = 1.0/whmean[~condition]
+
+        # For end-points choose d_0 so that 1/d_0 = 1/m_0 + 1/d_1 unless
+        #  one of d_1 or m_0 is 0, then choose d_0 = 0
+        PchipInterpolator_old._edge_case(mk[0], dk[1], dk[0])
+        PchipInterpolator_old._edge_case(mk[-1], dk[-2], dk[-1])
+
+        return dk.reshape(y_shape)
+
 
 parser = argparse.ArgumentParser(description='Produce bd-rate report')
 parser.add_argument('run',nargs=2,help='Run folders to compare')
@@ -17,7 +194,13 @@ parser.add_argument('--anchordir',nargs=1,help='Folder to find anchor runs')
 parser.add_argument('--suffix',help='Metric data suffix (default is .out)',default='.out')
 parser.add_argument('--format',help='Format of output',default='text')
 parser.add_argument('--fullrange',action='store_true',help='Use full range of QPs instead of 20-55')
+parser.add_argument('--old-pchip',action='store_true')
 args = parser.parse_args()
+
+if args.old_pchip:
+    pchip = PchipInterpolator_old
+else:
+    pchip = PchipInterpolator_new
 
 met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000', 'PSNR Cb', 'PSNR Cr', 'APSNR', 'APSNR Cb', 'APSNR Cr', 'MSSSIM', 'Time', 'VMAF']
 met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4, 'PSNR Cb': 5, 'PSNR Cr': 6, 'APSNR': 7, 'APSNR Cb': 8, 'APSNR Cr':9, 'MSSSIM':10, 'Time':11, 'VMAF':12}

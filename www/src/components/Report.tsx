@@ -237,39 +237,45 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
   textReport: string;
   reversed: boolean;
   range: Option;
+  interpolation: Option;
 }> {
   constructor() {
     super();
-    this.state = { report: null, textReport: null, reversed: false, range: "av1" } as any;
+    this.state = { report: null, textReport: null, reversed: false, range: "av1", interpolation:"pchip-new"} as any;
   }
   componentWillReceiveProps(nextProps: BDRateReportProps, nextContext: any) {
     if (this.props.a !== nextProps.a || this.props.b !== nextProps.b) {
-      this.loadReport(nextProps, this.state.range.value);
+      this.loadReport(nextProps, this.state.range.value, this.state.interpolation.value);
     }
   }
-  loadReport(props: BDRateReportProps, range: string) {
+  loadReport(props: BDRateReportProps, range: string, interpolation: string) {
     let a = props.a;
     let b = props.b;
     if (!a || !b) {
       return;
     }
     this.setState({report: null, textReport: null} as any);
-    AppStore.loadBDRateReport(a, b, a.task, "report-overlap", range).then((report) => {
+    AppStore.loadBDRateReport(a, b, a.task, "report-overlap", range, interpolation).then((report) => {
       this.setState({report} as any);
     });
   }
   componentWillMount() {
-    this.loadReport(this.props, this.state.range.value);
+    this.loadReport(this.props, this.state.range.value, this.state.interpolation.value);
   }
   onReverseClick() {
     let report = this.state.report;
     this.setState({reversed: !this.state.reversed} as any);
-    this.loadReport({a: report.b, b: report.a}, this.state.range.value);
+    this.loadReport({a: report.b, b: report.a}, this.state.range.value, this.state.interpolation.value);
   }
   onChangeRange(range: Option) {
     let report = this.state.report;
     this.setState({ range } as any);
-    this.loadReport({a: report.a, b: report.b}, range.value);
+    this.loadReport({a: report.a, b: report.b}, range.value, this.state.interpolation.value);
+  }
+  onChangeInterpolation(interpolation: Option) {
+    let report = this.state.report;
+    this.setState({ interpolation } as any);
+    this.loadReport({a: report.a, b: report.b}, this.state.range.value, interpolation.value);
   }
 
   onTextReportClick() {
@@ -384,28 +390,33 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     let rangeOptions: Option[] = [];
     rangeOptions.push({ value: "av1", label: "Quantizer range: 20-55" });
     rangeOptions.push({ value: "fullrange", label: "Quantizer range: All" });
+    let interpolationOptions: Option[] = [];
+    interpolationOptions.push({ value: "pchip-new", label: "New interpolation method" });
+    interpolationOptions.push({ value: "pchip-old", label: "Historic (AV1) interpolation method" });
     let textReport = this.state.textReport ? <pre>{this.state.textReport}</pre> : null;
-    return <Panel header={`BD Rate Report ${report.a.selectedName + " " + report.a.id} → ${report.b.selectedName + " " + report.b.id}`}>
+      return <Panel header={`BD Rate Report ${report.a.selectedName + " " + report.a.id} → ${report.b.selectedName + " " + report.b.id}`}>
         <div style={{ paddingBottom: 8, paddingTop: 4 }}>
-            <Button active={this.state.reversed} onClick={this.onReverseClick.bind(this)} >Reverse</Button>{' '}
-            <Button onClick={this.onTextReportClick.bind(this)} >Get Text Report</Button>
-            <FormGroup>
-                <Select clearable={false} value={this.state.range} onChange={this.onChangeRange.bind(this)} options={rangeOptions} placeholder="Range">
-                </Select>
-            </FormGroup>
+          <Button active={this.state.reversed} onClick={this.onReverseClick.bind(this)} >Reverse</Button>{' '}
+          <Button onClick={this.onTextReportClick.bind(this)} >Get Text Report</Button>
+          <FormGroup>
+            <Select clearable={false} value={this.state.range} onChange={this.onChangeRange.bind(this)} options={rangeOptions} placeholder="Range">
+            </Select>
+            <Select clearable={false} value={this.state.interpolation} onChange={this.onChangeInterpolation.bind(this)} options={interpolationOptions} placeholder="interpolation">
+            </Select>
+          </FormGroup>
         </div>
         {errors}
         {textReport}
         <Table striped bordered condensed hover style={{width: "100%"}}>
-            <thead>
-                <tr>
-                    {headers}
-                </tr>
-            </thead>
-            <tbody>
-                {rows}
-            </tbody>
+          <thead>
+            <tr>
+              {headers}
+            </tr>
+          </thead>
+          <tbody>
+            {rows}
+          </tbody>
         </Table>
-    </Panel>
+      </Panel>
   }
 }
