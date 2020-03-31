@@ -94,8 +94,6 @@ RUN \
 		ssh \
 		time \
 		&& \
-	apt-get clean && \
-	rm -rf /var/lib/apt/lists && \
 	rm -vf /etc/ssh/ssh_host_*
 
 # install dav1d and dependencies
