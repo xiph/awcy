@@ -1,3 +1,4 @@
+
 Are We Compressed Yet?
 ====
 This repository contains the arewecompressedyet.com website source code.
@@ -78,6 +79,36 @@ Then start the rd_server.py daemon:
 The rd_server.py daemon listens on port 4000 by default.
 
 More documentation on rd_server.py can be found in its README.
+
+Setting up workers
+===
+Workers are Linux machines accessible over ssh. They need to be the same architecture as the AWCY server.
+
+A worker needs a AWCY work root, which has a directory structure as follows:
+```
+daalatool/
+slot0/
+vmaf/
+```
+
+The slot* directores are created by AWCY for jobs. daalatool must be pre-populated by a clone of the daaal repo, with tools built (make tools). vmaf is a clone of the Netflix VMAF repository, also built.
+
+In addition, a copy of the test media must be accessible to the worker.
+
+The workers should be configured on the main server with a machines.json file, which contains the host, user and port (for ssh). In addition, it contains the number of cores (which controlls the number of slots), plus the work root (containing the above mentioned directores) and the test media path. For example:
+
+```
+[
+  {
+    "host": "localhost",
+    "user": "xiph",
+    "cores": 8,
+    "port": 22,
+    "work_root": "/home/xiph/awcy_temp",
+    "media_path": "/home/xiph/sets/"
+  },
+]
+```
 
 Run database format
 ===
