@@ -5,8 +5,8 @@ import path = require('path');
 import glob = require('glob');
 
 const run_to_update = process.argv[2];
-const config_dir = process.env['CONFIG_DIR'] || process.env['PWD'];
-const runs_dst_dir = process.env['RUNS_DST_DIR'] || process.env['PWD']+'/runs';
+const config_dir = process.env['CONFIG_DIR'] || './';
+const runs_dst_dir = process.env['RUNS_DST_DIR'] || './runs';
 const listfile = config_dir + '/list.json';
 
 function create_list_entry(run_id) {
