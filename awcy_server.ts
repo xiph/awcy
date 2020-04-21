@@ -294,13 +294,13 @@ app.get('/bd_rate',function(req,res) {
     res.send('');
     return;
   }
-  const a = path.basename(req.query['a']);
-  const b = path.basename(req.query['b']);
-  const min_bpp = req.query['min_bpp'];
-  const max_bpp = req.query['max_bpp'];
+  const a = path.basename(String(req.query['a']));
+  const b = path.basename(String(req.query['b']));
+  const min_bpp = String(req.query['min_bpp']);
+  const max_bpp = String(req.query['max_bpp']);
   const metric_score = req.query['metric_score'];
-  const file = path.basename(req.query['file']);
-  const set = path.basename(req.query['set']);
+  const file = path.basename(String(req.query['file']));
+  const set = path.basename(String(req.query['set']));
   const a_file = runs_dst_dir+'/'+a+'/'+set+'/'+file;
   const b_file = runs_dst_dir+'/'+b+'/'+set+'/'+file;
   if (req.query['method'] == 'jm') {
@@ -341,7 +341,7 @@ app.get('/bd_rate',function(req,res) {
       }
     });
   } else if (req.query['method'] == 'metric-point') {
-    cp.execFile('./rate_delta_point.py',[a_file,b_file,metric_score],
+    cp.execFile('./rate_delta_point.py',[a_file,b_file,String(metric_score)],
                 {},
                 function(error,stdout,stderr) {
       if (error) {
