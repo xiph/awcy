@@ -86,12 +86,34 @@ Workers are Linux machines accessible over ssh. They need to be the same archite
 
 A worker needs a AWCY work root, which has a directory structure as follows:
 ```
+dump_ciede2000/
 daalatool/
 slot0/
 vmaf/
 ```
 
-The slot* directores are created by AWCY for jobs. daalatool must be pre-populated by a clone of the daaal repo, with tools built (make tools). vmaf is a clone of the Netflix VMAF repository, also built.
+The slot* directores are created by AWCY for jobs.
+
+daalatool must be pre-populated by a clone of the daala repo, with tools built (make tools):
+
+```
+git clone https://git.xiph.org/daala.git daalatool
+cd daalatool
+./autogen.sh
+./configure
+make
+make tools
+```
+
+dump_ciede2000 must be populated by a built version of the dump_ciede2000 tool:
+
+```
+git clone https://github.com/KyleSiefring/dump_ciede2000
+cd dump_ciede2000
+cargo build --release
+```
+
+vmaf is a clone of the Netflix VMAF repository, also built.
 
 In addition, a copy of the test media must be accessible to the worker.
 
