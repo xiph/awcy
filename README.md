@@ -112,6 +112,8 @@ The workers should be configured on the main server with a machines.json file, w
 
 Each worker must have a unique work root - usually local storage on the worker. One worker is intended to be one physical machine or VM. For testing purposes, one machine can act as multiple workers, but the work_root must be independent. The media path is read-only and can be shared, e.g. via NFS.
 
+The machines should be accesible via passwordless SSH authentication. If needed, the SSH_PRIVKEY_FILE environment variable can inform rd_server.py of a custom private key (.pem format) to use for logging into workers.
+
 Run database format
 ===
 The runs/ directory will contain all of the output files generated from a job. There is a info.json file that specifies what options were used by that particular run. Here is an example of an info.json file:
