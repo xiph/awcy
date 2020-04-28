@@ -282,7 +282,7 @@ Run (with workers)
 
 You first need to start an AWCY server instance using the [all-in-one instructions](#run-all-in-one), but setting `LOCAL_WORKER_ENABLED` to false.
 
-In a second terminal, start one or more worker instances:
+Next, run once instance of the worker container on each worker machine. FOr testing, you can also run multiple workers on your local machine. In a second terminal, start one or more worker instances:
 
 ```sh
 docker run \
