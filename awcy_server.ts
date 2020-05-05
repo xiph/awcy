@@ -116,6 +116,7 @@ function process_build_queue() {
     env['CODEC'] = build_job.codec;
     env['EXTRA_OPTIONS'] = build_job.extra_options;
     env['BUILD_OPTIONS'] = build_job.build_options;
+    env['ENCODING_MODE'] = build_job.encoding_mode;
     env['RUN_ID'] = build_job.run_id;
     env['APP_DIR'] = app_dir;
     env['CODECS_SRC_DIR'] = codecs_src_dir;
@@ -390,6 +391,7 @@ app.post('/submit/job',function(req,res) {
     'extra_options': req.body.extra_options,
     'build_options': req.body.build_options,
     'qualities': req.body.qualities,
+    'encoding_mode': req.body.encoding_mode,
     'master': req.body.master,
     'ab_compare': req.body.ab_compare,
     'save_encode': req.body.save_encode,

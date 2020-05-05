@@ -145,6 +145,7 @@ export class JobComponent extends React.Component<JobProps, {
       details.push(keyValue("Commit", job.commit));
       details.push(keyValue("Task", job.task));
       details.push(keyValue("Qualities", job.qualities));
+      details.push(keyValue("Encoding Mode", job.encodingMode));
       details.push(keyValue("Run A/B Compare", job.runABCompare));
       details.push(keyValue("Save Encoded Files", job.saveEncodedFiles));
       details.push(keyValue("Status", JobStatus[job.status]));

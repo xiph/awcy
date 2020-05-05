@@ -340,6 +340,7 @@ export class Job {
   extraOptions: string = "";
   nick: string = "";
   qualities: string = "";
+  encodingMode: string = "";
   id: string = "";
   task: string = "";
   taskType: string = "";
@@ -477,6 +478,7 @@ export class Job {
     job.id = json.run_id;
     job.nick = json.nick;
     job.qualities = json.qualities || "";
+    job.encodingMode = json.encoding_mode;
     job.buildOptions = json.build_options;
     job.codec = json.codec;
     job.commit = json.commit;
@@ -506,6 +508,11 @@ export class Job {
     "rav1e": "rav1e",
     "svt-av1": "SVT-AV1",
     "vvc-vtm": "VVC VTM"
+  };
+
+  static encodingModes = {
+    "quantizer": "Target Quantizer",
+    "bitrate": "Target Bitrate (single-pass, rav1e only)",
   };
 
   static sets = {};
@@ -728,6 +735,7 @@ export class AppStore {
       extra_options: job.extraOptions,
       build_options: job.buildOptions,
       qualities: job.qualities,
+      encoding_mode: job.encodingMode,
       nick: job.nick,
       ab_compare: job.runABCompare,
       save_encode: job.saveEncodedFiles
