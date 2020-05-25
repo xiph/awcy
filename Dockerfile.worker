@@ -1,4 +1,4 @@
-FROM ubuntu:disco
+FROM ubuntu:focal
 
 # environment variables
 ENV \
@@ -16,9 +16,9 @@ RUN \
 
 # install common/useful packages
 RUN \
-	echo "deb http://archive.ubuntu.com/ubuntu/ disco main restricted universe multiverse"           >/etc/apt/sources.list && \
-	echo "deb http://security.ubuntu.com/ubuntu disco-security main restricted universe multiverse" >>/etc/apt/sources.list && \
-	echo "deb http://archive.ubuntu.com/ubuntu/ disco-updates main restricted universe multiverse"  >>/etc/apt/sources.list && \
+	echo "deb http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse"           >/etc/apt/sources.list && \
+	echo "deb http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse" >>/etc/apt/sources.list && \
+	echo "deb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse"  >>/etc/apt/sources.list && \
 	apt-get update && \
 	apt-get install -y --no-install-recommends \
 		autoconf \
@@ -78,7 +78,7 @@ ENV \
 
 RUN \
 	mkdir -p $(dirname ${DAALATOOL_DIR}) && \
-	git clone https://github.com/xiph/daala.git ${DAALATOOL_DIR} && \
+	git clone https://gitlab.xiph.org/xiph/daala.git ${DAALATOOL_DIR} && \
 	cd ${DAALATOOL_DIR} && \
 	./autogen.sh && \
 	./configure --disable-player && \
