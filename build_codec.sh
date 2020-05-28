@@ -99,8 +99,6 @@ case "${CODEC}" in
 
   rav1e)
     cd ${CODECS_SRC_DIR}/rav1e
-    git submodule sync
-    git submodule update --init
     cargo build --release
     ;;
 
