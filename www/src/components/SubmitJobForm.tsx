@@ -68,15 +68,7 @@ export class SubmitJobFormComponent extends React.Component<{
         }
         break;
       case "commit":
-        let commit = job.commit.toLowerCase().trim();
-        if (commit.length >= 7 && commit.length <= 40) {
-          for (let i = 0; i < commit.length; i++) {
-            if ("abcdef0123456789".indexOf(commit[i]) < 0) {
-              return "error";
-            }
-          }
-          return "success";
-        }
+        if (job.commit) return "success";
         break;
       case "codec":
         if (this.state.codec.value) return "success";
@@ -162,7 +154,7 @@ export class SubmitJobFormComponent extends React.Component<{
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("commit")}>
-        <FormControl type="text" placeholder="Git Commit Hash e.g. 9368c05596d517c280146a1b815ec0ecc25e787c"
+        <FormControl type="text" placeholder="Git Commit Reference (Hash/Branch/Tag)"
           value={job.commit} onChange={this.onInputChange.bind(this, "commit")} />
       </FormGroup>
 
