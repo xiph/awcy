@@ -68,8 +68,11 @@ export class SubmitJobFormComponent extends React.Component<{
         }
         break;
       case "commit":
+        let commit = job.commit.trim();
+        if (commit.length === 41 && commit.charAt(0) === 'I') {
+          return "error"; // Gerrit Change-ID format, not a git reference
+        }
         if (job.commit) return "success";
-        break;
       case "codec":
         if (this.state.codec.value) return "success";
         break;
