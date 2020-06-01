@@ -396,7 +396,7 @@ app.post('/submit/job',function(req,res) {
     'task_type': 'video'
   }
 
-  const gerrit_detect_re = /I[0-9a-f].*/g;
+  const gerrit_detect_re = /I[0-9a-f]{40}/g;
   if (gerrit_detect_re.test(job.commit)) {
     res.status(400).send('Error: Commit looks like a Gerrit Change-Id. Use the commit hash instead.');
     return;
