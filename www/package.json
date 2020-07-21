@@ -13,28 +13,27 @@
   "license": "ISC",
   "devDependencies": {
     "@types/d3-scale": "^1.0.4",
-    "@types/es6-promise": "0.0.31",
     "@types/flux": "0.0.30",
-    "@types/node": "^12.6.2",
-    "@types/react": "^0.14.33",
+    "@types/node": "^12.12.51",
+    "@types/react": "^16.13.1",
     "@types/react-bootstrap": "0.0.32",
-    "@types/react-dom": "^0.14.16",
-    "ts-loader": "^6.0.4",
-    "typescript": "^2.4.1",
-    "webpack": "^4.35.3",
-    "webpack-cli": "^3.3.5",
-    "webpack-dev-server": "^3.7.2",
+    "@types/react-dom": "^16.13.1",
+    "ts-loader": "^6.2.2",
+    "typescript": "^2.9.2",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.11.0",
     "webpack-notifier": "^1.8.0"
   },
   "dependencies": {
     "d3-scale": "^1.0.3",
     "es6-promise": "^3.2.1",
     "flux": "2.1.1",
-    "react": "^16.8",
+    "react": "^16.13.1",
     "react-bootstrap": "^0.30.3",
-    "react-dom": "^15.3.1",
-    "react-select": "1.0.0-rc.1",
+    "react-dom": "^16.13.1",
+    "react-select": "2.4.4",
     "source-map-loader": "^0.1.5",
-    "ts-events": "^3.3.1"
+    "ts-events": "^3.4.0"
   }
 }
