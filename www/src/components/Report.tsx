@@ -244,12 +244,13 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     super();
     this.state = { report: null, textReport: null, reversed: false, range: "av1", interpolation:"pchip-new"} as any;
   }
-  componentWillReceiveProps(nextProps: BDRateReportProps, _nextContext: any) {
-    if (this.props.a !== nextProps.a || this.props.b !== nextProps.b) {
-      this.loadReport(nextProps, this.state.range.value, this.state.interpolation.value);
+  componentDidUpdate(prevProps: BDRateReportProps) {
+    if (this.props.a !== prevProps.a || this.props.b !== prevProps.b) {
+      this.loadReport(this.props, this.state.range.value, this.state.interpolation.value);
     }
   }
   loadReport(props: BDRateReportProps, range: string, interpolation: string) {
+    console.log("loadReport");
     let a = props.a;
     let b = props.b;
     if (!a || !b) {
@@ -260,7 +261,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       this.setState({report} as any);
     });
   }
-  componentWillMount() {
+  componentDidMount() {
     this.loadReport(this.props, this.state.range.value, this.state.interpolation.value);
   }
   onReverseClick() {
@@ -342,7 +343,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     this.setState({textReport: text} as any);
   }
   render() {
-    // console.debug("Rendering BDRateReport");
+    console.debug("Rendering BDRateReport");
     let a = this.props.a;
     let b = this.props.b;
     let report = this.state.report;
