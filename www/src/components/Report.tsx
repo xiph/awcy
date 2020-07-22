@@ -42,6 +42,8 @@ interface VideoReportProps {
 
 let displayedBDRateMetrics = ['PSNR', 'PSNR HVS', 'SSIM', 'CIEDE 2000', 'APSNR', 'MS SSIM', 'VMAF'];
 
+// this is the chart of raw metric scores underneath the graph
+
 export class VideoReportComponent extends React.Component<VideoReportProps, {
   jobReport: Report;
 }> {
@@ -49,7 +51,7 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
     super();
     this.state = {jobReport: null};
   }
-  componentWillReceiveProps(nextProps: VideoReportProps, nextContext: any) {
+  componentDidReceiveProps(nextProps: VideoReportProps, nextContext: any) {
     if (this.props.job !== nextProps.job) {
       this.loadReport("jobReport", nextProps.job);
     }
@@ -57,10 +59,10 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
   loadReport(name: string, job: Job) {
     if (job) {
       job.loadReport().then((report) => {
-        this.setState({[name]: report} as any);
+        this.setState({jobReport: report} as any);
       });
     } else {
-      this.setState({[name]: null} as any);
+      this.setState({jobReport: null} as any);
     }
   }
   componentDidMount() {
