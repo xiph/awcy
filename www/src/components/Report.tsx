@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Glyphicon, Checkbox, Panel, Table } from "react-bootstrap";
-import { Col, Row, Button, FormGroup, FormControl } from "react-bootstrap";
+import { Glyphicon, Panel, Table } from "react-bootstrap";
+import { Button, FormGroup, } from "react-bootstrap";
 import { Option } from "./Widgets";
-import { BDRateReport, Report, AppStore, Jobs, Job, JobStatus, loadXHR, ReportField, reportFieldNames, metricNames, metricNameToReportFieldIndex, analyzerBaseUrl} from "../stores/Stores";
+import { BDRateReport, Report, AppStore, Job, reportFieldNames, analyzerBaseUrl} from "../stores/Stores";
 
 declare var require: any;
 
@@ -51,7 +51,7 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
     super();
     this.state = {jobReport: null};
   }
-  componentDidReceiveProps(nextProps: VideoReportProps, nextContext: any) {
+  componentDidReceiveProps(nextProps: VideoReportProps, _nextContext: any) {
     if (this.props.job !== nextProps.job) {
       this.loadReport("jobReport", nextProps.job);
     }
@@ -172,7 +172,6 @@ export class AnalyzerLinksComponent extends React.Component<{
     let qualities = (jobs[0].qualities || defaultQualities(jobs[0].codec)).split(" ").map(x => parseInt(x));
     let report = this.props.jobs[0].report;
     let videoRows = [];
-    let qualityRows = [];
     let videos = [];
 
     for (let video in report) {
@@ -245,7 +244,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     super();
     this.state = { report: null, textReport: null, reversed: false, range: "av1", interpolation:"pchip-new"} as any;
   }
-  componentWillReceiveProps(nextProps: BDRateReportProps, nextContext: any) {
+  componentWillReceiveProps(nextProps: BDRateReportProps, _nextContext: any) {
     if (this.props.a !== nextProps.a || this.props.b !== nextProps.b) {
       this.loadReport(nextProps, this.state.range.value, this.state.interpolation.value);
     }
@@ -294,11 +293,6 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
           s = c + s;
         return s;
       }
-      function padRight(s, l, c) {
-        while (s.length < l)
-          s = s + c;
-        return s;
-      }
       for (let i = 0; i < numCols; i++) {
         for (let j = 0; j < rows.length; j++) {
           rows[j][i] = padLeft(rows[j][i], maxColWidths[i], ' ');
@@ -306,8 +300,6 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       }
     }
 
-    let a = this.props.a;
-    let b = this.props.b;
     let report = this.state.report;
     let summaryHeaders = ["PSNR", "PSNR Cb", "PSNR Cr", "PSNR HVS", "SSIM", "MS SSIM", "CIEDE 2000"];
     let summaryRows = [summaryHeaders];
