@@ -14,6 +14,7 @@ export class SubmitJobFormComponent extends React.Component<{
     job: Job;
     set: Option;
     codec: Option;
+    encoding_mode: Option;
   }> {
   constructor() {
     super();
@@ -28,6 +29,7 @@ export class SubmitJobFormComponent extends React.Component<{
       job.extraOptions = template.extraOptions;
       job.nick = template.nick;
       job.qualities = template.qualities;
+      job.encodingMode = template.encodingMode;
       job.id = template.id;
       if (job.id.indexOf("@") > 0) {
         job.id = job.id.substr(0, job.id.indexOf("@"));
@@ -37,11 +39,13 @@ export class SubmitJobFormComponent extends React.Component<{
     }
     let task = job.task ? job.task : "objective-1-fast";
     let codec = job.codec ? job.codec : "av1";
+    let encoding_mode = job.encodingMode ? job.encodingMode : "quantizer";
     job.id += "@" + formatDate(new Date());
     this.state = {
       job: null,
       set: {label: task, value: task},
-      codec: {label: Job.codecs[codec], value: codec}
+      codec: {label: Job.codecs[codec], value: codec},
+      encoding_mode: {label: Job.encodingModes[encoding_mode], value: encoding_mode}
     } as any;
     job.saveEncodedFiles = true;
     this.setState({ job } as any);
@@ -56,7 +60,7 @@ export class SubmitJobFormComponent extends React.Component<{
     let job = this.state.job;
     switch (name) {
       case "all":
-        return ["id", "commit", "codec", "set", "nick", "qualities"].every(name =>
+        return ["id", "commit", "codec", "encoding_mode", "set", "nick", "qualities"].every(name =>
           (this.getValidationState(name) === "success")
         ) ? "success" : "error";
       case "id":
@@ -75,6 +79,11 @@ export class SubmitJobFormComponent extends React.Component<{
         if (job.commit) return "success";
       case "codec":
         if (this.state.codec.value) return "success";
+        break;
+      case "encoding_mode":
+        if (this.state.encoding_mode.value) {
+          return "success";
+        }
         break;
       case "set":
         if (this.state.set.value) return "success";
@@ -115,13 +124,19 @@ export class SubmitJobFormComponent extends React.Component<{
     job.date = new Date();
     job.task = this.state.set.value;
     job.codec = this.state.codec.value;
+    job.encodingMode = this.state.encoding_mode.value;
     this.props.onCreate(job);
   }
   onCancel() {
     this.props.onCancel();
   }
+
   onChangeCodec(codec: Option) {
     this.setState({ codec } as any, () => { });
+  }
+
+  onChangeEncodingMode(encoding_mode: Option) {
+    this.setState({ encoding_mode } as any, () => { });
   }
 
   onChangeSet(set: Option) {
@@ -144,6 +159,12 @@ export class SubmitJobFormComponent extends React.Component<{
       codecOptions.push({ value: key, label: name });
     }
 
+    let encodingModeOptions = [];
+    for (let key in Job.encodingModes) {
+      let name = Job.encodingModes[key];
+      encodingModeOptions.push({ value: key, label: name });
+    }
+
     let setOptions = [];
     for (let key in Job.sets) {
       let set = Job.sets[key];
@@ -164,6 +185,11 @@ export class SubmitJobFormComponent extends React.Component<{
       <FormGroup validationState={this.getValidationState("codec")}>
         <ControlLabel>Codec</ControlLabel>
         <Select clearable={false} placeholder="Encoder" value={this.state.codec} options={codecOptions} onChange={this.onChangeCodec.bind(this)} />
+      </FormGroup>
+
+      <FormGroup validationState={this.getValidationState("encoding_mode")}>
+        <ControlLabel>Encoding Mode</ControlLabel>
+        <Select clearable={false} placeholder="Encoding Mode" value={this.state.encoding_mode} options={encodingModeOptions} onChange={this.onChangeEncodingMode.bind(this)} />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("set")}>
