@@ -411,7 +411,7 @@ export class Job {
 
   decoderUrl(): string {
     if (this.codec == 'rav1e' || this.codec == 'svt-av1' || this.codec == 'av1') {
-      return 'https://people.xiph.org/~mbebenita/analyzer/inspect.js';
+      return 'https://media.xiph.org/analyzer/inspect.js';
     } else {
       return baseUrl + `runs/${this.id}/js/decoder.js`;
     }
@@ -684,7 +684,7 @@ export class AppStore {
         this.cancelJob(action.job);
         jobs.onChange.post("");
       } else if (action instanceof AnalyzeFile) {
-        this.analyzedFiles.push({job: null, decoderUrl: "http://aomanalyzer.org/bin/decoder.js", videoUrl: "crosswalk_30.ivf"})
+        this.analyzedFiles.push({job: null, decoderUrl: "https://media.xiph.org/analyzer/inspect.js", videoUrl: "crosswalk_30.ivf"})
         this.onAnalyzedFilesChanged.post("change");
       }
     });
