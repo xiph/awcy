@@ -577,11 +577,11 @@ export class Plot<P extends PlotProps, S extends PlotState> extends React.Compon
     c.stroke();
     c.fill();
   }
-  drawText(a: Point, text: string, dx = 0, dy = 0, hAlign = "left", vAlign = "bottom", size = this.textSize) {
+  drawText(a: Point, text: string, dx = 0, dy = 0, hAlign = "left" as CanvasTextAlign, vAlign = "bottom" as CanvasTextBaseline, size = this.textSize) {
     a = this.transformPoint(a.clone());
     this.drawDeviceText(a, text, dx, dy, hAlign, vAlign, size);
   }
-  drawDeviceText(a: Point, text: string, dx = 0, dy = 0, hAlign = "left", vAlign = "bottom", size = this.textSize) {
+  drawDeviceText(a: Point, text: string, dx = 0, dy = 0, hAlign = "left" as CanvasTextAlign, vAlign = "bottom" as CanvasTextBaseline, size = this.textSize) {
     let c = this.ctx;
     c.font = (size * this.ratio) + "pt Roboto Mono";
     c.save();
