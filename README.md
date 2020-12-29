@@ -40,11 +40,14 @@ These commands will create the configuration files and install the node.js modul
 awcy. Open a node command line and run the following:
 
 ```
+mkdir runs
 cd www
 npm install
 cd ..
 npm install
-npm start
+npm run tsc
+node generate_list.js
+npm run start
 ```
 
 To run the server, execute the run_awcy.bat file
