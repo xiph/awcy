@@ -118,6 +118,13 @@ cargo build --release
 
 vmaf is a clone of the Netflix VMAF repository, also built.
 
+```
+git clone https://github.com/Netflix/vmaf.git
+cd vmaf/libvmaf
+meson build --buildtype release
+ninja -C build
+```
+
 In addition, a copy of the test media must be accessible to the worker.
 
 The workers should be configured on the main server with a machines.json file, which contains the host, user and port (for ssh). In addition, it contains the number of cores (which controlls the number of slots), plus the work root (containing the above mentioned directores) and the test media path. For example:
