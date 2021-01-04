@@ -138,7 +138,7 @@ The workers should be configured on the main server with a machines.json file, w
     "port": 22,
     "work_root": "/home/xiph/awcy_temp",
     "media_path": "/home/xiph/sets/"
-  },
+  }
 ]
 ```
 
