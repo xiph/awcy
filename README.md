@@ -100,7 +100,7 @@ The slot* directores are created by AWCY for jobs.
 daalatool must be pre-populated by a clone of the daala repo, with tools built (make tools):
 
 ```
-git clone https://git.xiph.org/daala.git daalatool
+git clone https://github.com/xiph/daala.git daalatool
 cd daalatool
 ./autogen.sh
 ./configure

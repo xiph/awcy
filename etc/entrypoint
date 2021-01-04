@@ -85,7 +85,7 @@ if [ ! -d "${CODECS_SRC_DIR}/av1" ]; then
 fi
 
 if [ ! -d "${CODECS_SRC_DIR}/daala" ]; then
-	gosu ${APP_USER}:${APP_USER} git clone https://git.xiph.org/daala.git ${CODECS_SRC_DIR}/daala
+	gosu ${APP_USER}:${APP_USER} git clone https://github.com/xiph/daala.git ${CODECS_SRC_DIR}/daala
 fi
 
 if [ ! -d "${CODECS_SRC_DIR}/rav1e" ]; then
