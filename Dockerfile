@@ -75,9 +75,9 @@ RUN \
 RUN \
 	DIR=/tmp/nasm && \
 	NASM_URL=http://debian-archive.trafficmanager.net/debian/pool/main/n/nasm && \
-	NASM_VERSION=2.15.02-1+b1 && \
+	NASM_VERSION=2.15.05-1 && \
 	NASM_DEB=nasm_${NASM_VERSION}_amd64.deb && \
-	NASM_SUM=b454c064732c046ba025b82549833b3892ce85f2812d3addb8cbb06c6a47da8e && \
+	NASM_SUM=c860caec653b865d5b83359452d97b11f1b3ba5b18b07cac554cf72550b3bfc9 && \
 	mkdir -p ${DIR} && \
 	cd ${DIR} && \
 	curl -O ${NASM_URL}/${NASM_DEB} && \
