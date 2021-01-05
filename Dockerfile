@@ -141,7 +141,7 @@ RUN \
 	./emsdk install ${EMSDK_VERSION} && \
 	./emsdk activate ${EMSDK_VERSION} && \
 	echo "hack emscript config getter (em-config)" && \
-	cp /root/.emscripten /home/${APP_USER}/.emscripten && \
+	cp .emscripten /home/${APP_USER}/.emscripten && \
 	printf '#!/usr/bin/env python\nimport os, sys\nexecfile(os.getenv("HOME")+"/.emscripten")\nprint eval(sys.argv[1])\n' >/usr/local/bin/em-config && \
 	chmod a+x /usr/local/bin/em-config
 
