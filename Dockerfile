@@ -132,8 +132,8 @@ RUN \
 
 # install emscripten
 RUN \
-	EMSDK_VERSION=1.39.2 && \
-	EMSDK_HASH=04d13b99d0630496139fa8f424c62aad65588c7b && \
+	EMSDK_VERSION=1.40.1 && \
+	EMSDK_HASH=e88a3c5bbfef172a5b947768204ef734e2fb6e04 && \
 	mkdir -p /opt/emsdk && \
 	curl -sSL https://github.com/emscripten-core/emsdk/archive/${EMSDK_HASH}.tar.gz | tar zxf - -C /opt/emsdk --strip-components=1 && \
 	cd /opt/emsdk && \
