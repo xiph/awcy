@@ -85,6 +85,22 @@ case "${CODEC}" in
     mv x86_64/* ./
     ;;
 
+  av2*)
+    cd ${CODECS_SRC_DIR}/av2
+    echo "-- Starting x86_64 Build --"
+    rm -rf cmake-build || true
+    mkdir cmake-build
+    pushd cmake-build
+    cmake ../ -DCONFIG_UNIT_TESTS=0 -DENABLE_DOCS=0 -DCMAKE_BUILD_TYPE=Release -DAOM_EXTRA_C_FLAGS=-UNDEBUG -DAOM_EXTRA_CXX_FLAGS=-UNDEBUG ${BUILD_OPTIONS}
+    make -j$(nproc)
+    popd
+    mkdir -p x86_64
+    mv cmake-build/aomenc cmake-build/aomdec x86_64/
+    echo "-- Finished x86_64 Build --"
+    mv x86_64/* ./
+    ;;
+
+
   vp8 | vp8-rt)
     cd ${CODECS_SRC_DIR}/vp8
     ./configure --enable-vp8 --disable-vp9 ${BUILD_OPTIONS}
