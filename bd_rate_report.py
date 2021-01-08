@@ -202,8 +202,21 @@ if args.old_pchip:
 else:
     pchip = PchipInterpolator_new
 
-met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000', 'PSNR Cb', 'PSNR Cr', 'APSNR', 'APSNR Cb', 'APSNR Cr', 'MSSSIM', 'Time', 'VMAF']
-met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4, 'PSNR Cb': 5, 'PSNR Cr': 6, 'APSNR': 7, 'APSNR Cb': 8, 'APSNR Cr':9, 'MSSSIM':10, 'Time':11, 'VMAF':12}
+met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000',
+            'PSNR Cb', 'PSNR Cr', 'APSNR', 'APSNR Cb', 'APSNR Cr',
+            'MSSSIM', 'Time', 'VMAF_old',
+             "PSNR Y (libvmaf)", "PSNR Cb (libvmaf)", "PSNR Cr (libvmaf)",
+            "CIEDE2000 (libvmaf)", "SSIM (libvmaf)", "MS-SSIM (libvmaf)",
+            "PSNR-HVS Y (libvmaf)", "PSNR-HVS Cb (libvmaf)", "PSNR-HVS Cr (libvmaf)",
+            "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG"
+            ]
+met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4,
+             'PSNR Cb': 5, 'PSNR Cr': 6, 'APSNR': 7, 'APSNR Cb': 8, 'APSNR Cr':9,
+             'MSSSIM':10, 'Time':11, 'VMAF_old':12,
+             "PSNR Y (libvmaf)": 13, "PSNR Cb (libvmaf)": 14, "PSNR Cr (libvmaf)": 15,
+             "CIEDE2000 (libvmaf)": 16, "SSIM (libvmaf)": 17, "MS-SSIM (libvmaf)": 18,
+             "PSNR-HVS Y (libvmaf)": 19, "PSNR-HVS Cb (libvmaf)": 20, "PSNR-HVS Cr (libvmaf)": 21,
+             "PSNR-HVS (libvmaf)": 22, "VMAF": 23, "VMAF-NEG": 24}
 
 q_not_found = False
 
