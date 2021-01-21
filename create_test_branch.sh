@@ -16,6 +16,7 @@ git reset --hard
 if git checkout ${COMMIT}; then
     echo "Commit found, skipping fetch."
 else
+    echo "Checking for commit in remotes..."
     git fetch --all
     git checkout ${COMMIT}
 fi
