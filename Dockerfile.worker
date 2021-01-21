@@ -72,6 +72,20 @@ RUN \
 	dpkg -i ${NASM_DEB} && \
 	rm -rf ${DIR}
 
+# prepare rust installation
+ENV \
+	RUSTUP_HOME=/usr/local/rustup \
+	CARGO_HOME=/usr/local/cargo \
+	PATH=/usr/local/cargo/bin:${PATH}
+
+# install rust
+RUN \
+	RUST_VERSION=1.42.0 && \
+	curl -sSf --output /tmp/rustup-init https://static.rust-lang.org/rustup/archive/1.14.0/x86_64-unknown-linux-gnu/rustup-init && \
+	chmod +x /tmp/rustup-init && \
+	/tmp/rustup-init -y --no-modify-path --default-toolchain ${RUST_VERSION} && \
+	rm -vf /tmp/rustup-init
+
 # install daalatool
 ENV \
 	DAALATOOL_DIR=/opt/daalatool
@@ -83,6 +97,16 @@ RUN \
 	./autogen.sh && \
 	./configure --disable-player && \
 	make tools -j4
+
+# install ciede2000
+ENV \
+	CIEDE2000_DIR=/opt/dump_ciede2000
+
+RUN \
+	mkdir -p $(dirname ${CIEDE2000_DIR}) && \
+	git clone https://github.com/KyleSiefring/dump_ciede2000.git ${CIEDE2000_DIR} && \
+	cd ${CIEDE2000_DIR} && \
+	cargo build --release
 
 # install rd_tool dependencies
 RUN \
@@ -132,6 +156,13 @@ WORKDIR /home/${APP_USER}
 # environment variables
 ENV \
 	WORK_DIR=/data/work
+
+# create symbolic links
+RUN \
+    mkdir /home/${APP_USER}/awcy_temp && \
+    ln -s /opt/daalatool /home/${APP_USER}/awcy_temp/daalatool && \
+    ln -s /opt/vmaf /home/${APP_USER}/awcy_temp/vmaf && \
+    ln -s /opt/dump_ciede2000 /home/${APP_USER}/awcy_temp/dump_ciede2000
 
 # set entrypoint
 ADD etc/entrypoint.worker /etc/entrypoint.worker
