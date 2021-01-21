@@ -160,6 +160,7 @@ ENV \
 # create symbolic links
 RUN \
     mkdir /home/${APP_USER}/awcy_temp && \
+    chown -R ${APP_USER}:${APP_USER} /home/${APP_USER}/awcy_temp && \
     ln -s /opt/daalatool /home/${APP_USER}/awcy_temp/daalatool && \
     ln -s /opt/vmaf /home/${APP_USER}/awcy_temp/vmaf && \
     ln -s /opt/dump_ciede2000 /home/${APP_USER}/awcy_temp/dump_ciede2000
