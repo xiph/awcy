@@ -126,7 +126,7 @@ export class JobComponent extends React.Component<JobProps, {
     if (job.selected) {
       backgroundColor = "#F0F0F0";
     }
-    if (job.status == JobStatus.Canceled) {
+    if (job.status == JobStatus.Canceled || job.status == JobStatus.Unknown) {
       backgroundColor = "#fcf6ed";
     } else if (job.status == JobStatus.Failed) {
       backgroundColor = "#fff4f4";
