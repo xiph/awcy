@@ -242,7 +242,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
 }> {
   constructor() {
     super();
-    this.state = { report: null, textReport: null, reversed: false, range: "av1", interpolation:"pchip-new"} as any;
+    this.state = { report: null, textReport: null, reversed: false, range: "fullrange", interpolation:"pchip-new"} as any;
   }
   componentDidUpdate(prevProps: BDRateReportProps) {
     if (this.props.a !== prevProps.a || this.props.b !== prevProps.b) {
@@ -383,8 +383,8 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       errors.push(<p className="bg-warning">{error}</p>);
     }
     let rangeOptions: Option[] = [];
-    rangeOptions.push({ value: "av1", label: "Quantizer range: 20-55" });
     rangeOptions.push({ value: "fullrange", label: "Quantizer range: All" });
+    rangeOptions.push({ value: "av1", label: "Quantizer range: 20-55" });
     let interpolationOptions: Option[] = [];
     interpolationOptions.push({ value: "pchip-new", label: "New interpolation method" });
     interpolationOptions.push({ value: "pchip-old", label: "Historic (AV1) interpolation method" });
