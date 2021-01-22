@@ -494,12 +494,13 @@ export class Job {
   }
 
   static codecs = {
-    "av1": "AV1 Random Access (RA)",
-    "av1-rt": "AV1 Low Delay (LD)",
-    "av2-ai": "AV2 All Intra (AI)",
-    "av2-ra": "AV2 Random Access (RA)",
-    "av2-ld": "AV2 Low Delay (LD)",
-    "av2-as": "AV2 Adaptive Streaming (AS)",
+    "av1": "AV1 (libaom) Random Access (RA)",
+    "av1-rt": "AV1 (libaom) Low Delay (LD)",
+    "svt-av1": "AV1 (SVT-AV1) Random Access (RA)",
+    "av2-ai": "AV2 (libaom) All Intra (AI)",
+    "av2-ra": "AV2 (libaom) Random Access (RA)",
+    "av2-ld": "AV2 (libaom) Low Delay (LD)",
+    "av2-as": "AV2 (libaom) Adaptive Streaming (AS)",
     "daala": "Daala",
     "x264": "x264",
     "x265": "x265",
@@ -512,7 +513,6 @@ export class Job {
     "thor": "Thor",
     "thor-rt": "Thor Realtime",
     "rav1e": "rav1e",
-    "svt-av1": "SVT-AV1",
     "vvc-vtm": "VVC VTM"
   };
 
