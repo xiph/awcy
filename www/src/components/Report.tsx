@@ -302,7 +302,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     }
 
     let report = this.state.report;
-    let summaryHeaders = ["PSNR Y (libvmaf)", "PSNR Cb (libvmaf)", "PSNR Cr (libvmaf)", "CIEDE2000 (libvmaf)", "SSIM (libvmaf)", "MS SSIM (libvmaf)", "PSNR-HVS Y (libvmaf)", "PSNR-HVS Cb (libvmaf)", "PSNR-HVS Cr (libvmaf)", "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG"];
+    let summaryHeaders = ["PSNR Y (libvmaf)", "PSNR Cb (libvmaf)", "PSNR Cr (libvmaf)", "CIEDE2000 (libvmaf)", "SSIM (libvmaf)", "MS-SSIM (libvmaf)", "PSNR-HVS Y (libvmaf)", "PSNR-HVS Cb (libvmaf)", "PSNR-HVS Cr (libvmaf)", "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG"];
     let summaryRows = [summaryHeaders.map(title => title.replace(" (libvmaf)",""))];
     summaryRows.push(summaryHeaders.map(name =>
       report.average[name] != undefined ? report.average[name].toFixed(4) : "N/A"
