@@ -111,7 +111,7 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
       rows.push(<tr key={quality}>{cols}</tr>);
     });
     let reportUrl = hasIvfs ? this.props.job.reportUrl(this.props.name) : this.props.job.totalReportUrl();
-    let table = <div style={{overflowY: "scroll"}}>
+    let table = <div style={{overflowX: "scroll"}}>
       <Table striped bordered condensed hover style={{width: "100%"}}>
         <thead>
           <tr>
@@ -402,7 +402,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
         </div>
         {errors}
         {textReport}
-        <div style={{overflowY: "scroll"}}>
+        <div style={{overflowX: "scroll"}}>
           <Table striped bordered condensed hover style={{width: "100%"}}>
             <thead>
               <tr>
