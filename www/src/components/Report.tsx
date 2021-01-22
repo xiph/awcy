@@ -40,7 +40,7 @@ interface VideoReportProps {
   filterQualities?: number [];
 }
 
-let displayedBDRateMetrics = ['PSNR', 'PSNR HVS', 'SSIM', 'CIEDE 2000', 'APSNR', 'MS SSIM', 'VMAF'];
+let displayedBDRateMetrics = ['PSNR Y (libvmaf)', 'PSNR Cb (libvmaf)', 'PSNR Cr (libvmaf)', 'CIEDE2000 (libvmaf)', 'SSIM (libvmaf)', 'MS-SSIM (libvmaf)', 'PSNR-HVS Y (libvmaf)', 'PSNR-HVS Cb (libvmaf)', 'PSNR-HVS Cr (libvmaf)', 'VMAF', 'VMAF-NEG'];
 
 // this is the chart of raw metric scores underneath the graph
 
@@ -111,7 +111,7 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
       rows.push(<tr key={quality}>{cols}</tr>);
     });
     let reportUrl = hasIvfs ? this.props.job.reportUrl(this.props.name) : this.props.job.totalReportUrl();
-    let table = <div>
+    let table = <div style={{overflowY: "scroll"}}>
       <Table striped bordered condensed hover style={{width: "100%"}}>
         <thead>
           <tr>
@@ -402,16 +402,18 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
         </div>
         {errors}
         {textReport}
-        <Table striped bordered condensed hover style={{width: "100%"}}>
-          <thead>
-            <tr>
-              {headers}
-            </tr>
-          </thead>
-          <tbody>
-            {rows}
-          </tbody>
-        </Table>
+        <div style={{overflowY: "scroll"}}>
+          <Table striped bordered condensed hover style={{width: "100%"}}>
+            <thead>
+              <tr>
+                {headers}
+              </tr>
+            </thead>
+            <tbody>
+              {rows}
+            </tbody>
+          </Table>
+        </div>
       </Panel>
   }
 }
