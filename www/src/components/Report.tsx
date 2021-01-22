@@ -40,7 +40,7 @@ interface VideoReportProps {
   filterQualities?: number [];
 }
 
-let displayedBDRateMetrics = ['PSNR Y (libvmaf)', 'PSNR Cb (libvmaf)', 'PSNR Cr (libvmaf)', 'CIEDE2000 (libvmaf)', 'SSIM (libvmaf)', 'MS-SSIM (libvmaf)', 'PSNR-HVS Y (libvmaf)', 'PSNR-HVS Cb (libvmaf)', 'PSNR-HVS Cr (libvmaf)', 'VMAF', 'VMAF-NEG'];
+let displayedBDRateMetrics = ['PSNR Y (libvmaf)', 'PSNR Cb (libvmaf)', 'PSNR Cr (libvmaf)', 'CIEDE2000 (libvmaf)', 'SSIM (libvmaf)', 'MS-SSIM (libvmaf)', 'PSNR-HVS Y (libvmaf)', 'PSNR-HVS Cb (libvmaf)', 'PSNR-HVS Cr (libvmaf)', 'PSNR-HVS (libvmaf)', 'VMAF', 'VMAF-NEG'];
 
 // this is the chart of raw metric scores underneath the graph
 
