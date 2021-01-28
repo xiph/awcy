@@ -89,6 +89,7 @@ const binaries = {
   'av1-rt': ['aomenc','aomdec'],
   'av2-ai': ['aomenc','aomdec'],
   'av2-ra': ['aomenc','aomdec'],
+  'av2-ra-st': ['aomenc','aomdec'],
   'av2-ld': ['aomenc','aomdec'],
   'av2-as': ['aomenc','aomdec'],
   'thor': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt'],
