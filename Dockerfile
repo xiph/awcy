@@ -30,6 +30,7 @@ RUN \
 		check \
 		cmake \
 		cmake-extras \
+		ctags \
 		curl \
 		dirmngr \
 		file \
@@ -190,6 +191,21 @@ RUN \
 	git clone https://github.com/KyleSiefring/dump_ciede2000.git ${CIEDE2000_DIR} && \
 	cd ${CIEDE2000_DIR} && \
 	cargo build --release
+
+# install hdrtools
+ENV \
+	HDRTOOLS_DIR=/opt/hdrtools \
+	HDRTOOLS_VERSION=0.21
+
+RUN \
+	mkdir -p ${HDRTOOLS_DIR} && \
+	curl -sSfL --output HDRTools.tar.bz2 https://gitlab.com/standards/HDRTools/-/archive/v${HDRTOOLS_VERSION}/HDRTools-v${HDRTOOLS_VERSION}.tar.bz2 && \
+	tar -xvf HDRTools.tar.bz2 --strip-components=1 -C ${HDRTOOLS_DIR} && \
+	cd ${HDRTOOLS_DIR} && \
+	sed -i 's/std::modff/modff/g' common/src/OutputY4M.cpp && \
+	sed -i 's/using ::hdrtoolslib::Y_COMP;//g' projects/HDRConvScaler/src/HDRConvScalerYUV.cpp && \
+	sed -i 's/\[Y_COMP\]/\[hdrtoolslib::Y_COMP\]/g' projects/HDRConvScaler/src/HDRConvScalerYUV.cpp && \
+	make # -j is broken
 
 # install rd_tool and dependencies
 ENV \
