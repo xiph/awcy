@@ -2,7 +2,7 @@ import * as React from "react";
 import { Glyphicon, Panel, Table } from "react-bootstrap";
 import { Button, FormGroup, } from "react-bootstrap";
 import { Option } from "./Widgets";
-import { BDRateReport, Report, AppStore, Job, reportFieldNames, analyzerBaseUrl} from "../stores/Stores";
+import { BDRateReport, Report, AppStore, Job, reportFieldNames, outFileFieldNames, analyzerBaseUrl} from "../stores/Stores";
 
 declare var require: any;
 
@@ -98,8 +98,8 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
           this.props.filterQualities.indexOf(row[0]) < 0) {
         return;
       }
-      let cols = row.map((v, i) => {
-        return <td key={i} className="tableValue">{formatNumber(v)}</td>
+      let cols = reportFieldNames.map((v, i) => {
+        return <td key={i} className="tableValue">{formatNumber(row[outFileFieldNames.indexOf(v)])}</td>
       });
       let quality = row[0];
       if (hasIvfs) {
