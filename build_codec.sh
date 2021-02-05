@@ -91,7 +91,7 @@ case "${CODEC}" in
     rm -rf cmake-build || true
     mkdir cmake-build
     pushd cmake-build
-    cmake ../ -DENABLE_TESTS=0 -DENABLE_DOCS=0 -DCMAKE_BUILD_TYPE=Release -DAOM_EXTRA_C_FLAGS=-UNDEBUG -DAOM_EXTRA_CXX_FLAGS=-UNDEBUG ${BUILD_OPTIONS}
+    cmake ../ -DENABLE_TESTS=0 -DENABLE_DOCS=0 -DCMAKE_BUILD_TYPE=Release ${BUILD_OPTIONS}
     make -j$(nproc)
     popd
     mkdir -p x86_64
