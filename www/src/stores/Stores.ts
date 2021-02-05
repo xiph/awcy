@@ -315,9 +315,20 @@ export let metricNames = [
   "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG"
 ];
 
-export let reportFieldNames = [
+export let outFileFieldNames = [
   "Q", "Pixels", "Size"
 ].concat(metricNames);
+
+export let reportDisplayedMetrics = [ "Encoding Time", "Decoding Time",
+  "PSNR Y (libvmaf)", "PSNR Cb (libvmaf)", "PSNR Cr (libvmaf)",
+  "CIEDE2000 (libvmaf)", "SSIM (libvmaf)", "MS-SSIM (libvmaf)",
+  "PSNR-HVS Y (libvmaf)", "PSNR-HVS Cb (libvmaf)", "PSNR-HVS Cr (libvmaf)",
+  "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG"
+];
+
+export let reportFieldNames = [
+  "Q", "Pixels", "Size"
+].concat(reportDisplayedMetrics);
 
 export function metricNameToReportFieldIndex(name: string) {
   return 3 + metricNames.indexOf(name);
