@@ -204,7 +204,7 @@ else:
 
 met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000',
             'PSNR Cb', 'PSNR Cr', 'APSNR', 'APSNR Cb', 'APSNR Cr',
-            'MSSSIM', 'Time', 'VMAF_old', 'Decoding Time',
+            'MSSSIM', 'Encoding Time', 'VMAF_old', 'Decoding Time',
              "PSNR Y (libvmaf)", "PSNR Cb (libvmaf)", "PSNR Cr (libvmaf)",
             "CIEDE2000 (libvmaf)", "SSIM (libvmaf)", "MS-SSIM (libvmaf)",
             "PSNR-HVS Y (libvmaf)", "PSNR-HVS Cb (libvmaf)", "PSNR-HVS Cr (libvmaf)",
@@ -212,7 +212,7 @@ met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000',
             ]
 met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4,
              'PSNR Cb': 5, 'PSNR Cr': 6, 'APSNR': 7, 'APSNR Cb': 8, 'APSNR Cr':9,
-             'MSSSIM':10, 'Time':11, 'VMAF_old':12, 'Decoding Time': 13,
+             'MSSSIM':10, 'Encoding Time':11, 'VMAF_old':12, 'Decoding Time': 13,
              "PSNR Y (libvmaf)": 14, "PSNR Cb (libvmaf)": 15, "PSNR Cr (libvmaf)": 16,
              "CIEDE2000 (libvmaf)": 17, "SSIM (libvmaf)": 18, "MS-SSIM (libvmaf)": 19,
              "PSNR-HVS Y (libvmaf)": 20, "PSNR-HVS Cb (libvmaf)": 21, "PSNR-HVS Cr (libvmaf)": 22,
@@ -300,6 +300,17 @@ def bdrate(file1, file2, anchorfile, fullrange):
         if abs(bdr) > 1000:
             bdr = NaN
         ret[m] = bdr
+    # handle encode time and decode time as sums instead
+    encode_times_a = a[:,3+met_index['Encoding Time']];
+    encode_times_b = b[:,3+met_index['Encoding Time']];
+    encode_time_a = encode_times_a.sum()
+    encode_time_b = encode_times_b.sum()
+    ret[met_index['Encoding Time']] = (encode_time_b - encode_time_a) / encode_time_a * 100.0
+    decode_times_a = a[:,3+met_index['Decoding Time']];
+    decode_times_b = b[:,3+met_index['Decoding Time']];
+    decode_time_a = decode_times_a.sum()
+    decode_time_b = decode_times_b.sum()
+    ret[met_index['Decoding Time']] = (decode_time_b - decode_time_a) / decode_time_a * 100.0
     return ret
 
 metric_data = {}
