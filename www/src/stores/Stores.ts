@@ -121,6 +121,8 @@ export function loadXHR(path: string, next: (json: any) => void, fail: () => voi
     let response = this.responseText;
     if (type === "json") {
       response = response.replace(/NaN/g, "null");
+      response = response.replace(/-Infinity/g, "null");
+      response = response.replace(/Infinity/g, "null");
       try {
         response = response ? JSON.parse(response) : null;
       } catch (x) {
