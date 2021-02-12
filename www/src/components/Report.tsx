@@ -85,6 +85,7 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
     if (hasIvfs) {
       headers.unshift(<th className="tableToolHeader" key={"link-0"}></th>);
       headers.unshift(<th className="tableToolHeader" key={"link-1"}></th>);
+      headers.unshift(<th className="tableToolHeader" key={"link-2"}>XML</th>);
     }
 
     let rows = [];
@@ -107,6 +108,8 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
         cols.unshift(<td key="link-0" className="tableValue"><a href={ivfUrl} alt="Download"><Glyphicon glyph="download-alt" /></a></td>);
         let analyzerUrl = this.props.job.analyzerIvfUrl(this.props.name, quality);
         cols.unshift(<td key="link-1" className="tableValue"><a target="_blank" href={analyzerUrl} alt="Analyze"><Glyphicon glyph="film" /></a></td>);
+        let libvmafXmlUrl = this.props.job.libvmafXmlUrl(this.props.name, quality);
+        cols.unshift(<td key="link-2" className="tableValueCentered"><a href={libvmafXmlUrl} alt="XML"><Glyphicon glyph="eye-open" /></a></td>);
       }
       rows.push(<tr key={quality}>{cols}</tr>);
     });

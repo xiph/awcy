@@ -452,6 +452,10 @@ export class Job {
     return analyzerReportBaseUrl + `?decoder=${this.decoderUrl()}&file=${this.ivfUrl(name, quality)}`;
   }
 
+  libvmafXmlUrl(name: string, quality: number) {
+    return this.ivfUrlPrefix() + `${name}-${quality}-libvmaf.xml`;
+  }
+
   loadReport(): Promise<{ [name: string]: any }> {
     if (this.report) {
       return Promise.resolve(this.report);
