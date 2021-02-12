@@ -303,14 +303,20 @@ def bdrate(file1, file2, anchorfile, fullrange):
     # handle encode time and decode time separately
     encode_times_a = a[:,3+met_index['Encoding Time']];
     encode_times_b = b[:,3+met_index['Encoding Time']];
-    # compute a percent change for each qp
-    encode_times = (encode_times_b - encode_times_a) / encode_times_a
-    # average the percent changes together
-    ret[met_index['Encoding Time']] = encode_times.mean() * 100.0
+    if encode_times_a != 0.0:
+        # compute a percent change for each qp
+        encode_times = (encode_times_b - encode_times_a) / encode_times_a
+        # average the percent changes together
+        ret[met_index['Encoding Time']] = encode_times.mean() * 100.0
+    else:
+        ret[met_index['Encoding Time']] = NaN
     decode_times_a = a[:,3+met_index['Decoding Time']];
     decode_times_b = b[:,3+met_index['Decoding Time']];
-    decode_times = (decode_times_b - decode_times_a) / decode_times_a
-    ret[met_index['Decoding Time']] = decode_times.mean() * 100.0
+    if decode_times_a != 0.0:
+        decode_times = (decode_times_b - decode_times_a) / decode_times_a
+        ret[met_index['Decoding Time']] = decode_times.mean() * 100.0
+    else:
+        ret[met_index['Decoding Time']] = NaN
     return ret
 
 metric_data = {}
