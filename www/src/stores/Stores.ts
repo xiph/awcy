@@ -314,7 +314,8 @@ export let metricNames = [
   "PSNR Y (libvmaf)", "PSNR Cb (libvmaf)", "PSNR Cr (libvmaf)",
   "CIEDE2000 (libvmaf)", "SSIM (libvmaf)", "MS-SSIM (libvmaf)",
   "PSNR-HVS Y (libvmaf)", "PSNR-HVS Cb (libvmaf)", "PSNR-HVS Cr (libvmaf)",
-  "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG"
+  "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG",
+  "APSNR Y (libvmaf)", "APSNR Cb (libvmaf)", "APSNR Cr (libvmaf)"
 ];
 
 export let outFileFieldNames = [
@@ -325,7 +326,8 @@ export let reportDisplayedMetrics = [ "Encoding Time", "Decoding Time",
   "PSNR Y (libvmaf)", "PSNR Cb (libvmaf)", "PSNR Cr (libvmaf)",
   "CIEDE2000 (libvmaf)", "SSIM (libvmaf)", "MS-SSIM (libvmaf)",
   "PSNR-HVS Y (libvmaf)", "PSNR-HVS Cb (libvmaf)", "PSNR-HVS Cr (libvmaf)",
-  "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG"
+  "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG",
+  "APSNR Y (libvmaf)", "APSNR Cb (libvmaf)", "APSNR Cr (libvmaf)"
 ];
 
 export let reportFieldNames = [
