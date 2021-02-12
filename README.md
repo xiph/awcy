@@ -206,7 +206,7 @@ Configuration is driven by a few environment variables (with their default value
  * `CODECS_SRC_DIR=/data/src`: where codecs' sources are going to be cloned (and compiled)
  * `RUNS_DST_DIR=/data/runs`: rd_tool jobs runs output
  * `WORK_DIR=/data/work`: rd_tool job workdir directory
- * `MEDIAS_SRC_DIR=/data/media`: directory containing media files ( get them from https://people.xiph.org/~tdaede/sets/ )
+ * `MEDIAS_SRC_DIR=/data/media`: directory containing media files (get them from https://media.xiph.org/sets/)
  * `LOCAL_WORKER_ENABLED=false`: if a local worker need to be started and configured
  * `LOCAL_WORKER_SLOTS=$(nproc)`: number of slots for the local worker
  * `IRC_CHANNEL=none`: IRC notifications target channel (`none` means disabled)
