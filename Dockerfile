@@ -259,7 +259,7 @@ RUN \
 	rm -rf /var/lib/apt/lists
 
 # add code
-ADD package.json *.ts tsconfig.json ${APP_DIR}/
+ADD package.json package-lock.json *.ts tsconfig.json ${APP_DIR}/
 ADD www ${APP_DIR}/www
 
 # compile typescript/nodejs code
