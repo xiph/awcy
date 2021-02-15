@@ -100,7 +100,12 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
         return;
       }
       let cols = reportFieldNames.map((v, i) => {
-        return <td key={i} className="tableValue">{formatNumber(row[outFileFieldNames.indexOf(v)])}</td>
+        let field_index = outFileFieldNames.indexOf(v);
+        if (field_index in row) {
+          return <td key={i} className="tableValue">{formatNumber(row[field_index])}</td>
+        } else {
+          return <td key={i} className="tableValue">N/A</td>
+        }
       });
       let quality = row[0];
       if (hasIvfs) {
