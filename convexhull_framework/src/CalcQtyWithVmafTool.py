@@ -107,7 +107,7 @@ def ParseVMAFLogFile(vmaf_log):
 
 
 def GetVMAFLogFile(recfile, path):
-    filename = GetShortContentName(recfile, False) + '_vmaf.log'
+    filename = recfile + '-libvmaf.xml'
     file = os.path.join(path, filename)
     return file
 

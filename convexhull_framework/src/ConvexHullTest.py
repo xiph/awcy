@@ -14,6 +14,9 @@ import os
 import sys
 import xlsxwriter
 import argparse
+import numpy as np
+import scipy.interpolate
+import re
 
 from EncDecUpscale import Run_EncDec_Upscale, GetBsReconFileName
 from VideoScaler import GetDownScaledOutFile, DownScaling
@@ -214,7 +217,7 @@ def Run_ConvexHull_Test(clip, dnScalAlgo, upScalAlgo, LogCmdOnly = False):
         Utils.Logger.info("finish running encode test.")
     Utils.Logger.info("finish running encode test.")
 
-def SaveConvexHullResultsToExcel(content, dnScAlgos, upScAlgos, csv, perframe_csv,
+def SaveConvexHullResultsToExcel(clip, dnScAlgos, upScAlgos, csv, perframe_csv,
                                  EnablePreInterpolation=False):
     Utils.Logger.info("start saving RD results to excel file.......")
     if not os.path.exists(Path_RDResults):
@@ -258,7 +261,17 @@ def SaveConvexHullResultsToExcel(content, dnScAlgos, upScAlgos, csv, perframe_cs
                                                   DnScaledH, dnScAlgos[indx],
                                                   upScAlgos[indx], qp,
                                                   Path_Bitstreams, False, i)
-                bitrate = (os.path.getsize(bs) * 8 * (clip.fps_num / clip.fps_denom)
+                file_name_dnscaled_res = re.sub(r'(3840x2160)', str(DnScaledW) + 'x' + str(DnScaledH), clip.file_name)
+                reconyuv = os.path.join(file_name_dnscaled_res + '-' + str(qp))
+
+                out_file = open(os.path.join(Path_Bitstreams, file_name_dnscaled_res + '-daala.out'), 'r')
+                out_data = []
+                for line in out_file.readlines():
+                    out_data = line.split(' ')
+                    if (int(out_data[0]) == qp):
+                        break
+                size_in_bytes = int(out_data[2])
+                bitrate = (size_in_bytes * 8 * (clip.fps_num / clip.fps_denom)
                            / FrameNum['AS']) / 1000.0
                 bitratesKbps.append(bitrate)
                 quality, perframe_vmaf_log = GatherQualityMetrics(reconyuv, Path_QualityLog)
@@ -270,18 +283,9 @@ def SaveConvexHullResultsToExcel(content, dnScAlgos, upScAlgos, csv, perframe_cs
                            contentname, clip.fps,clip.bit_depth,str(DnScaledW)+"x"+str(DnScaledH),qp,bitrate))
                 for qty in quality:
                     csv.write(",%.4f"%qty)
-
-                if UsePerfUtil:
-                    enc_instr, enc_cycles, dec_instr, dec_cycles = GatherInstrCycleInfo(bs, Path_PerfLog)
-                    csv.write(",%s,%s,%s,%s,\n"%(enc_instr, enc_cycles, dec_instr, dec_cycles))
-                else:
-                    enc_time, dec_time = GatherPerfInfo(bs, Path_PerfLog)
-                    csv.write(",%.2f,%.2f,\n" % (enc_time, dec_time))
-                if (EncodeMethod == 'aom'):
-                    enc_log = GetEncLogFile(bs, Path_EncLog)
-                    GatherPerframeStat("AS", EncodeMethod, CodecName, EncodePreset, clip, GetShortContentName(bs),
-                                       DnScaledW, DnScaledH, qp, enc_log, perframe_csv,
-                                       perframe_vmaf_log)
+                enc_time, dec_time = float(out_data[14]), float(out_data[16])
+                enc_hour = (enc_time / 3600.0)
+                csv.write(",%.2f,%.2f,%.2f,\n" % (enc_time, dec_time, enc_hour))
             sht.write_column(CvxH_WtRows[0], col, bitratesKbps)
             for qs, row in zip(qualities, CvxH_WtRows):
                 sht.write_row(row, col + 1, qs)
