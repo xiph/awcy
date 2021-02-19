@@ -191,7 +191,6 @@ parser.add_argument('run',nargs=2,help='Run folders to compare')
 parser.add_argument('--overlap',action='store_true',help='Use traditional overlap instead of anchor')
 parser.add_argument('--suffix',help='Metric data suffix (default is .out)',default='.out')
 parser.add_argument('--format',help='Format of output',default='text')
-parser.add_argument('--fullrange',action='store_true',help='Use full range of QPs instead of 20-55')
 parser.add_argument('--old-pchip',action='store_true')
 args = parser.parse_args()
 
@@ -220,7 +219,7 @@ q_not_found = False
 
 error_strings = []
 
-def bdrate(file1, file2, fullrange):
+def bdrate(file1, file2):
     a = loadtxt(file1)
     b = loadtxt(file2)
     a = a[a[:,0].argsort()]
@@ -242,33 +241,19 @@ def bdrate(file1, file2, fullrange):
             #p1 = interp1d(ra, ya, interp_type)(rates[1]);
             minq = 20
             maxq = 55
-            try:
-                if fullrange:
-                    # bypass finding 20 and 55 and use the full range
-                    raise ValueError
-                # path if quantizers 20 and 55 are in set
-                minqa_index = qa.tolist().index(minq)
-                maxqa_index = qa.tolist().index(maxq)
-                minqb_index = qb.tolist().index(minq)
-                maxqb_index = qb.tolist().index(maxq)
-                yya = ya[maxqa_index:minqa_index+1]
-                yyb = yb[maxqb_index:minqb_index+1]
-                rra = ra[maxqa_index:minqa_index+1]
-                rrb = rb[maxqb_index:minqb_index+1]
-            except ValueError:
-                # path if quantizers 20 and 55 are not found - use
-                # entire range of quantizers found, and fit curve
-                # on all the points, and set q_not_found to print
-                # a warning
-                q_not_found = True
-                minqa_index = -1
-                maxqa_index = 0
-                minqb_index = -1
-                maxqb_index = 0
-                yya = ya
-                yyb = yb
-                rra = ra
-                rrb = rb
+            # path if quantizers 20 and 55 are not found - use
+            # entire range of quantizers found, and fit curve
+            # on all the points, and set q_not_found to print
+            # a warning
+            q_not_found = True
+            minqa_index = -1
+            maxqa_index = 0
+            minqb_index = -1
+            maxqb_index = 0
+            yya = ya
+            yyb = yb
+            rra = ra
+            rrb = rb
             p0 = max(ya[maxqa_index],yb[maxqb_index])
             p1 = min(ya[minqa_index],yb[minqb_index])
             a_rate = pchip(yya, log(rra))(arange(p0,p1,abs(p1-p0)/5000.0));
@@ -335,7 +320,7 @@ if info_data and not args.overlap:
 if info_data:
     for video in videos:
         if args.overlap:
-            metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,args.fullrange)
+            metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix)
 
 filename_len = 40
 
