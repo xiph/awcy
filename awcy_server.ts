@@ -345,6 +345,24 @@ app.get('/bd_rate',function(req,res) {
         res.send(stdout);
       }
     });
+  } else if (req.query['method'] == 'report-as') {
+    const parameters = [runs_dst_dir+'/'+a,runs_dst_dir+'/'+b,'--suffix=-daala.out','--overlap'];
+    if (req.query['format'] == 'json') {
+      res.contentType('application/json');
+      parameters.push('--format=json');
+    }
+    if (req.query['interpolation'] == 'pchip-old') {
+      parameters.push('--old-pchip')
+    }
+    cp.execFile('./bd_rate_report_as.py',parameters,
+                {},
+                function(error,stdout,stderr) {
+      if (error) {
+        res.send(stderr + stdout);
+      } else {
+        res.send(stdout);
+      }
+    });
   } else if (req.query['method'] == 'metric-point') {
     cp.execFile('./rate_delta_point.py',[a_file,b_file,String(metric_score)],
                 {},
