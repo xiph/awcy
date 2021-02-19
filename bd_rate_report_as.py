@@ -188,9 +188,7 @@ class PchipInterpolator_old(BPoly):
 
 parser = argparse.ArgumentParser(description='Produce bd-rate report')
 parser.add_argument('run',nargs=2,help='Run folders to compare')
-parser.add_argument('--anchor',help='Explicit anchor to use')
 parser.add_argument('--overlap',action='store_true',help='Use traditional overlap instead of anchor')
-parser.add_argument('--anchordir',nargs=1,help='Folder to find anchor runs')
 parser.add_argument('--suffix',help='Metric data suffix (default is .out)',default='.out')
 parser.add_argument('--format',help='Format of output',default='text')
 parser.add_argument('--fullrange',action='store_true',help='Use full range of QPs instead of 20-55')
@@ -222,9 +220,7 @@ q_not_found = False
 
 error_strings = []
 
-def bdrate(file1, file2, anchorfile, fullrange):
-    if anchorfile:
-        anchor = flipud(loadtxt(anchorfile));
+def bdrate(file1, file2, fullrange):
     a = loadtxt(file1)
     b = loadtxt(file2)
     a = a[a[:,0].argsort()]
@@ -242,49 +238,39 @@ def bdrate(file1, file2, anchorfile, fullrange):
         try:
             ya = a[:,3+m];
             yb = b[:,3+m];
-            if anchorfile:
-                yr = anchor[:,3+m];
             #p0 = interp1d(ra, ya, interp_type)(rates[0]);
             #p1 = interp1d(ra, ya, interp_type)(rates[1]);
-            if anchorfile:
-                p0 = yr[0]
-                p1 = yr[-1]
+            minq = 20
+            maxq = 55
+            try:
+                if fullrange:
+                    # bypass finding 20 and 55 and use the full range
+                    raise ValueError
+                # path if quantizers 20 and 55 are in set
+                minqa_index = qa.tolist().index(minq)
+                maxqa_index = qa.tolist().index(maxq)
+                minqb_index = qb.tolist().index(minq)
+                maxqb_index = qb.tolist().index(maxq)
+                yya = ya[maxqa_index:minqa_index+1]
+                yyb = yb[maxqb_index:minqb_index+1]
+                rra = ra[maxqa_index:minqa_index+1]
+                rrb = rb[maxqb_index:minqb_index+1]
+            except ValueError:
+                # path if quantizers 20 and 55 are not found - use
+                # entire range of quantizers found, and fit curve
+                # on all the points, and set q_not_found to print
+                # a warning
+                q_not_found = True
+                minqa_index = -1
+                maxqa_index = 0
+                minqb_index = -1
+                maxqb_index = 0
                 yya = ya
                 yyb = yb
                 rra = ra
                 rrb = rb
-            else:
-                minq = 20
-                maxq = 55
-                try:
-                    if fullrange:
-                        # bypass finding 20 and 55 and use the full range
-                        raise ValueError
-                    # path if quantizers 20 and 55 are in set
-                    minqa_index = qa.tolist().index(minq)
-                    maxqa_index = qa.tolist().index(maxq)
-                    minqb_index = qb.tolist().index(minq)
-                    maxqb_index = qb.tolist().index(maxq)
-                    yya = ya[maxqa_index:minqa_index+1]
-                    yyb = yb[maxqb_index:minqb_index+1]
-                    rra = ra[maxqa_index:minqa_index+1]
-                    rrb = rb[maxqb_index:minqb_index+1]
-                except ValueError:
-                    # path if quantizers 20 and 55 are not found - use
-                    # entire range of quantizers found, and fit curve
-                    # on all the points, and set q_not_found to print
-                    # a warning
-                    q_not_found = True
-                    minqa_index = -1
-                    maxqa_index = 0
-                    minqb_index = -1
-                    maxqb_index = 0
-                    yya = ya
-                    yyb = yb
-                    rra = ra
-                    rrb = rb
-                p0 = max(ya[maxqa_index],yb[maxqb_index])
-                p1 = min(ya[minqa_index],yb[minqb_index])
+            p0 = max(ya[maxqa_index],yb[maxqb_index])
+            p1 = min(ya[minqa_index],yb[minqb_index])
             a_rate = pchip(yya, log(rra))(arange(p0,p1,abs(p1-p0)/5000.0));
             b_rate = pchip(yyb, log(rrb))(arange(p0,p1,abs(p1-p0)/5000.0));
             if not len(a_rate) or not len(b_rate):
@@ -339,26 +325,17 @@ if info_data:
     sets = json.load(open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.json")))
     videos = sets[task]["sources"]
 else:
-    if not args.anchor and not args.overlap:
+    if not args.overlap:
         print("You must specify an anchor to use if comparing bare result directories.")
         exit(1)
-    videos = os.listdir(args.anchor)
 
 if info_data and not args.overlap:
-    info_data[2] = json.load(open(args.anchordir[0]+'/'+sets[task]['anchor']+'/info.json'))
-    if info_data[2]['task'] != info_data[0]['task']:
-        print("Mismatched anchor data!")
-        sys.exit(1)
+    sys.exit(1)
 
 if info_data:
     for video in videos:
         if args.overlap:
-            metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,None,args.fullrange)
-        else:
-            metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,args.anchordir[0]+'/'+sets[task]['anchor']+'/'+task+'/'+video+args.suffix,args.fullrange)
-else:
-    for video in videos:
-        metric_data[video] = bdrate(args.run[0]+'/'+video,args.run[1]+'/'+video,args.anchor+'/'+video,args.fullrange)
+            metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix,args.fullrange)
 
 filename_len = 40
 
@@ -416,8 +393,6 @@ if args.format == 'text':
         print('Test Run: ' + info_data[1]['run_id'])
     if args.overlap:
         print('Range: overlap')
-    elif info_data:
-        print('Range: Anchor ' + info_data[2]['run_id'])
 elif args.format == 'json':
     output = {}
     output['metric_names'] = met_name
