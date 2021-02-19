@@ -13,6 +13,7 @@ import sys
 import os
 import argparse
 import json
+import subprocess
 
 # The following implementations of pchip are copied from scipy.
 
@@ -307,6 +308,10 @@ else:
 
 if info_data and not args.overlap:
     sys.exit(1)
+
+# generate xls for each of the two runs:
+for run in args.run:
+    subprocess.run(['python3', 'convexhull_framework/src/AWCYConvexHullTest.py', run], check=True)
 
 if info_data:
     for video in videos:
