@@ -215,8 +215,6 @@ met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4,
              "PSNR-HVS Y (libvmaf)": 20, "PSNR-HVS Cb (libvmaf)": 21, "PSNR-HVS Cr (libvmaf)": 22,
              "PSNR-HVS (libvmaf)": 23, "VMAF": 24, "VMAF-NEG": 25}
 
-q_not_found = False
-
 error_strings = []
 
 def bdrate(file1, file2):
@@ -236,13 +234,6 @@ def bdrate(file1, file2):
         try:
             ya = a[:,3+m];
             yb = b[:,3+m];
-            minq = 20
-            maxq = 55
-            # path if quantizers 20 and 55 are not found - use
-            # entire range of quantizers found, and fit curve
-            # on all the points, and set q_not_found to print
-            # a warning
-            q_not_found = True
             minqa_index = -1
             maxqa_index = 0
             minqb_index = -1
@@ -333,9 +324,6 @@ if info_data:
             for m in range(0,len(met_index)):
                 category[m] = mean([metric_data[x][m] for x in sets[task]['categories'][category_name]])
             categories[category_name] = category
-
-if q_not_found:
-    error_strings.append("Warning: Quantizers 20 and 55 not found in results, using maximum overlap")
 
 if args.format == 'text':
     for error in error_strings:
