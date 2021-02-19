@@ -36,7 +36,7 @@ UsePerfUtil = False
 Platform = platform.system()
 
 ############ test contents #######################################
-ContentPath = "D://YUVs//AV2-CTC"
+ContentPath = "/mnt/runs/sets/"
 ############## Scaling settings ############################################
 # down scaling ratio
 DnScaleRatio = [1.0, 1.5, 2.0, 3.0, 4.0, 6.0]   # downscale ratio
@@ -48,17 +48,17 @@ if SMOKE_TEST:
     DnScalingAlgos = ['bicubic', 'lanczos', 'sinc']
     UpScalingAlgos = ['bicubic', 'lanczos', 'sinc']
 HDRToolsConfigFileTemplate = os.path.join(BinPath, 'HDRConvScalerY4MFile.cfg')
-HDRConvert = os.path.join(BinPath, 'HDRConvert.exe')
+HDRConvert = os.path.join(BinPath, 'HDRConvert')
 
 ##################### Encode Config ########################################
 EncodeMethods = ["aom", "svt"]
 CodecNames = ["av1"]
 SUFFIX = {"av1": ".obu"}
 FFMPEG = os.path.join(BinPath, 'ffmpeg.exe')
-AOMENC = os.path.join(BinPath, 'aomenc.exe')
+AOMENC = os.path.join(BinPath, 'aomenc')
 SVTAV1 = os.path.join(BinPath, 'SvtAv1EncApp.exe')
-AV1DEC = os.path.join(BinPath, 'av1dec.exe')
-AOMDEC = os.path.join(BinPath, 'aomdec.exe')
+AV1DEC = os.path.join(BinPath, 'av1dec')
+AOMDEC = os.path.join(BinPath, 'aomdec')
 QPs = {
     "LD" : [23, 31, 39, 47, 55, 63],
     "RA" : [23, 31, 39, 47, 55, 63],
