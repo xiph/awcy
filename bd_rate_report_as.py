@@ -217,6 +217,30 @@ met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4,
 
 error_strings = []
 
+def bdrate_single_metric(ra, rb, ya, yb):
+    try:
+        minqa_index = -1
+        maxqa_index = 0
+        minqb_index = -1
+        maxqb_index = 0
+        p0 = max(ya[maxqa_index],yb[maxqb_index])
+        p1 = min(ya[minqa_index],yb[minqb_index])
+        a_rate = pchip(ya, log(ra))(arange(p0,p1,abs(p1-p0)/5000.0));
+        b_rate = pchip(yb, log(rb))(arange(p0,p1,abs(p1-p0)/5000.0));
+        if not len(a_rate) or not len(b_rate):
+            bdr = NaN;
+        else:
+            bdr=100 * (exp(mean(b_rate-a_rate))-1);
+    except ValueError:
+        bdr = NaN
+    except linalg.linalg.LinAlgError:
+        bdr = NaN
+    except IndexError:
+        bdr = NaN
+    if abs(bdr) > 1000:
+        bdr = NaN
+    return bdr
+
 def bdrate(file1, file2):
     a = loadtxt(file1)
     b = loadtxt(file2)
@@ -231,30 +255,10 @@ def bdrate(file1, file2):
     bdr = zeros((4,4))
     ret = {}
     for m in range(0,len(met_index)):
-        try:
-            ya = a[:,3+m];
-            yb = b[:,3+m];
-            minqa_index = -1
-            maxqa_index = 0
-            minqb_index = -1
-            maxqb_index = 0
-            p0 = max(ya[maxqa_index],yb[maxqb_index])
-            p1 = min(ya[minqa_index],yb[minqb_index])
-            a_rate = pchip(ya, log(ra))(arange(p0,p1,abs(p1-p0)/5000.0));
-            b_rate = pchip(yb, log(rb))(arange(p0,p1,abs(p1-p0)/5000.0));
-            if not len(a_rate) or not len(b_rate):
-                bdr = NaN;
-            else:
-                bdr=100 * (exp(mean(b_rate-a_rate))-1);
-        except ValueError:
-            bdr = NaN
-        except linalg.linalg.LinAlgError:
-            bdr = NaN
-        except IndexError:
-            bdr = NaN
-        if abs(bdr) > 1000:
-            bdr = NaN
-        ret[m] = bdr
+        ya = a[:,3+m];
+        yb = b[:,3+m];
+        ret[m] = bdrate_single_metric(ra, rb, ya, yb)
+
     # handle encode time and decode time separately
     encode_times_a = a[:,3+met_index['Encoding Time']];
     encode_times_b = b[:,3+met_index['Encoding Time']];
