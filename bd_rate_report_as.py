@@ -226,7 +226,6 @@ def bdrate(file1, file2):
     b = b[b[:,0].argsort()]
     a = flipud(a)
     b = flipud(b)
-    rates = [0.06,0.2];
     qa = a[:,0]
     qb = b[:,0]
     ra = a[:,2]*8./a[:,1]
@@ -237,8 +236,6 @@ def bdrate(file1, file2):
         try:
             ya = a[:,3+m];
             yb = b[:,3+m];
-            #p0 = interp1d(ra, ya, interp_type)(rates[0]);
-            #p1 = interp1d(ra, ya, interp_type)(rates[1]);
             minq = 20
             maxq = 55
             # path if quantizers 20 and 55 are not found - use
