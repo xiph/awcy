@@ -238,14 +238,10 @@ def bdrate(file1, file2):
             maxqa_index = 0
             minqb_index = -1
             maxqb_index = 0
-            yya = ya
-            yyb = yb
-            rra = ra
-            rrb = rb
             p0 = max(ya[maxqa_index],yb[maxqb_index])
             p1 = min(ya[minqa_index],yb[minqb_index])
-            a_rate = pchip(yya, log(rra))(arange(p0,p1,abs(p1-p0)/5000.0));
-            b_rate = pchip(yyb, log(rrb))(arange(p0,p1,abs(p1-p0)/5000.0));
+            a_rate = pchip(ya, log(ra))(arange(p0,p1,abs(p1-p0)/5000.0));
+            b_rate = pchip(yb, log(rb))(arange(p0,p1,abs(p1-p0)/5000.0));
             if not len(a_rate) or not len(b_rate):
                 bdr = NaN;
             else:
