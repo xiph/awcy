@@ -91,5 +91,5 @@ if __name__ == "__main__":
     for clip in clip_list:
         SaveConvexHullResultsToExcel(clip, DnScalingAlgos, UpScalingAlgos, csv, perframe_csv,
                                      EnablePreInterpolation)
-        csv.close()
-        perframe_csv.close()
+    csv.close()
+    perframe_csv.close()
