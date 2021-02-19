@@ -14,6 +14,7 @@ import os
 import argparse
 import json
 import subprocess
+import xlrd
 
 # The following implementations of pchip are copied from scipy.
 
@@ -208,13 +209,10 @@ met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000',
             "PSNR-HVS Y (libvmaf)", "PSNR-HVS Cb (libvmaf)", "PSNR-HVS Cr (libvmaf)",
             "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG"
             ]
-met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4,
-             'PSNR Cb': 5, 'PSNR Cr': 6, 'APSNR': 7, 'APSNR Cb': 8, 'APSNR Cr':9,
-             'MSSSIM':10, 'Encoding Time':11, 'VMAF_old':12, 'Decoding Time': 13,
-             "PSNR Y (libvmaf)": 14, "PSNR Cb (libvmaf)": 15, "PSNR Cr (libvmaf)": 16,
-             "CIEDE2000 (libvmaf)": 17, "SSIM (libvmaf)": 18, "MS-SSIM (libvmaf)": 19,
-             "PSNR-HVS Y (libvmaf)": 20, "PSNR-HVS Cb (libvmaf)": 21, "PSNR-HVS Cr (libvmaf)": 22,
-             "PSNR-HVS (libvmaf)": 23, "VMAF": 24, "VMAF-NEG": 25}
+
+met_index_as = {"PSNR Y (libvmaf)": 11, "PSNR Cb (libvmaf)": 18, "PSNR Cr (libvmaf)": 25,
+             "CIEDE2000 (libvmaf)": 74, "SSIM (libvmaf)": 39, "MS-SSIM (libvmaf)": 46,
+                "PSNR-HVS (libvmaf)": 67, "VMAF": 53, "VMAF-NEG": 60}
 
 error_strings = []
 
@@ -242,41 +240,58 @@ def bdrate_single_metric(ra, rb, ya, yb):
         bdr = NaN
     return bdr
 
-def bdrate(file1, file2):
-    a = loadtxt(file1)
-    b = loadtxt(file2)
-    a = a[a[:,0].argsort()]
-    b = b[b[:,0].argsort()]
-    a = flipud(a)
-    b = flipud(b)
-    qa = a[:,0]
-    qb = b[:,0]
-    ra = a[:,2]*8./a[:,1]
-    rb = b[:,2]*8./b[:,1]
-    bdr = zeros((4,4))
+def bdrate_as(file1, file2):
+    a_xls = xlrd.open_workbook(file1)
+    b_xls = xlrd.open_workbook(file2)
+    a_sh = a_xls.sheet_by_index(0)
+    b_sh = b_xls.sheet_by_index(0)
     ret = {}
-    for m in range(0,len(met_index)):
-        ya = a[:,3+m];
-        yb = b[:,3+m];
+    for m in range(0,len(met_name)):
+        if met_name[m] not in met_index_as:
+            ret[m] = NaN
+            continue
+        ra = []
+        ya = []
+        for c in range(1,a_sh.ncols):
+            y = a_sh.cell_value(colx=c, rowx=met_index_as[met_name[m]] - 1 + 4)
+            if (y == ''):
+                continue
+            ya.append(y)
+            ra.append(a_sh.cell_value(colx=c, rowx=met_index_as[met_name[m]] - 1 + 5))
+        rb = []
+        yb = []
+        for c in range(1,b_sh.ncols):
+            y = b_sh.cell_value(colx=c, rowx=met_index_as[met_name[m]] - 1 + 4)
+            if (y == ''):
+                continue
+            yb.append(y)
+            rb.append(b_sh.cell_value(colx=c, rowx=met_index_as[met_name[m]] - 1 + 5))
+        ra = flipud(ra)
+        rb = flipud(rb)
+        ya = flipud(ya)
+        yb = flipud(yb)
+        if (met_name[m] == "PSNR Y (libvmaf)"):
+            print(file1, file2)
+            print(ra, ya)
         ret[m] = bdrate_single_metric(ra, rb, ya, yb)
 
     # handle encode time and decode time separately
-    encode_times_a = a[:,3+met_index['Encoding Time']];
-    encode_times_b = b[:,3+met_index['Encoding Time']];
-    try:
+    #encode_times_a = a[:,3+met_index['Encoding Time']];
+    #encode_times_b = b[:,3+met_index['Encoding Time']];
+    #try:
         # compute a percent change for each qp
-        encode_times = (encode_times_b - encode_times_a) / encode_times_a
+    #    encode_times = (encode_times_b - encode_times_a) / encode_times_a
         # average the percent changes together
-        ret[met_index['Encoding Time']] = encode_times.mean() * 100.0
-    except ZeroDivisionError:
-        ret[met_index['Encoding Time']] = NaN
-    decode_times_a = a[:,3+met_index['Decoding Time']];
-    decode_times_b = b[:,3+met_index['Decoding Time']];
-    try:
-        decode_times = (decode_times_b - decode_times_a) / decode_times_a
-        ret[met_index['Decoding Time']] = decode_times.mean() * 100.0
-    except ZeroDivisionError:
-        ret[met_index['Decoding Time']]
+    #    ret[met_index['Encoding Time']] = encode_times.mean() * 100.0
+    #except ZeroDivisionError:
+    #    ret[met_index['Encoding Time']] = NaN
+    #decode_times_a = a[:,3+met_index['Decoding Time']];
+    #decode_times_b = b[:,3+met_index['Decoding Time']];
+    #try:
+    #    decode_times = (decode_times_b - decode_times_a) / decode_times_a
+    #    ret[met_index['Decoding Time']] = decode_times.mean() * 100.0
+    #except ZeroDivisionError:
+    #    ret[met_index['Decoding Time']]
     return ret
 
 metric_data = {}
@@ -315,13 +330,15 @@ for run in args.run:
 
 if info_data:
     for video in videos:
+        video_basename = os.path.splitext(video)[0]
         if args.overlap:
-            metric_data[video] = bdrate(args.run[0]+'/'+task+'/'+video+args.suffix,args.run[1]+'/'+task+'/'+video+args.suffix)
+            #RDResults_Neon1224_3840x2160_2997fps_aom_av1_0.xlsx
+            metric_data[video] = bdrate_as(args.run[0]+'/'+task+'/RDResults_'+video_basename+'_aom_av1_0.xlsx',args.run[1]+'/'+task+'/RDResults_'+video_basename+'_aom_av1_0.xlsx')
 
 filename_len = 40
 
 avg = {}
-for m in range(0,len(met_index)):
+for m in range(0,len(met_name)):
     avg[m] = mean([metric_data[x][m] for x in metric_data])
 
 categories = {}
