@@ -15,6 +15,7 @@ import argparse
 import json
 import subprocess
 import xlrd
+import re
 
 # The following implementations of pchip are copied from scipy.
 
@@ -210,9 +211,19 @@ met_name = ['PSNR', 'PSNRHVS', 'SSIM', 'FASTSSIM', 'CIEDE2000',
             "PSNR-HVS (libvmaf)", "VMAF", "VMAF-NEG"
             ]
 
+met_index = {'PSNR': 0, 'PSNRHVS': 1, 'SSIM': 2, 'FASTSSIM': 3, 'CIEDE2000': 4,
+             'PSNR Cb': 5, 'PSNR Cr': 6, 'APSNR': 7, 'APSNR Cb': 8, 'APSNR Cr':9,
+             'MSSSIM':10, 'Encoding Time':11, 'VMAF_old':12, 'Decoding Time': 13,
+             "PSNR Y (libvmaf)": 14, "PSNR Cb (libvmaf)": 15, "PSNR Cr (libvmaf)": 16,
+             "CIEDE2000 (libvmaf)": 17, "SSIM (libvmaf)": 18, "MS-SSIM (libvmaf)": 19,
+             "PSNR-HVS Y (libvmaf)": 20, "PSNR-HVS Cb (libvmaf)": 21, "PSNR-HVS Cr (libvmaf)": 22,
+             "PSNR-HVS (libvmaf)": 23, "VMAF": 24, "VMAF-NEG": 25}
+
 met_index_as = {"PSNR Y (libvmaf)": 11, "PSNR Cb (libvmaf)": 18, "PSNR Cr (libvmaf)": 25,
              "CIEDE2000 (libvmaf)": 74, "SSIM (libvmaf)": 39, "MS-SSIM (libvmaf)": 46,
                 "PSNR-HVS (libvmaf)": 67, "VMAF": 53, "VMAF-NEG": 60}
+
+resolutions = ['3840x2160', '2560x1440', '1920x1080', '1280x720', '960x540', '640x360']
 
 error_strings = []
 
@@ -240,7 +251,7 @@ def bdrate_single_metric(ra, rb, ya, yb):
         bdr = NaN
     return bdr
 
-def bdrate_as(file1, file2):
+def bdrate_as(args, task, video, file1, file2):
     a_xls = xlrd.open_workbook(file1)
     b_xls = xlrd.open_workbook(file2)
     a_sh = a_xls.sheet_by_index(0)
@@ -270,28 +281,39 @@ def bdrate_as(file1, file2):
         rb = flipud(rb)
         ya = flipud(ya)
         yb = flipud(yb)
-        if (met_name[m] == "PSNR Y (libvmaf)"):
-            print(file1, file2)
-            print(ra, ya)
         ret[m] = bdrate_single_metric(ra, rb, ya, yb)
 
     # handle encode time and decode time separately
-    #encode_times_a = a[:,3+met_index['Encoding Time']];
-    #encode_times_b = b[:,3+met_index['Encoding Time']];
-    #try:
+    encode_times_a = zeros(0)
+    encode_times_b = zeros(0)
+    decode_times_a = zeros(0)
+    decode_times_b = zeros(0)
+    for res in resolutions:
+        video_chres = re.sub(r'(3840x2160)', res, video)
+        file1 = open(args.run[0]+'/'+task+'/'+video_chres+args.suffix)
+        file2 = open(args.run[1]+'/'+task+'/'+video_chres+args.suffix)
+        a = loadtxt(file1)
+        b = loadtxt(file2)
+        a = a[a[:,0].argsort()]
+        b = b[b[:,0].argsort()]
+        a = flipud(a)
+        b = flipud(b)
+        encode_times_a = append(encode_times_a, a[:,3+met_index['Encoding Time']])
+        encode_times_b = append(encode_times_b, b[:,3+met_index['Encoding Time']])
+        decode_times_a = append(decode_times_a, a[:,3+met_index['Decoding Time']])
+        decode_times_b = append(decode_times_b, b[:,3+met_index['Decoding Time']])
+    try:
         # compute a percent change for each qp
-    #    encode_times = (encode_times_b - encode_times_a) / encode_times_a
+        encode_times = (encode_times_b - encode_times_a) / encode_times_a
         # average the percent changes together
-    #    ret[met_index['Encoding Time']] = encode_times.mean() * 100.0
-    #except ZeroDivisionError:
-    #    ret[met_index['Encoding Time']] = NaN
-    #decode_times_a = a[:,3+met_index['Decoding Time']];
-    #decode_times_b = b[:,3+met_index['Decoding Time']];
-    #try:
-    #    decode_times = (decode_times_b - decode_times_a) / decode_times_a
-    #    ret[met_index['Decoding Time']] = decode_times.mean() * 100.0
-    #except ZeroDivisionError:
-    #    ret[met_index['Decoding Time']]
+        ret[met_index['Encoding Time']] = encode_times.mean() * 100.0
+    except ZeroDivisionError:
+        ret[met_index['Encoding Time']] = NaN
+    try:
+        decode_times = (decode_times_b - decode_times_a) / decode_times_a
+        ret[met_index['Decoding Time']] = decode_times.mean() * 100.0
+    except ZeroDivisionError:
+        ret[met_index['Decoding Time']] = NaN
     return ret
 
 metric_data = {}
@@ -333,7 +355,7 @@ if info_data:
         video_basename = os.path.splitext(video)[0]
         if args.overlap:
             #RDResults_Neon1224_3840x2160_2997fps_aom_av1_0.xlsx
-            metric_data[video] = bdrate_as(args.run[0]+'/'+task+'/RDResults_'+video_basename+'_aom_av1_0.xlsx',args.run[1]+'/'+task+'/RDResults_'+video_basename+'_aom_av1_0.xlsx')
+            metric_data[video] = bdrate_as(args, task, video, args.run[0]+'/'+task+'/RDResults_'+video_basename+'_aom_av1_0.xlsx',args.run[1]+'/'+task+'/RDResults_'+video_basename+'_aom_av1_0.xlsx')
 
 filename_len = 40
 
