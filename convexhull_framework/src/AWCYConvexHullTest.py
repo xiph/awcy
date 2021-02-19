@@ -78,7 +78,7 @@ if __name__ == "__main__":
               "Bit Depth,QP,Bitrate(kbps)")
     for qty in QualityList:
         csv.write(',' + qty)
-        csv.write(",EncT[s],DecT[s],EncT[h]\n")
+    csv.write(",EncT[s],DecT[s],EncT[h]\n")
 
     perframe_csv = open(perframe_csvfile, 'wt')
     perframe_csv.write("TestCfg,EncodeMethod,CodecName,EncodePreset,Class,Res,Name,FPS," \
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     for qty in QualityList:
         if (qty != "Overall_PSNR" and qty != "Overall_APSNR" and not qty.startswith("APSNR")):
             perframe_csv.write(',' + qty)
-            perframe_csv.write('\n')
+    perframe_csv.write('\n')
 
     for clip in clip_list:
         SaveConvexHullResultsToExcel(clip, DnScalingAlgos, UpScalingAlgos, csv, perframe_csv,
