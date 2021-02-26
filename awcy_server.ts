@@ -447,6 +447,26 @@ app.post('/submit/job',function(req,res) {
   res.send('ok');
 });
 
+app.get('/csv_export.csv',function(req,res) {
+  if (!req.query['a']) {
+    res.send('No run specified');
+    return;
+  }
+  const a = path.basename(String(req.query['a']));
+  const a_file = runs_dst_dir+'/'+a;
+  res.header("Content-Type", "text/csv");
+  res.header('Content-Disposition', 'attachment; filename="'+a+'.csv"')
+  cp.execFile('./csv_export.py',[a_file],
+              {},
+              function(error,stdout,stderr) {
+                if (error) {
+                  res.send(stderr);
+                } else {
+                  res.send(stdout);
+                }
+              });
+});
+
 app.post('/submit/delete',function(req,res) {
   const run = path.basename(req.body.run_id);
   cp.execFile('nuke_branch.sh',[run],
