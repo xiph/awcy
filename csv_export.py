@@ -5,6 +5,7 @@ import json
 import os
 import csv
 import sys
+import re
 from numpy import *
 
 #offset by 3
@@ -25,17 +26,24 @@ info_data = json.load(open(args.run[0]+'/info.json'))
 task = info_data['task']
 sets = json.load(open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.json")))
 videos = sets[task]["sources"]
+videos_dir = os.path.join(os.getenv("MEDIA_DIR", "/mnt/runs/sets"), task) # for getting framerate
 
 w = csv.writer(sys.stdout, dialect='excel')
-w.writerow(['Video', 'QP', 'Filesize', 'PSNR Y', 'PSNR U', 'PSNR V',
+w.writerow(['Video', 'QP', 'Bitrate (kbps)', 'PSNR Y', 'PSNR U', 'PSNR V',
             'SSIM', 'MS-SSIM', 'VMAF', 'nVMAF', 'PSNR-HVS Y', 'DE2K',
             'APSNR Y', 'APSNR U', 'APSNR V', 'Enc T [s]', 'Dec T [s]'])
 for video in videos:
+    v = open(os.path.join(videos_dir, video), 'rb')
+    line = v.readline().decode('utf-8')
+    fps_n, fps_d = re.search(r'F([0-9]*)\:([0-9]*)', line).group(1,2)
+    width = re.search(r'W([0-9]*)', line).group(1)
+    height = re.search(r'H([0-9]*)', line).group(1)
     a = loadtxt(os.path.join(args.run[0],task,video+'-daala.out'))
     for row in a:
+        frames = int(row[1]) / int(width) / int(height)
         w.writerow([video,
                     row[0], #qp
-                    row[2],# bitrate
+                    int(row[2])*8.0*float(fps_n)/float(fps_d)/frames/1000.0,# bitrate
                     row[met_index['PSNR Y (libvmaf)']+3],
                     row[met_index['PSNR Cb (libvmaf)']+3],
                     row[met_index['PSNR Cr (libvmaf)']+3],
