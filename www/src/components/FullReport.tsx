@@ -90,6 +90,13 @@ export class FullReportComponent extends React.Component<{}, {
         for (let name in job.report) {
           addSeries(job, name, job.selectedName + " " + name, (job, name) => getRandomColorForString(name));
         }
+      } else if (job.codec == 'av2-as') {
+        let video_prefix = name.split('_')[0];
+        for (let name in job.report) {
+          if (name.includes(video_prefix)) {
+            addSeries(job, name, job.selectedName + " " + name, (job, name) => getRandomColorForString(name));
+          }
+        }
       } else if (name in job.report) {
         addSeries(job, name, job.selectedName, (job, name) => job.color);
       }

@@ -36,6 +36,12 @@ export class JobSelectorComponent extends React.Component<JobSelectorProps, {
   resetJobs(jobs: Job []) {
     let videos = Object.keys(jobs[0].report).map(name => {
       return { value: name, label: name };
+    }).filter(video => {
+      if (jobs[0].codec == 'av2-as') {
+        return video.value.includes("3840x2160");
+      } else {
+        return true;
+      }
     });
     videos.unshift({ value: "All", label: "All" });
     this.setState({videos} as any);
