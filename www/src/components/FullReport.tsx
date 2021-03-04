@@ -64,11 +64,19 @@ export class FullReportComponent extends React.Component<{}, {
     let log = this.state.log;
     function addSeries(job, name, seriesName, color) {
       let values = [];
-      job.report[name].forEach(row => {
-        let bitRate = (row[ReportField.Size] * 8) / row[ReportField.Pixels];
-        let quality = row[reportFieldIndex];
-        values.push([bitRate, quality]);
-      });
+      if (job.codec == 'av2-as') {
+        job.report[name].forEach(row => {
+          let bitRate = (row[ReportField.Size] * 8) / 3840 / 2160;
+          let quality = row[reportFieldIndex];
+          values.push([bitRate, quality]);
+        });
+      } else {
+        job.report[name].forEach(row => {
+          let bitRate = (row[ReportField.Size] * 8) / row[ReportField.Pixels];
+          let quality = row[reportFieldIndex];
+          values.push([bitRate, quality]);
+        });
+      }
       sortArray(values, 0);
       series.push({
         name: seriesName,
