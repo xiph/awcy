@@ -32,7 +32,7 @@ export class FullReportComponent extends React.Component<{}, {
       fit: true,
       log: true,
       stack: false,
-      metric: "MS SSIM",
+      metric: "MS-SSIM (libvmaf)",
       video: "Total"
     };
     this.onChange = () => {
