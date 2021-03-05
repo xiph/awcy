@@ -420,6 +420,8 @@ export class Job {
 
   report: Report = null;
 
+  convex_hulls:  { [name: string]: number[][] } = null;
+
   totalReportUrl(): string {
     return baseUrl + `runs/${this.id}/${this.task}/total.out`;
   }
@@ -479,7 +481,31 @@ export class Job {
         return text.split("\n").filter(line => !!line).map(line => line.trim().split(" ").map(value => Number(value)))
       }
       let data = textArray.map(parse);
-      return this.report = zip(names, data);
+      this.report = zip(names, data);
+    }).then(data => {
+      if (this.codec == 'av2-as') {
+        return this.loadConvexHulls();
+      } else {
+        return null;
+      }
+    }).then(data => {
+      return this.report;
+    });
+  }
+
+  loadConvexHulls(): Promise<{ [name: string]: any }> {
+    // File Report
+    let names = Job.sets[this.task].sources;
+    let task = this.task;
+    let paths = Job.sets[this.task].sources.filter(name=> {
+      return name.includes('3840x2160')
+    }).map(name => {
+      return `/dump_convex_hull.json?a=${encodeURIComponent(this.id)}&task=${encodeURIComponent(task)}&video=${encodeURIComponent(name)}`
+    });
+    console.log(paths)
+    return this.loadFiles(paths).then(encodedJsonArray => {
+      let datas = encodedJsonArray.map(encodedJson => { return JSON.parse(encodedJson)});
+      return this.convex_hulls = zip(names, datas);
     });
   }
 
