@@ -26,12 +26,21 @@ info_data = json.load(open(args.run[0]+'/info.json'))
 task = info_data['task']
 sets = json.load(open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.json")))
 videos = sets[task]["sources"]
+# sort name ascending, resolution descending
+videos.sort(key=lambda x: x.split('_')[0] + '%08d' % (100000 - int(x.split('_')[1].split('x')[0])))
 videos_dir = os.path.join(os.getenv("MEDIA_DIR", "/mnt/runs/sets"), task) # for getting framerate
 
 w = csv.writer(sys.stdout, dialect='excel')
-w.writerow(['Video', 'QP', 'Bitrate (kbps)', 'PSNR Y', 'PSNR U', 'PSNR V',
-            'SSIM', 'MS-SSIM', 'VMAF', 'nVMAF', 'PSNR-HVS Y', 'DE2K',
-            'APSNR Y', 'APSNR U', 'APSNR V', 'Enc T [s]', 'Dec T [s]'])
+if info_data['codec'] == 'av2-as':
+    w.writerow(['TestCfg', 'EncodeMethod', 'CodecName', 'EncodePreset',
+                'Class', 'Name', 'OrigRes', 'FPS', 'BitDepth', 'CodedRes',
+                'QP', 'Bitrate (kbps)', 'PSNR Y', 'PSNR U', 'PSNR V',
+                'SSIM', 'MS-SSIM', 'VMAF', 'nVMAF', 'PSNR-HVS Y', 'DE2K',
+                'APSNR Y', 'APSNR U', 'APSNR V', 'Enc T [s]', 'Dec T [s]'])
+else:
+    w.writerow(['Video', 'QP', 'Bitrate (kbps)', 'PSNR Y', 'PSNR U', 'PSNR V',
+                'SSIM', 'MS-SSIM', 'VMAF', 'nVMAF', 'PSNR-HVS Y', 'DE2K',
+                'APSNR Y', 'APSNR U', 'APSNR V', 'Enc T [s]', 'Dec T [s]'])
 for video in videos:
     v = open(os.path.join(videos_dir, video), 'rb')
     line = v.readline().decode('utf-8')
@@ -41,21 +50,50 @@ for video in videos:
     a = loadtxt(os.path.join(args.run[0],task,video+'-daala.out'))
     for row in a:
         frames = int(row[1]) / int(width) / int(height)
-        w.writerow([video,
-                    row[0], #qp
-                    int(row[2])*8.0*float(fps_n)/float(fps_d)/frames/1000.0,# bitrate
-                    row[met_index['PSNR Y (libvmaf)']+3],
-                    row[met_index['PSNR Cb (libvmaf)']+3],
-                    row[met_index['PSNR Cr (libvmaf)']+3],
-                    row[met_index['SSIM (libvmaf)']+3],
-                    row[met_index['MS-SSIM (libvmaf)']+3],
-                    row[met_index['VMAF']+3],
-                    row[met_index['VMAF-NEG']+3],
-                    row[met_index['PSNR-HVS Y (libvmaf)']+3],
-                    row[met_index['CIEDE2000 (libvmaf)']+3],
-                    row[met_index['APSNR Y (libvmaf)']+3],
-                    row[met_index['APSNR Cb (libvmaf)']+3],
-                    row[met_index['APSNR Cr (libvmaf)']+3],
-                    row[met_index['Encoding Time']+3],
-                    row[met_index['Decoding Time']+3],
-                    ])
+        if info_data['codec'] == 'av2-as':
+            w.writerow(['AS', # TestCfg
+                        'aom', # EncodeMethod
+                        info_data['run_id'], # CodecName
+                        '', # EncodePreset
+                        info_data['task'], # Class
+                        video, #name
+                        '3840x2160', # OrigRes
+                        '', # FPS
+                        10, # BitDepth
+                        str(width)+'x'+str(height), # CodedRes
+                        row[0], #qp
+                        int(row[2])*8.0*float(fps_n)/float(fps_d)/frames/1000.0,# bitrate
+                        row[met_index['PSNR Y (libvmaf)']+3],
+                        row[met_index['PSNR Cb (libvmaf)']+3],
+                        row[met_index['PSNR Cr (libvmaf)']+3],
+                        row[met_index['SSIM (libvmaf)']+3],
+                        row[met_index['MS-SSIM (libvmaf)']+3],
+                        row[met_index['VMAF']+3],
+                        row[met_index['VMAF-NEG']+3],
+                        row[met_index['PSNR-HVS Y (libvmaf)']+3],
+                        row[met_index['CIEDE2000 (libvmaf)']+3],
+                        row[met_index['APSNR Y (libvmaf)']+3],
+                        row[met_index['APSNR Cb (libvmaf)']+3],
+                        row[met_index['APSNR Cr (libvmaf)']+3],
+                        row[met_index['Encoding Time']+3],
+                        row[met_index['Decoding Time']+3],
+                        ])
+        else:
+            w.writerow([video,
+                        row[0], #qp
+                        int(row[2])*8.0*float(fps_n)/float(fps_d)/frames/1000.0,# bitrate
+                        row[met_index['PSNR Y (libvmaf)']+3],
+                        row[met_index['PSNR Cb (libvmaf)']+3],
+                        row[met_index['PSNR Cr (libvmaf)']+3],
+                        row[met_index['SSIM (libvmaf)']+3],
+                        row[met_index['MS-SSIM (libvmaf)']+3],
+                        row[met_index['VMAF']+3],
+                        row[met_index['VMAF-NEG']+3],
+                        row[met_index['PSNR-HVS Y (libvmaf)']+3],
+                        row[met_index['CIEDE2000 (libvmaf)']+3],
+                        row[met_index['APSNR Y (libvmaf)']+3],
+                        row[met_index['APSNR Cb (libvmaf)']+3],
+                        row[met_index['APSNR Cr (libvmaf)']+3],
+                        row[met_index['Encoding Time']+3],
+                        row[met_index['Decoding Time']+3],
+                        ])
