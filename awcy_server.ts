@@ -467,6 +467,34 @@ app.get('/csv_export.csv',function(req,res) {
               });
 });
 
+app.get('/dump_convex_hull.json',function(req,res) {
+  if (!req.query['a']) {
+    res.send('No run specified');
+    return;
+  }
+  if (!req.query['task']) {
+    res.send('No task specified');
+    return;
+  }
+  if (!req.query['video']) {
+    res.send('No video specified');
+    return;
+  }
+  const a = path.basename(String(req.query['a']));
+  const video = path.basename(String(req.query['video']), '.y4m');
+  const a_file = runs_dst_dir+'/'+a+'/'+req.query['task']+'/RDResults_'+video+'_aom_av1_0.xlsx';
+  res.header("Content-Type", "application/json");
+  cp.execFile('./dump_convex_hull.py',[a_file],
+              {},
+              function(error,stdout,stderr) {
+                if (error) {
+                  res.send(stderr);
+                } else {
+                  res.send(stdout);
+                }
+              });
+});
+
 app.post('/submit/delete',function(req,res) {
   const run = path.basename(req.body.run_id);
   cp.execFile('nuke_branch.sh',[run],
