@@ -34,15 +34,30 @@ export class JobSelectorComponent extends React.Component<JobSelectorProps, {
     }
   }
   resetJobs(jobs: Job []) {
-    let videos = Object.keys(jobs[0].report).map(name => {
-      return { value: name, label: name };
-    }).filter(video => {
-      if (jobs[0].codec == 'av2-as') {
-        return video.value.includes("3840x2160");
-      } else {
-        return true;
-      }
-    });
+    let videos = [];
+    if (jobs[0].codec == 'av2-as') {
+      videos = Object.keys(jobs[0].report).reduce((acc, name) => {
+        return acc.concat([ { value: name, label: name },
+          { value: name + ' - Convex Hull', label: name + ' - Convex Hull' }
+        ]);
+      }, []).filter(video => {
+        if (jobs[0].codec == 'av2-as') {
+            return video.value.includes("3840x2160");
+        } else {
+          return true;
+        }
+      });
+    } else {
+      videos = Object.keys(jobs[0].report).map(name => {
+        return { value: name, label: name };
+      }).filter(video => {
+        if (jobs[0].codec == 'av2-as') {
+          return video.value.includes("3840x2160");
+        } else {
+          return true;
+        }
+      });
+    }
     videos.unshift({ value: "All", label: "All" });
     this.setState({videos} as any);
   }

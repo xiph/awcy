@@ -62,6 +62,34 @@ export class FullReportComponent extends React.Component<{}, {
     let reportFieldIndex = metricNameToReportFieldIndex(metric);
     let fit = this.state.fit;
     let log = this.state.log;
+    function addConvexHullSeries(job, name, seriesName, color) {
+      let values = [];
+      if (!(name in job.convex_hulls)) {
+        return;
+      }
+      if (!(metric in job.convex_hulls[name])) {
+        return;
+      }
+      job.convex_hulls[name][metric]['Bitrate'].forEach((bitrate, index) => {
+        let quality = job.convex_hulls[name][metric]['Metric'][index];
+        values.push([bitrate, quality]);
+      });
+      sortArray(values, 0);
+      series.push({
+        name: seriesName,
+        values: values,
+        color: color(job, name),
+        xAxis: {
+          min: fit ? undefined : 0.001,
+          max: fit ? undefined : 1,
+          log: log
+        },
+        yAxis: {
+          min: fit ? undefined : 0,
+          max: fit ? undefined : 50
+        }
+      });
+    }
     function addSeries(job, name, seriesName, color) {
       let values = [];
       if (job.codec == 'av2-as') {
@@ -99,10 +127,14 @@ export class FullReportComponent extends React.Component<{}, {
           addSeries(job, name, job.selectedName + " " + name, (job, name) => getRandomColorForString(name));
         }
       } else if (job.codec == 'av2-as') {
-        let video_prefix = name.split('_')[0];
-        for (let name in job.report) {
-          if (name.includes(video_prefix)) {
-            addSeries(job, name, job.selectedName + " " + name, (job, name) => getRandomColorForString(name));
+        if (name.includes('Convex Hull')) {
+          addConvexHullSeries(job, name.replace(" - Convex Hull",""), job.selectedName + " convex hull", (job, name) => job.color);
+        } else {
+          let video_prefix = name.split('_')[0];
+          for (let name in job.report) {
+            if (name.includes(video_prefix)) {
+              addSeries(job, name, job.selectedName + " " + name, (job, name) => getRandomColorForString(name));
+            }
           }
         }
       } else if (name in job.report) {
