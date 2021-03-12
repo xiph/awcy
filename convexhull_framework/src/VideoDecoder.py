@@ -11,7 +11,7 @@
 __author__ = "maggie.sun@intel.com, ryan.lei@intel.com"
 
 import Utils
-from Config import AOMDEC, EnableTimingInfo, Platform
+from Config import AOMDEC, EnableTimingInfo, Platform, UsePerfUtil
 from Utils import ExecuteCmd
 
 def DecodeWithAOM(test_cfg, infile, outfile, dec_perf, decode_to_yuv, LogCmdOnly=False):
@@ -26,7 +26,11 @@ def DecodeWithAOM(test_cfg, infile, outfile, dec_perf, decode_to_yuv, LogCmdOnly
         elif Platform == "Darwin":
             cmd = "gtime --verbose --output=%s "%dec_perf + cmd
         else:
-            cmd = "/usr/bin/time --verbose --output=%s "%dec_perf + cmd
+            if UsePerfUtil:
+                cmd = "3>%s perf stat --log-fd 3 "%dec_perf +cmd
+            else:
+                cmd = "/usr/bin/time --verbose --output=%s "%dec_perf + cmd
+
     ExecuteCmd(cmd, LogCmdOnly)
 
 def VideoDecode(test_cfg, codec, infile, outfile, dec_perf, decode_to_yuv, LogCmdOnly=False):

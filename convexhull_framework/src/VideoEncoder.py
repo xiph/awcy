@@ -11,7 +11,7 @@
 __author__ = "maggie.sun@intel.com, ryan.lei@intel.com"
 
 import Utils
-from Config import AOMENC, SVTAV1, EnableTimingInfo, Platform
+from Config import AOMENC, SVTAV1, EnableTimingInfo, Platform, UsePerfUtil
 from Utils import ExecuteCmd
 
 def get_qindex_from_QP(QP):
@@ -63,7 +63,10 @@ def EncodeWithAOM_AV1(clip, test_cfg, QP, framenum, outfile, preset, enc_perf,
         elif Platform == "Darwin":
             cmd = "gtime --verbose --output=%s "%enc_perf + cmd
         else:
-            cmd = "/usr/bin/time --verbose --output=%s "%enc_perf + cmd
+            if UsePerfUtil:
+                cmd = "3>%s perf stat --log-fd 3 " % enc_perf + cmd
+            else:
+                cmd = "/usr/bin/time --verbose --output=%s "%enc_perf + cmd
     ExecuteCmd(cmd, LogCmdOnly)
 
 def EncodeWithSVT_AV1(clip, test_cfg, QP, framenum, outfile, preset, enc_perf,
@@ -80,7 +83,10 @@ def EncodeWithSVT_AV1(clip, test_cfg, QP, framenum, outfile, preset, enc_perf,
         elif Platform == "Darwin":
             cmd = "gtime --verbose --output=%s "%enc_perf + cmd
         else:
-            cmd = "/usr/bin/time --verbose --output=%s "%enc_perf + cmd
+            if UsePerfUtil:
+                cmd = "3>%s perf stat --log-fd 3 " % enc_perf + cmd
+            else:
+                cmd = "/usr/bin/time --verbose --output=%s "%enc_perf + cmd
     ExecuteCmd(cmd, LogCmdOnly)
 
 def VideoEncode(EncodeMethod, CodecName, clip, test_cfg, QP, framenum, outfile,
