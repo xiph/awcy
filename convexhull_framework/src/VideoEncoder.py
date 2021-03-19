@@ -11,7 +11,7 @@
 __author__ = "maggie.sun@intel.com, ryan.lei@intel.com"
 
 import Utils
-from Config import AOMENC, SVTAV1, EnableTimingInfo, Platform
+from Config import AOMENC, SVTAV1, EnableTimingInfo, Platform, UsePerfUtil
 from Utils import ExecuteCmd
 
 def get_qindex_from_QP(QP):
@@ -55,6 +55,11 @@ def EncodeWithAOM_AV1(clip, test_cfg, QP, framenum, outfile, preset, enc_perf,
                 " --gf-max-pyr-height=4 --subgop-config-str=ld "
     else:
         print("Unsupported Test Configuration %s" % test_cfg)
+
+    if (clip.file_class == 'G1' or clip.file_class == 'G2'):
+        args += "--color-primaries=bt2020 --transfer-characteristics=smpte2084 "\
+                "--matrix-coefficients=bt2020ncl --chroma-sample-position=colocated "
+
     args += " -o %s %s" % (outfile, clip.file_path)
     cmd = AOMENC + args + "> %s 2>&1"%enc_log
     if (EnableTimingInfo):
@@ -63,16 +68,42 @@ def EncodeWithAOM_AV1(clip, test_cfg, QP, framenum, outfile, preset, enc_perf,
         elif Platform == "Darwin":
             cmd = "gtime --verbose --output=%s "%enc_perf + cmd
         else:
-            cmd = "/usr/bin/time --verbose --output=%s "%enc_perf + cmd
+            if UsePerfUtil:
+                cmd = "3>%s perf stat --log-fd 3 " % enc_perf + cmd
+            else:
+                cmd = "/usr/bin/time --verbose --output=%s "%enc_perf + cmd
     ExecuteCmd(cmd, LogCmdOnly)
 
 def EncodeWithSVT_AV1(clip, test_cfg, QP, framenum, outfile, preset, enc_perf,
                       enc_log, LogCmdOnly=False):
     #TODO: update svt parameters
-    args = " --preset %s --scm 2 --lookahead 0 --hierarchical-levels 3 -n %d" \
-           " --keyint 255 -rc 0 -q %d -w %d -h %d -b %s -i %s"\
-           % (str(preset), framenum, QP, clip.width, clip.height, outfile,
-              clip.file_path)
+    args = " --preset %s --scm 2 --lookahead 0 -n %d " \
+           " --rc 0 -q %d -w %d -h %d --irefresh-type 2 "\
+           " --fps-num %d --fps-denom %d --input-depth %d " \
+           " --aq-mode 0 " \
+           % (str(preset), framenum, QP, clip.width, clip.height,
+              clip.fps_num, clip.fps_denom, clip.bit_depth)
+
+    # For 4K clip, encode with 2 tile columns using two threads.
+    # --tile-columns value is in log2.
+    if (clip.width >= 3840 and clip.height >= 2160):
+        args += " --tile-columns 1 "
+    else:
+        args += " --tile-columns 0 "
+
+    if test_cfg == "AI" or test_cfg == "STILL":
+        args += " --keyint 255 "
+    elif test_cfg == "RA" or test_cfg == "AS":
+        args += " --keyint 64 --hierarchical-levels 4 --pred-struct 2 "
+    elif test_cfg == "LD":
+        args += " --keyint 9999 --hierarchical-levels 4 --pred-struct 1 "
+    else:
+        print("Unsupported Test Configuration %s" % test_cfg)
+
+    if (clip.file_class == 'G1' or clip.file_class == 'G2'):
+        args += "--enable-hdr 1 "
+
+    args += "-i %s -b %s"%(clip.file_path,  outfile)
     cmd = SVTAV1 + args + "> %s 2>&1"%enc_log
     if EnableTimingInfo:
         if Platform == "Windows":
@@ -80,7 +111,10 @@ def EncodeWithSVT_AV1(clip, test_cfg, QP, framenum, outfile, preset, enc_perf,
         elif Platform == "Darwin":
             cmd = "gtime --verbose --output=%s "%enc_perf + cmd
         else:
-            cmd = "/usr/bin/time --verbose --output=%s "%enc_perf + cmd
+            if UsePerfUtil:
+                cmd = "3>%s perf stat --log-fd 3 " % enc_perf + cmd
+            else:
+                cmd = "/usr/bin/time --verbose --output=%s "%enc_perf + cmd
     ExecuteCmd(cmd, LogCmdOnly)
 
 def VideoEncode(EncodeMethod, CodecName, clip, test_cfg, QP, framenum, outfile,

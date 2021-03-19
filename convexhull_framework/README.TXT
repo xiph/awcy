@@ -13,7 +13,7 @@ Prerequisites
    such as vmaf(version v2.1.1+), HDRConvert, encoder, decoder, etc. You can get
    the pre-build binaries or source code for the following tools that are needed:
    vmaf tools: https://github.com/Netflix/vmaf/releases/tag/v2.1.1
-   HDRConvert: https://gitlab.com/standards/HDRTools 0.20-dev branch
+   HDRConvert: https://gitlab.com/standards/HDRTools 0.22-dev branch
    libaom research branch encoder/decoder: https://aomedia.googlesource.com/aom/
    SVT AV1 encoder: https://github.com/OpenVisualCloud/SVT-AV1
    Please always follow the manual of these tools to update the command

@@ -16,11 +16,12 @@ import sys
 import argparse
 from CalculateQualityMetrics import CalculateQualityMetric, GatherQualityMetrics
 from Utils import GetShortContentName, CreateNewSubfolder, SetupLogging, \
-     Cleanfolder, CreateClipList, GetEncLogFile, GatherPerfInfo, GetEncPerfFile, \
-     GetDecPerfFile, GetRDResultCsvFile, GatherPerframeStat
+     Cleanfolder, CreateClipList, GetEncLogFile, GatherPerfInfo, \
+     GetRDResultCsvFile, GatherPerframeStat, GatherInstrCycleInfo
 import Utils
 from Config import LogLevels, FrameNum, TEST_CONFIGURATIONS, QPs, WorkPath, \
-     Path_RDResults, LoggerName, QualityList, Platform, MIN_GOP_LENGTH
+     Path_RDResults, LoggerName, QualityList, MIN_GOP_LENGTH, UsePerfUtil, \
+     EnableTimingInfo
 from EncDecUpscale import Encode, Decode
 
 ###############################################################################
@@ -59,7 +60,7 @@ def CleanUp_workfolders():
     for folder in folders:
         Cleanfolder(folder)
 
-def Run_Encode_Test(test_cfg, clip, preset, LogCmdOnly = False):
+def Run_Encode_Test(test_cfg, clip, method, preset, LogCmdOnly = False):
     Utils.Logger.info("start running %s encode tests with %s"
                       % (test_cfg, clip.file_name))
     for QP in QPs[test_cfg]:
@@ -67,12 +68,12 @@ def Run_Encode_Test(test_cfg, clip, preset, LogCmdOnly = False):
         #encode
         if LogCmdOnly:
             Utils.CmdLogger.write("============== Job Start =================\n")
-        bsFile = Encode('aom', 'av1', preset, clip, test_cfg, QP,
+        bsFile = Encode(method, 'av1', preset, clip, test_cfg, QP,
                         FrameNum[test_cfg], Path_Bitstreams, Path_TimingLog,
                         Path_EncLog, LogCmdOnly)
         Utils.Logger.info("start decode file %s" % os.path.basename(bsFile))
         #decode
-        decodedYUV = Decode(test_cfg, 'av1', bsFile, Path_DecodedYuv, Path_TimingLog,
+        decodedYUV = Decode(method, test_cfg, 'av1', bsFile, Path_DecodedYuv, Path_TimingLog,
                             False, LogCmdOnly)
         #calcualte quality distortion
         Utils.Logger.info("start quality metric calculation")
@@ -109,20 +110,25 @@ def GenerateSummaryRDDataFile(EncodeMethod, CodecName, EncodePreset,
 
     csv_file, perframe_csvfile = GetRDResultCsvFile(EncodeMethod, CodecName, EncodePreset, test_cfg)
     csv = open(csv_file, 'wt')
-    csv.write("TestCfg,EncodeMethod,CodecName,EncodePreset,Class,Res,Name,FPS,"\
-              "Bit Depth,QP,")
+    # "TestCfg,EncodeMethod,CodecName,EncodePreset,Class,OrigRes,Name,FPS,Bit Depth,CodedRes,QP,Bitrate(kbps)")
+    csv.write("TestCfg,EncodeMethod,CodecName,EncodePreset,Class,OrigRes,Name,FPS,"\
+              "Bit Depth,CodecRes,QP,")
     if (test_cfg == "STILL"):
         csv.write("FileSize(bytes)")
     else:
         csv.write("Bitrate(kbps)")
     for qty in QualityList:
         csv.write(',' + qty)
-    csv.write(",EncT[s],DecT[s],EncT[h]")
+    if UsePerfUtil:
+        csv.write(",EncInstr,EncCycles,DecInstr,DecCycles")
+    else:
+        csv.write(",EncT[s],DecT[s]")
     csv.write('\n')
 
     perframe_csv = open(perframe_csvfile, 'wt')
+
     perframe_csv.write("TestCfg,EncodeMethod,CodecName,EncodePreset,Class,Res,Name,FPS," \
-                       "Bit Depth,QP,POC,FrameType,qindex,FrameSize")
+                       "Bit Depth,QP,POC,FrameType,Level,qindex,FrameSize")
     for qty in QualityList:
         if (qty != "Overall_PSNR" and qty != "Overall_APSNR" and not qty.startswith("APSNR")):
             perframe_csv.write(',' + qty)
@@ -136,10 +142,10 @@ def GenerateSummaryRDDataFile(EncodeMethod, CodecName, EncodePreset,
             bitrate = (filesize * 8 * (clip.fps_num / clip.fps_denom)
                        / FrameNum[test_cfg]) / 1000.0
             quality, perframe_vmaf_log = GatherQualityMetrics(dec, Path_QualityLog)
-            csv.write("%s,%s,%s,%s,%s,%s,%s,%.2f,%d,%d,"
+            csv.write("%s,%s,%s,%s,%s,%s,%s,%.2f,%d,%s,%d,"
                       %(test_cfg,EncodeMethod,CodecName,EncodePreset,clip.file_class,
                         str(clip.width)+'x'+str(clip.height), clip.file_name,
-                        clip.fps,clip.bit_depth,qp))
+                        clip.fps,clip.bit_depth,str(clip.width)+'x'+str(clip.height),qp))
             if (test_cfg == "STILL"):
                 csv.write("%d"%filesize)
             else:
@@ -147,9 +153,15 @@ def GenerateSummaryRDDataFile(EncodeMethod, CodecName, EncodePreset,
 
             for qty in quality:
                 csv.write(",%.4f"%qty)
-            enc_time, dec_time = GatherPerfInfo(bs, Path_TimingLog)
-            enc_hour = (enc_time / 3600.0)
-            csv.write(",%.2f,%.2f,%.2f,\n"%(enc_time,dec_time,enc_hour))
+            if UsePerfUtil:
+                enc_instr, enc_cycles, dec_instr, dec_cycles = GatherInstrCycleInfo(bs, Path_TimingLog)
+                csv.write(",%s,%s,%s,%s,\n" % (enc_instr, enc_cycles, dec_instr, dec_cycles))
+            elif EnableTimingInfo:
+                enc_time, dec_time = GatherPerfInfo(bs, Path_TimingLog)
+                csv.write(",%.2f,%.2f,\n"%(enc_time,dec_time))
+            else:
+                csv.write(",,,\n")
+
             if (EncodeMethod == 'aom'):
                 enc_log = GetEncLogFile(bs, log_path)
                 GatherPerframeStat(test_cfg,EncodeMethod,CodecName,EncodePreset,clip,clip.file_name, clip.width,
@@ -182,24 +194,27 @@ def ParseArguments(raw_args):
                              " 3: Warning, 4: Info, 5: Debug")
     parser.add_argument('-p', "--EncodePreset", dest='EncodePreset', type=str,
                         metavar='', help="EncodePreset: 0,1,2... for aom")
+    parser.add_argument('-m', "--EncodeMethod", dest='EncodeMethod', type=str,
+                        metavar='', help="EncodeMethod: aom, svt for av1")
     if len(raw_args) == 1:
         parser.print_help()
         sys.exit(1)
     args = parser.parse_args(raw_args[1:])
 
-    global Function, SaveMemory, LogLevel, EncodePreset, LogCmdOnly
+    global Function, SaveMemory, LogLevel, EncodePreset, EncodeMethod, LogCmdOnly
     Function = args.Function
     SaveMemory = args.SaveMemory
     LogLevel = args.LogLevel
     EncodePreset = args.EncodePreset
+    EncodeMethod = args.EncodeMethod
     LogCmdOnly = args.LogCmdOnly
 
 ######################################
 # main
 ######################################
 if __name__ == "__main__":
-    #sys.argv = ["", "-f", "encode", "-p","1"]
-    #sys.argv = ["", "-f", "summary", "-p","1"]
+    #sys.argv = ["", "-f", "encode", "-m", "aom", "-p", "6"]
+    #sys.argv = ["", "-f", "summary", "-m", "aom", "-p", "6"]
     ParseArguments(sys.argv)
 
     # preparation for executing functions
@@ -214,11 +229,11 @@ if __name__ == "__main__":
         for test_cfg in TEST_CONFIGURATIONS:
             clip_list = CreateClipList(test_cfg)
             for clip in clip_list:
-                Run_Encode_Test(test_cfg, clip, EncodePreset, LogCmdOnly)
+                Run_Encode_Test(test_cfg, clip, EncodeMethod, EncodePreset, LogCmdOnly)
     elif Function == 'summary':
         for test_cfg in TEST_CONFIGURATIONS:
             clip_list = CreateClipList(test_cfg)
-            GenerateSummaryRDDataFile('aom', 'av1', EncodePreset,
+            GenerateSummaryRDDataFile(EncodeMethod, 'av1', EncodePreset,
                                       test_cfg, clip_list, Path_EncLog)
         Utils.Logger.info("RD data summary file generated")
     else:

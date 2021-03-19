@@ -52,11 +52,11 @@ def Encode(method, codec, preset, clip, test_cfg, qp, num, bs_path, perf_path,
                 enc_log, LogCmdOnly)
     return bsfile
 
-def Decode(test_cfg, codec, bsfile, path, perf_path, decode_to_yuv, LogCmdOnly=False):
+def Decode(method, test_cfg, codec, bsfile, path, perf_path, decode_to_yuv, LogCmdOnly=False):
     decodedfile = GetDecodedFile(bsfile, path, decode_to_yuv)
     dec_perf = GetDecPerfFile(bsfile, perf_path)
     #call VideoDecoder to do the decoding
-    VideoDecode(test_cfg, codec, bsfile, decodedfile, dec_perf, decode_to_yuv, LogCmdOnly)
+    VideoDecode(method, test_cfg, codec, bsfile, decodedfile, dec_perf, decode_to_yuv, LogCmdOnly)
     return decodedfile
 
 def Run_EncDec_Upscale(method, codec, preset, clip, test_cfg, QP, num, outw,
@@ -67,16 +67,14 @@ def Run_EncDec_Upscale(method, codec, preset, clip, test_cfg, QP, num, outw,
     bsFile = Encode(method, codec, preset, clip, test_cfg, QP, num, path_bs,
                     path_perf, path_enc_log, LogCmdOnly)
     logger.info("start decode file %s" % os.path.basename(bsFile))
-    decode_to_yuv = (clip.width != outw or clip.height != outh)
-    decodedYUV = Decode(test_cfg, codec, bsFile, path_decoded, path_perf, decode_to_yuv,
+    decodedYUV = Decode(method, test_cfg, codec, bsFile, path_decoded, path_perf, False,
                         LogCmdOnly)
-    suffix = ".yuv" if decode_to_yuv else ".y4m"
     logger.info("start upscale file %s" % os.path.basename(decodedYUV))
-    #hard code frame rate to 30fps to match with decoder output for now.
+    #hard code frame rate to 0 before upscaling.
     #TODO: change to real frame rate after decoder fix the issue
-    dec_clip = Clip(GetShortContentName(decodedYUV, False) + suffix,
+    dec_clip = Clip(GetShortContentName(decodedYUV, False) + ".y4m",
                     decodedYUV, clip.file_class, clip.width, clip.height,
-                    clip.fmt, clip.fps_num, clip.fps_denom, clip.bit_depth)
+                    clip.fmt, 0, 0, clip.bit_depth)
     upscaledYUV = UpScaling(dec_clip, num, outw, outh, path_upscaled, path_cfg,
                             upscale_algo, LogCmdOnly)
     logger.info("finish Run Encode, Decode and Upscale")
@@ -84,19 +82,17 @@ def Run_EncDec_Upscale(method, codec, preset, clip, test_cfg, QP, num, outw,
 
 
 def GetBsReconFileName(encmethod, codecname, test_cfg, preset, clip, dw, dh,
-                       dnScAlgo, upScAlgo, qp, path_bs):
-    dsyuv_name = GetDownScaledOutFile(clip, dw, dh, path_bs, dnScAlgo)
+                       dnScAlgo, upScAlgo, qp, path_bs, ds_on_the_fly=True, ratio_idx=0):
+    dsyuv_name = GetDownScaledOutFile(clip, dw, dh, path_bs, dnScAlgo, ds_on_the_fly, ratio_idx)
     # return bitstream file with absolute path
     bs = GetBitstreamFile(encmethod, codecname, test_cfg, preset, dsyuv_name,
                           qp, path_bs)
-    decode_to_yuv = (clip.width != dw or clip.height != dh)
-    decoded = GetDecodedFile(bs, path_bs, decode_to_yuv)
-    suffix = ".yuv" if decode_to_yuv else ".y4m"
-    ds_clip = Clip(GetShortContentName(decoded, False) + suffix,
+    decoded = GetDecodedFile(bs, path_bs, False)
+    ds_clip = Clip(GetShortContentName(decoded, False) + ".y4m",
                    decoded, clip.file_class, dw, dh, clip.fmt, clip.fps_num,
                    clip.fps_denom, clip.bit_depth)
     reconfilename = GetUpScaledOutFile(ds_clip, clip.width, clip.height,
                                        upScAlgo, path_bs)
     # return only Recon yuv file name w/o path
-    reconfilename = GetShortContentName(reconfilename, False) + suffix
+    reconfilename = GetShortContentName(reconfilename, False) + ".y4m"
     return bs, reconfilename
