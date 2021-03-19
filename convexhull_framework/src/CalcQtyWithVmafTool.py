@@ -14,7 +14,7 @@ import os
 import re
 import logging
 import math
-from Config import BinPath, LoggerName, VMAF, PSNRY_WEIGHT, PSNRU_WEIGHT, PSNRV_WEIGHT
+from Config import BinPath, LoggerName, VMAF
 from Utils import GetShortContentName, ExecuteCmd
 
 subloggername = "CalcQtyMetrics_VMAFTool"
@@ -23,8 +23,7 @@ logger = logging.getLogger(loggername)
 
 Model_Pkg_File = os.path.join(BinPath, 'vmaf_v0.6.1.pkl')
 VMAFMetricsFullList = ['VMAF_Y','VMAF_Y-NEG','PSNR_Y','PSNR_U','PSNR_V','SSIM_Y(dB)',
-                       'MS-SSIM_Y(dB)','PSNR-HVS','CIEDE2000','APSNR_Y','APSNR_U','APSNR_V',
-                       'Overall_PSNR', 'Overall_APSNR']
+                       'MS-SSIM_Y(dB)','PSNR-HVS','CIEDE2000','APSNR_Y','APSNR_U','APSNR_V']
 
 def ParseVMAFLogFile(vmaf_log):
     floats = len(VMAFMetricsFullList) * [0.0]
@@ -99,17 +98,6 @@ def ParseVMAFLogFile(vmaf_log):
             floats[11] = m.group(3)
     flog.close()
     floats = [float(i) for i in floats]
-    floats[12] = (PSNRY_WEIGHT * floats[2] + PSNRU_WEIGHT * floats[3] + PSNRV_WEIGHT * floats[4]) / \
-                 (PSNRY_WEIGHT + PSNRU_WEIGHT + PSNRV_WEIGHT)
-    floats[12] = round(floats[12],6)
-    #Overall_APSNR =10 * LOG10(1.0 / ((PSNRY_WEIGHT / 10.0 ^ (APSNRY / 10.0) +
-    #                                  PSNRY_WEIGHT / 10.0 ^ (APSNRU / 10.0) +
-    #                                  PSNRV_WEIGHT / 10.0 ^ (APSNRV / 10.0)) / (PSNRY_WEIGHT + PSNRU_WEIGHT + PSNRV_WEIGHT)))
-    floats[13] = 10.0 * math.log10 ( 1.0 / ((PSNRY_WEIGHT / pow(10.0, floats[9]  / 10.0) +
-                                             PSNRU_WEIGHT / pow(10.0, floats[10] / 10.0) +
-                                             PSNRV_WEIGHT / pow(10.0, floats[11] / 10.0)) /
-                                            (PSNRY_WEIGHT + PSNRU_WEIGHT + PSNRV_WEIGHT)))
-    floats[13] = round(floats[13], 6)
     print_str = "VMAF quality metrics: "
     for metrics, idx in zip(VMAFMetricsFullList, range(len(VMAFMetricsFullList))):
         print_str += "%s = %2.5f, " % (metrics, floats[idx])
@@ -119,7 +107,7 @@ def ParseVMAFLogFile(vmaf_log):
 
 
 def GetVMAFLogFile(recfile, path):
-    filename = recfile + '-libvmaf.xml'
+    filename = GetShortContentName(recfile, False) + '_vmaf.log'
     file = os.path.join(path, filename)
     return file
 

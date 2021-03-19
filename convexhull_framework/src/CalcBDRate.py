@@ -13,36 +13,14 @@ __author__ = "maggie.sun@intel.com, ryan.lei@intel.com"
 import numpy as np
 import math
 import scipy.interpolate
-import matplotlib.pyplot as plt
 import logging
 from Config import LoggerName
 from operator import itemgetter
+from Utils import plot_rd_curve
 
 subloggername = "CalcBDRate"
 loggername = LoggerName + '.' + '%s' % subloggername
 logger = logging.getLogger(loggername)
-
-def plot_rd_curve(br, qty, qty_str, line_color=None, line_style=None, marker_format=None):
-    # generate samples between max and min of quality metrics
-    '''
-    brqtypairs = []
-    for i in range(min(len(qty), len(br))):
-        brqtypairs.append((br[i], qty[i]))
-    brqtypairs.sort(key = itemgetter(0, 1))
-    new_br = [brqtypairs[i][0] for i in range(len(brqtypairs))]
-    new_qty = [brqtypairs[i][1] for i in range(len(brqtypairs))]
-    min_br = min(new_br)
-    max_br = max(new_br)
-    lin = np.linspace(min_br, max_br, num=100, retstep=True)
-    samples = lin[0]
-    v = scipy.interpolate.pchip_interpolate(new_br, new_qty, samples)
-    plt.plot(samples, v, linestyle=line_style, color=line_color)
-    plt.scatter(new_br, new_qty, color=line_color, marker=marker_format)
-    '''
-    plt.plot(br, qty, linestyle=line_style, color=line_color)
-    plt.scatter(br, qty, color=line_color, marker=marker_format)
-    plt.xlabel('bdrate(Kbps)')
-    plt.ylabel(qty_str)
 
 def non_decreasing(L):
     return all(x<=y for x, y in zip(L, L[1:]))
