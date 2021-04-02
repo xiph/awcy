@@ -442,7 +442,11 @@ export class Job {
     return baseUrl + `runs/${this.id}/${this.task}/`;
   }
   ivfUrlName(name: string, quality: number) {
-    return `${name}-${quality}.ivf`;
+    if (this.codec.substring(0,3) == 'av2') {
+      return `${name}-${quality}.obu`;
+    } else {
+      return `${name}-${quality}.ivf`;
+    }
   }
   ivfUrl(name: string, quality: number) {
     return this.ivfUrlPrefix() + this.ivfUrlName(name, quality);
