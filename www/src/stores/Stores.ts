@@ -464,6 +464,14 @@ export class Job {
     return this.ivfUrlPrefix() + `${name}-${quality}-libvmaf.xml`;
   }
 
+  stdoutUrl(name: string, quality: number) {
+    return this.ivfUrlPrefix() + `${name}-${quality}-stdout.txt`;
+  }
+
+  stderrUrl(name: string, quality: number) {
+    return this.ivfUrlPrefix() + `${name}-${quality}-stderr.txt`;
+  }
+
   loadReport(): Promise<{ [name: string]: any }> {
     if (this.report) {
       return Promise.resolve(this.report);

@@ -83,6 +83,8 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
 
     let hasIvfs = this.props.name !== "Total";
     if (hasIvfs) {
+      headers.unshift(<th className="tableToolHeader" key={"link-stdout"}></th>); // stdout
+      headers.unshift(<th className="tableToolHeader" key={"link-stderr"}></th>); // stderr
       headers.unshift(<th className="tableToolHeader" key={"link-0"}></th>);
       headers.unshift(<th className="tableToolHeader" key={"link-1"}></th>);
       headers.unshift(<th className="tableToolHeader" key={"link-2"}>XML</th>);
@@ -109,6 +111,10 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
       });
       let quality = row[0];
       if (hasIvfs) {
+        let stdoutUrl = this.props.job.stdoutUrl(this.props.name, quality);
+        cols.unshift(<td key="link-stdout" className="tableValueCentered"><a href={stdoutUrl}>stdout</a></td>);
+        let stderrUrl = this.props.job.stderrUrl(this.props.name, quality);
+        cols.unshift(<td key="link-stderr" className="tableValueCentered"><a href={stderrUrl}>stderr</a></td>);
         let ivfUrl = this.props.job.ivfUrl(this.props.name, quality);
         cols.unshift(<td key="link-0" className="tableValue"><a href={ivfUrl} alt="Download"><Glyphicon glyph="download-alt" /></a></td>);
         let analyzerUrl = this.props.job.analyzerIvfUrl(this.props.name, quality);
