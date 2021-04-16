@@ -27,7 +27,7 @@ task = info_data['task']
 sets = json.load(open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.json")))
 videos = sets[task]["sources"]
 # sort name ascending, resolution descending
-if task == 'av2-b1-syn' or task == 'av2-f1-hires' or task == 'av2-f2-midres':
+if task != 'av2-a1-4k-as':
     videos.sort()
 else:
     videos.sort(key=lambda x: x.split('_')[0] + '%08d' % (100000 - int(x.split('_')[1].split('x')[0])))
