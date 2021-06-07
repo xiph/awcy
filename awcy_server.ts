@@ -43,7 +43,7 @@ AWS.config.update({region: 'us-west-2'});
 
 var ircclient = null;
 if (channel != "none") {
-  ircclient = new irc.Client('irc.freenode.net', 'XiphAWCY', {
+  ircclient = new irc.Client('irc.libera.chat', 'XiphAWCY', {
       channels: [channel],
   });
   ircclient.addListener('error', function(message) {
