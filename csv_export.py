@@ -28,7 +28,7 @@ sets = json.load(open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.jso
 videos = sets[task]["sources"]
 # sort name ascending, resolution descending
 if task != 'av2-a1-4k-as':
-    videos.sort()
+    videos.sort(key=lambda s: s.lower())
 else:
     videos.sort(key=lambda x: x.split('_')[0] + '%08d' % (100000 - int(x.split('_')[1].split('x')[0])))
 videos_dir = os.path.join(os.getenv("MEDIA_DIR", "/mnt/runs/sets"), task) # for getting framerate
