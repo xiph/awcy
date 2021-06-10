@@ -63,7 +63,7 @@ if [ ! -f "${CONFIG_DIR}/sets.json" ]; then
 	set_name=awcy-builder-quicktest
 	rm -rf ${MEDIAS_SRC_DIR}/${set_name}
 	mkdir -p ${MEDIAS_SRC_DIR}/${set_name}
-	wget --output-document ${MEDIAS_SRC_DIR}/${set_name}/test_frame.y4m https://people.xiph.org/~tdaede/sets/subset1-monochrome/Claudette_14_july_2003_1920Z.y4m
+	wget --output-document ${MEDIAS_SRC_DIR}/${set_name}/test_frame.y4m https://media.xiph.org/video/av2ctc/test_set/f2_still_MidRes/part1/Claudette.y4m
 	jq '. + {"'${set_name}'": {"type": "image", "sources": ["test_frame.y4m"]}}' ${RD_TOOL_DIR}/sets.dist.json >${CONFIG_DIR}/sets.json
 	chown -R ${APP_USER}:${APP_USER} ${MEDIAS_SRC_DIR}/${set_name}
 fi
