@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 
+import datetime
+
+import dateutil
 import matplotlib.pyplot as plt
 import requests
-import datetime
-import dateutil
 
-list = requests.get('https://arewecompressedyet.com/list.json').json()
+list = requests.get("https://arewecompressedyet.com/list.json").json()
 
 histogram = {}
 
 for run in list:
-    date = dateutil.parser.parse(run['date'])
-    yearmonth = date.strftime('%Y-%m')
+    date = dateutil.parser.parse(run["date"])
+    yearmonth = date.strftime("%Y-%m")
     if yearmonth in histogram:
         histogram[yearmonth] += 1
     else:
@@ -28,5 +29,5 @@ for yearmonth in sorted(histogram.keys()):
     counts.append(histogram[yearmonth])
     n += 1
 
-plt.bar(xpos, counts, tick_label=monthnames, align='center')
+plt.bar(xpos, counts, tick_label=monthnames, align="center")
 plt.show()
