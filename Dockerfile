@@ -8,7 +8,7 @@ ENV \
 	LANG=C.UTF-8 \
 	LANGUAGE=C.UTF-8 \
 	DEBIAN_FRONTEND=noninteractive \
-	GPG_SERVERS="ha.pool.sks-keyservers.net hkp://p80.pool.sks-keyservers.net:80 keyserver.ubuntu.com hkp://keyserver.ubuntu.com:80"
+	GPG_SERVERS="hkp://keys.openpgp.org:80 hkp://p80.pool.sks-keyservers.net:80 hkp://keyserver.ubuntu.com:80"
 
 # add runtime user
 RUN \
