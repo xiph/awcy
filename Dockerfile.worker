@@ -16,9 +16,18 @@ RUN \
 
 # install common/useful packages
 RUN \
-	echo "deb http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse"           >/etc/apt/sources.list && \
-	echo "deb http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse" >>/etc/apt/sources.list && \
-	echo "deb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse"  >>/etc/apt/sources.list && \
+	ARCH=`uname -m` && \
+	if [ "$ARCH" = "x86_64" ]; then \
+		echo "deb http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse"           >/etc/apt/sources.list && \
+		echo "deb http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse" >>/etc/apt/sources.list && \
+		echo "deb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse"  >>/etc/apt/sources.list; \
+	else \
+		echo "deb http://ports.ubuntu.com/ubuntu-ports/ focal main restricted universe multiverse"           >/etc/apt/sources.list && \
+		echo "deb http://ports.ubuntu.com/ubuntu-ports focal-security main restricted universe multiverse" >>/etc/apt/sources.list && \
+		echo "deb http://ports.ubuntu.com/ubuntu-ports/ focal-updates main restricted universe multiverse"  >>/etc/apt/sources.list; \
+	fi
+
+RUN \
 	apt-get update && \
 	apt-get install -y --no-install-recommends \
 		autoconf \
@@ -61,17 +70,20 @@ RUN \
 
 # install nasm
 RUN \
-	DIR=/tmp/nasm && \
-	NASM_URL=http://debian-archive.trafficmanager.net/debian/pool/main/n/nasm && \
-	NASM_VERSION=2.15.05-1 && \
-	NASM_DEB=nasm_${NASM_VERSION}_amd64.deb && \
-	NASM_SUM=c860caec653b865d5b83359452d97b11f1b3ba5b18b07cac554cf72550b3bfc9 && \
-	mkdir -p ${DIR} && \
-	cd ${DIR} && \
-	curl -O ${NASM_URL}/${NASM_DEB} && \
-	echo ${NASM_SUM} ${NASM_DEB} | sha256sum --check && \
-	dpkg -i ${NASM_DEB} && \
-	rm -rf ${DIR}
+	ARCH=`uname -m` && \
+	if [ "$ARCH" = "x86_64" ]; then \
+		DIR=/tmp/nasm && \
+		NASM_URL=http://debian-archive.trafficmanager.net/debian/pool/main/n/nasm && \
+		NASM_VERSION=2.15.05-1 && \
+		NASM_DEB=nasm_${NASM_VERSION}_amd64.deb && \
+		NASM_SUM=c860caec653b865d5b83359452d97b11f1b3ba5b18b07cac554cf72550b3bfc9 && \
+		mkdir -p ${DIR} && \
+		cd ${DIR} && \
+		curl -O ${NASM_URL}/${NASM_DEB} && \
+		echo ${NASM_SUM} ${NASM_DEB} | sha256sum --check && \
+		dpkg -i ${NASM_DEB} && \
+		rm -rf ${DIR}; \
+	fi
 
 # prepare rust installation
 ENV \
@@ -81,8 +93,13 @@ ENV \
 
 # install rust
 RUN \
+	ARCH=`uname -m` && \
 	RUST_VERSION=1.51.0 && \
-	curl -sSf --output /tmp/rustup-init https://static.rust-lang.org/rustup/archive/1.14.0/x86_64-unknown-linux-gnu/rustup-init && \
+	if [ "$ARCH" = "x86_64" ]; then \
+		curl -sSf --output /tmp/rustup-init  https://static.rust-lang.org/rustup/archive/1.14.0/x86_64-unknown-linux-gnu/rustup-init; \
+	else \
+		curl -sSf --output /tmp/rustup-init  https://static.rust-lang.org/rustup/archive/1.14.0/aarch64-unknown-linux-gnu/rustup-init; \
+	fi && \
 	chmod +x /tmp/rustup-init && \
 	/tmp/rustup-init -y --no-modify-path --default-toolchain ${RUST_VERSION} && \
 	rm -vf /tmp/rustup-init
@@ -115,6 +132,7 @@ ENV \
 	HDRTOOLS_VERSION=0.21
 
 RUN \
+	ARCH=`uname -m` && \
 	mkdir -p ${HDRTOOLS_DIR} && \
 	curl -sSfL --output HDRTools.tar.bz2 https://gitlab.com/standards/HDRTools/-/archive/v${HDRTOOLS_VERSION}/HDRTools-v${HDRTOOLS_VERSION}.tar.bz2 && \
 	tar -xvf HDRTools.tar.bz2 --strip-components=1 -C ${HDRTOOLS_DIR} && \
@@ -122,6 +140,14 @@ RUN \
 	sed -i 's/std::modff/modff/g' common/src/OutputY4M.cpp && \
 	sed -i 's/using ::hdrtoolslib::Y_COMP;//g' projects/HDRConvScaler/src/HDRConvScalerYUV.cpp && \
 	sed -i 's/\[Y_COMP\]/\[hdrtoolslib::Y_COMP\]/g' projects/HDRConvScaler/src/HDRConvScalerYUV.cpp && \
+	if [ "$ARCH" = "aarch64" ]; then \
+		# temporary patches until ARM support is upstream
+		sed -i 's/-msse2//g' common/Makefile projects/*/Makefile; \
+		sed -i 's/-mfpmath=sse//g' common/Makefile projects/*/Makefile; \
+		sed -i 's/#include <x86intrin.h>//g' common/src/ResizeBiCubic.cpp common/src/DistortionMetricVQM.cpp; \
+		sed -i 's/#include <mmintrin.h>//g' common/src/DistortionMetricVQM.cpp; \
+		sed -i 's/#if defined(ENABLE_SSE_OPT)/#if ENABLE_SSE_OPT/g' common/src/ResizeBiCubic.cpp; \
+	fi && \
 	make # -j is broken
 
 # install rd_tool dependencies
