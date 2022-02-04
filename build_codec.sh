@@ -85,19 +85,23 @@ case "${CODEC}" in
     mv x86_64/* ./
     ;;
 
-  av2*)
+  av2* | avm*)
     cd ${CODECS_SRC_DIR}/av2
     echo "-- Starting x86_64 Build --"
     rm -rf cmake-build || true
     mkdir cmake-build
     pushd cmake-build
-    cmake ../ -DENABLE_TESTS=0 -DENABLE_DOCS=0 -DCMAKE_BUILD_TYPE=Release ${BUILD_OPTIONS}
+    if [[ "${ARCH}" == "aarch64" ]]; then
+      ARCH_OPTIONS="-DCMAKE_TOOLCHAIN_FILE=../build/cmake/toolchains/arm64-linux-gcc.cmake"
+    else
+      ARCH_OPTIONS=""
+    fi
+    cmake ../ -DENABLE_TESTS=0 -DENABLE_DOCS=0 -DCMAKE_BUILD_TYPE=Release ${ARCH_OPTIONS} ${BUILD_OPTIONS}
     make -j$(nproc)
     popd
-    mkdir -p x86_64
-    mv cmake-build/aomenc cmake-build/aomdec x86_64/
-    echo "-- Finished x86_64 Build --"
-    mv x86_64/* ./
+    mkdir -p "$ARCH"
+    mv cmake-build/aomenc cmake-build/aomdec ./
+    echo "-- Finished $ARCH Build --"
     ;;
 
 

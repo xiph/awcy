@@ -122,6 +122,7 @@ function process_build_queue() {
     env['EXTRA_OPTIONS'] = build_job.extra_options;
     env['BUILD_OPTIONS'] = build_job.build_options;
     env['RUN_ID'] = build_job.run_id;
+    env['ARCH'] = build_job.arch ? build_job.arch : 'x86_64';
     env['APP_DIR'] = app_dir;
     env['CODECS_SRC_DIR'] = codecs_src_dir;
     env['MEDIAS_SRC_DIR'] = medias_src_dir;
@@ -142,8 +143,9 @@ function process_build_queue() {
       if (error == 0) {
         try {
           for (const binary of binaries[build_job.codec]) {
-            fs.mkdirsSync(runs_dst_dir+'/'+build_job.run_id+'/x86_64/'+path.dirname(binary));
-            fs.copySync(codecs_src_dir+'/'+build_job.codec+'/'+binary,runs_dst_dir+'/'+build_job.run_id+'/x86_64/'+binary);
+            const arch = build_job.arch ? build_job.arch : "x86_64";
+            fs.mkdirsSync(runs_dst_dir+'/'+build_job.run_id+'/'+arch+'/'+path.dirname(binary));
+            fs.copySync(codecs_src_dir+'/'+build_job.codec+'/'+binary,runs_dst_dir+'/'+build_job.run_id+'/'+arch+'/'+binary);
           }
         } catch (e) {
           console.log(e);
@@ -416,7 +418,8 @@ app.post('/submit/job',function(req,res) {
     'master': req.body.master,
     'ab_compare': req.body.ab_compare,
     'save_encode': req.body.save_encode,
-    'task_type': 'video'
+    'task_type': 'video',
+    'arch': req.body.arch,
   }
 
   const gerrit_detect_re = /I[0-9a-f]{40}/g;

@@ -14,6 +14,7 @@ export class SubmitJobFormComponent extends React.Component<{
     job: Job;
     set: Option;
     codec: Option;
+    arch: Option;
   }> {
   constructor() {
     super();
@@ -34,14 +35,17 @@ export class SubmitJobFormComponent extends React.Component<{
       }
       job.task = template.task;
       job.taskType = template.taskType;
+      job.arch = template.arch;
     }
     let task = job.task ? job.task : "objective-1-fast";
     let codec = job.codec ? job.codec : "av1";
+    let arch = job.arch ? job.arch : "x86_64";
     job.id += "@" + formatDate(new Date());
     this.state = {
       job: null,
       set: {label: task, value: task},
-      codec: {label: Job.codecs[codec], value: codec}
+      codec: {label: Job.codecs[codec], value: codec},
+      arch: {label: job.arch, value: job.arch},
     } as any;
     job.saveEncodedFiles = true;
     this.setState({ job } as any);
@@ -107,6 +111,9 @@ export class SubmitJobFormComponent extends React.Component<{
         return checkCli(job.extraOptions) ? "success" : "warning";
       case "build":
         return checkCli(job.buildOptions) ? "success" : "warning";
+      case "arch":
+        if (job.arch) return "success";
+        break;
     }
     return "error";
   }
@@ -124,6 +131,7 @@ export class SubmitJobFormComponent extends React.Component<{
     job.date = new Date();
     job.task = this.state.set.value;
     job.codec = this.state.codec.value;
+    job.arch = this.state.arch.value;
     this.props.onCreate(job);
   }
   onCancel() {
@@ -139,6 +147,10 @@ export class SubmitJobFormComponent extends React.Component<{
 
   onChangeAuthor(author: Option) {
     this.setState({ author } as any, () => { });
+  }
+
+  onChangeArch(arch: Option) {
+    this.setState({ arch } as any, () => { });
   }
 
   onChangeConfigs(configs: Option) {
@@ -158,6 +170,8 @@ export class SubmitJobFormComponent extends React.Component<{
       let set = Job.sets[key];
       setOptions.push({ value: key, label: key });
     }
+
+    const archOptions = [{value: 'x86_64', label: 'x86_64'}, {value: 'aarch64', label: 'aarch64'}];
 
     return <Form>
       <FormGroup validationState={this.getValidationState("id")}>
@@ -202,6 +216,11 @@ export class SubmitJobFormComponent extends React.Component<{
         <ControlLabel>Custom qualities (optional)</ControlLabel>
         <FormControl type="text" placeholder="30 40 50 ..."
           value={job.qualities} onChange={this.onInputChange.bind(this, "qualities")} />
+      </FormGroup>
+
+      <FormGroup validationState={this.getValidationState("arch")}>
+        <ControlLabel>Architecture</ControlLabel>
+        <Select clearable={false} placeholder="Encoder" value={this.state.arch} options={archOptions} onChange={this.onChangeArch.bind(this)} />
       </FormGroup>
 
       <FormGroup>
