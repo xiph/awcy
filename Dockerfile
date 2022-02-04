@@ -38,6 +38,7 @@ RUN \
 		git-core \
 		gpg \
 		gpg-agent \
+		g++-aarch64-linux-gnu \
 		iproute2 \
 		iputils-ping \
 		jq \
