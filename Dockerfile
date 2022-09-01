@@ -278,6 +278,11 @@ RUN \
 # add scripts
 ADD *.m *.sh *.py ${APP_DIR}/
 
+# AOM_CTC: Install Openpyxl
+RUN \
+	pip3 install openpyxl
+
+
 # environment variables
 ENV \
 	CONFIG_DIR=/data/conf \

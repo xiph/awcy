@@ -384,6 +384,38 @@ app.get('/bd_rate',function(req,res) {
   }
 });
 
+// AOM-CTC XLSM Template endpoint
+// Requires Two Jobs as arguments.
+app.get('/ctc_report.xlsm',function(req,res) {
+  if (!req.query['a']) {
+    res.send('No Run A specified');
+    return;
+  }
+  if (!req.query['b']) {
+    res.send('No Run B specified');
+    return;
+  }
+  const a = path.basename(String(req.query['a']));
+  const b = path.basename(String(req.query['b']));
+  const a_file = runs_dst_dir+'/'+a;
+  const b_file = runs_dst_dir+'/'+b;
+  let filename_to_send = 'CTC_Regular_v0-'+a+'-'+b+'.xlsm';
+  console.log(filename_to_send);
+  console.log(runs_dst_dir)
+  res.header("Content-Type", "application/vnd.ms-excel.sheet.macroEnabled.12");
+  res.header('Content-Disposition', 'attachment; filename="'+filename_to_send+'"');
+  cp.execFile('./csv_export.py',[a_file, '--ctc_export', '--run_b='+b_file],
+              {},
+              function(error,stdout,stderr) {
+                if (error) {
+                  res.send(stdout+stderr);
+                  throw error;
+                } else {
+                  res.sendFile(path.join(runs_dst_dir, '/ctc_results/'+filename_to_send));
+                }
+              });
+});
+
 app.use('/submit',check_key);
 
 app.use('/submit/check',function(req,res) {
