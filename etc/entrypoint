@@ -25,6 +25,9 @@ for dir in \
 	chown ${APP_USER}:${APP_USER} ${dir}
 done
 
+# CTC result storage folder
+mkdir -p "${RUNS_DST_DIR}/ctc_results"
+
 # detect main IP external address if not set/forced
 net_iface=$(awk '{ if ($2 == "00000000") { print $1; exit; } }' /proc/net/route)
 net_ip_addr=$(ip addr show dev ${net_iface} | awk -F'[ \t/]+' '/inet / { print $3; exit; }')

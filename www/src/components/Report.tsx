@@ -2,7 +2,7 @@ import * as React from "react";
 import { Glyphicon, Panel, Table } from "react-bootstrap";
 import { Button, FormGroup, } from "react-bootstrap";
 import { Option } from "./Widgets";
-import { BDRateReport, Report, AppStore, Job, reportFieldNames, outFileFieldNames, analyzerBaseUrl} from "../stores/Stores";
+import { BDRateReport, Report, AppStore, Job, reportFieldNames, outFileFieldNames, analyzerBaseUrl, baseUrl } from "../stores/Stores";
 
 declare var require: any;
 
@@ -410,10 +410,16 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     interpolationOptions.push({ value: "pchip-new", label: "New interpolation method" });
     interpolationOptions.push({ value: "pchip-old", label: "Historic (AV1) interpolation method" });
     let textReport = this.state.textReport ? <pre>{this.state.textReport}</pre> : null;
+    let args = [
+      "a=" + encodeURIComponent(report.a.id),
+      "b=" + encodeURIComponent(report.b.id)
+      ];
+    let csvExportUrl = baseUrl + "ctc_report.xlsm?" + args.join("&");
       return <Panel header={`BD Rate Report ${report.a.selectedName + " " + report.a.id} → ${report.b.selectedName + " " + report.b.id}`}>
         <div style={{ paddingBottom: 8, paddingTop: 4 }}>
           <Button active={this.state.reversed} onClick={this.onReverseClick.bind(this)} >Reverse</Button>{' '}
           <Button onClick={this.onTextReportClick.bind(this)} >Get Text Report</Button>
+          <Button href={csvExportUrl} >Get CTC Report</Button>
           <FormGroup>
             <Select clearable={false} value={this.state.range} onChange={this.onChangeRange.bind(this)} options={rangeOptions} placeholder="Range">
             </Select>
