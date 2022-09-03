@@ -87,6 +87,14 @@ if [ ! -d "${CODECS_SRC_DIR}/av1" ]; then
 	ln -s ${CODECS_SRC_DIR}/av1 ${CODECS_SRC_DIR}/av1-rt
 fi
 
+if [ ! -d "${CODECS_SRC_DIR}/av2" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://gitlab.com/AOMediaCodec/avm.git ${CODECS_SRC_DIR}/av2
+	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ra
+	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ra-st
+	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ld
+	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ai
+fi
+
 if [ ! -d "${CODECS_SRC_DIR}/daala" ]; then
 	gosu ${APP_USER}:${APP_USER} git clone https://github.com/xiph/daala.git ${CODECS_SRC_DIR}/daala
 fi
