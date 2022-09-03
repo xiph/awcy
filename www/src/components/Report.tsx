@@ -370,8 +370,15 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     let report = this.state.report;
     if (a && b) {
       if (!report) {
+        let args = [
+          "a=" + encodeURIComponent(a.id),
+          "b=" + encodeURIComponent(b.id)
+          ];
+        let csvExportUrl = baseUrl + "ctc_report.xlsm?" + args.join("&");
         return <Panel header={"BD Rate Report"}>
-            <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Loading report ...
+          <Button href={csvExportUrl}>Get Partial CTC Report</Button>{' '}
+          <br></br>
+          <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Full Report loading ...
         </Panel>
       }
     } else {
