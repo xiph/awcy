@@ -367,6 +367,7 @@ export class Job {
   status: JobStatus = JobStatus.Unknown;
   date: Date;
   arch: string = "x86_64";
+  ctcSets: string[] = [];
 
   progress: JobProgress = new JobProgress(0, 0);
   selected: boolean = false;
@@ -547,6 +548,7 @@ export class Job {
     job.taskType = json.task_type;
     job.status = json.status;
     job.arch = json.arch || "x86_64";
+    job.ctcSets = json.ctcSets || "";
     job.saveEncodedFiles = parseBoolean(json.save_encode);
     job.runABCompare = parseBoolean(json.ab_compare);
     return job;
@@ -800,6 +802,7 @@ export class AppStore {
       ab_compare: job.runABCompare,
       save_encode: job.saveEncodedFiles,
       arch: job.arch,
+      ctcSets: job.ctcSets,
     });
   }
   cancelJob(job: Job) {
