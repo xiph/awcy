@@ -192,7 +192,7 @@ export class JobsComponent extends React.Component<JobsProps, {
   }
   render() {
     console.debug("Rendering Job List");
-    return <div>
+    return <div style={{ bottom: 0, height: this.props.listHeight, overflow: "scroll", overflowX: "hidden" }}>
       { this.state.showSubmitJobForm ? <SubmitJobFormComponent onCreate={this.onSubmitJob.bind(this)} onCancel={this.hideSubmitJobForm.bind(this)} /> : null }
       { this.makeJobList() }
     </div>
