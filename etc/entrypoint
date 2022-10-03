@@ -84,6 +84,14 @@ if [ ! -d "${CODECS_SRC_DIR}/av1" ]; then
 	ln -s ${CODECS_SRC_DIR}/av1 ${CODECS_SRC_DIR}/av1-rt
 fi
 
+if [ ! -d "${CODECS_SRC_DIR}/av2" ]; then
+	gosu ${APP_USER}:${APP_USER} git clone https://gitlab.com/AOMediaCodec/avm.git ${CODECS_SRC_DIR}/av2
+	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ra
+	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ra-st
+	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ld
+	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ai
+fi
+
 if [ ! -d "${CODECS_SRC_DIR}/daala" ]; then
 	gosu ${APP_USER}:${APP_USER} git clone https://github.com/xiph/daala.git ${CODECS_SRC_DIR}/daala
 fi
@@ -93,7 +101,7 @@ if [ ! -d "${CODECS_SRC_DIR}/rav1e" ]; then
 fi
 
 if [ ! -d "${CODECS_SRC_DIR}/svt-av1" ]; then
-	gosu ${APP_USER}:${APP_USER} git clone https://github.com/OpenVisualCloud/SVT-AV1.git ${CODECS_SRC_DIR}/svt-av1
+	gosu ${APP_USER}:${APP_USER} git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git ${CODECS_SRC_DIR}/svt-av1
 fi
 
 if [ ! -d "${CODECS_SRC_DIR}/vvc-vtm" ]; then
@@ -193,6 +201,31 @@ fi
 if [ -z "${SSH_PRIVKEY_FILE:-}" ]; then
 	export SSH_PRIVKEY_FILE=${CONFIG_DIR}/awcy.pem
 fi
+
+# Update the git to have all folders as safe.dir for git safety mechansim.
+git config --global --add safe.directory '*'
+touch /home/${APP_USER}/.gitconfig
+cat >/home/${APP_USER}/.gitconfig <<-EOF
+	[safe]
+		directory = *
+	EOF
+chown xiph /home/${APP_USER}/.gitconfig
+
+# Explictly Set Permissions to be sure we got it right
+export SSH_PRIVKEY_FILE=${CONFIG_DIR}/awcy.pem
+echo $SSH_PRIVKEY_FILE
+
+## Add Key to agent
+eval `ssh-agent -s`
+ssh-add /data/conf/awcy.pem
+ssh-add -l
+
+## Update permissions
+chmod 700 /home/${APP_USER}/.ssh
+chmod 600 /home/${APP_USER}/.ssh/authorized_keys
+chown -R ${APP_USER}:${APP_USER} /home/${APP_USER}/.ssh
+chown -R ${APP_USER}:${APP_USER} /home/${APP_USER}/.ssh/authorized_keys
+chown -R ${APP_USER}:${APP_USER} $SSH_PRIVKEY_FILE
 
 # run runit services
 exec tini -g -- /usr/bin/runsvdir -P /etc/service
