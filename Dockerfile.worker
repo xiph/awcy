@@ -94,12 +94,8 @@ ENV \
 # install rust
 RUN \
 	ARCH=`uname -m` && \
-	RUST_VERSION=1.59.0 && \
-	if [ "$ARCH" = "x86_64" ]; then \
-		curl -sSf --output /tmp/rustup-init  https://static.rust-lang.org/rustup/archive/1.14.0/x86_64-unknown-linux-gnu/rustup-init; \
-	else \
-		curl -sSf --output /tmp/rustup-init  https://static.rust-lang.org/rustup/archive/1.14.0/aarch64-unknown-linux-gnu/rustup-init; \
-	fi && \
+	RUST_VERSION=1.64.0 && \
+	curl -sSf --output /tmp/rustup-init https://static.rust-lang.org/rustup/archive/1.25.0/${ARCH}-unknown-linux-gnu/rustup-init && \
 	chmod +x /tmp/rustup-init && \
 	/tmp/rustup-init -y --no-modify-path --default-toolchain ${RUST_VERSION} && \
 	rm -vf /tmp/rustup-init
@@ -129,7 +125,7 @@ RUN \
 # install hdrtools
 ENV \
 	HDRTOOLS_DIR=/opt/hdrtools \
-	HDRTOOLS_VERSION=0.21
+	HDRTOOLS_VERSION=0.22
 
 RUN \
 	ARCH=`uname -m` && \
@@ -171,13 +167,13 @@ RUN \
 	git clone https://code.videolan.org/videolan/dav1d.git ${DAV1D_DIR} && \
 	cd ${DAV1D_DIR} && \
 	mkdir build && cd build && \
-	meson .. && \
-	ninja
+	meson .. --default-library static --buildtype release && \
+	ninja install
 
 # install VMAF
 ENV \
 	VMAF_DIR=/opt/vmaf \
-	VMAF_VERSION=v2.2.1
+	VMAF_VERSION=v2.3.1
 
 RUN \
 	mkdir -p ${VMAF_DIR} && \
