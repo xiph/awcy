@@ -397,18 +397,25 @@ def write_xls_file(run_a, run_b):
     run_id_a = run_a_info["run_id"]
     run_id_b = run_b_info["run_id"]
     xls_file = run_a + '/../ctc_results/' + \
-        "CTC_Regular_v0-%s-%s.xlsm" % (run_id_a, run_id_b)
+        "CTCv3_Regular_v7.2-%s-%s.xlsm" % (run_id_a, run_id_b)
     shutil.copyfile(xls_template, xls_file)
     wb = load_workbook(xls_file, read_only=False, keep_vba=True)
-    this_codec = run_a_info['codec']
-    if '-' in this_codec:
-        if this_codec.split('-')[1].upper() in run_cfgs:
-            this_cfg = this_codec.split('-')[1].upper()
+    sheet_a_codec = run_a_info['codec']
+    sheet_b_codec = run_b_info['codec']
+    # Since we can select two presets/codecs as A/B, parse them differently,
+    if '-' in sheet_a_codec:
+        if sheet_a_codec.split('-')[1].upper() in run_cfgs:
+            this_a_cfg = sheet_a_codec.split('-')[1].upper()
     else:
-        this_cfg = 'RA'
-    anchor_sheet_name = 'Anchor-%s' % this_cfg
+        this_a_cfg = 'RA'
+    anchor_sheet_name = 'Anchor-%s' % this_a_cfg
     anchor_sheet = wb[anchor_sheet_name]
-    test_sheet_name = 'Test-%s' % this_cfg
+    if '-' in sheet_b_codec:
+        if sheet_b_codec.split('-')[1].upper() in run_cfgs:
+            this_b_cfg = sheet_b_codec.split('-')[1].upper()
+    else:
+        this_b_cfg = 'RA'
+    test_sheet_name = 'Test-%s' % this_b_cfg
     test_sheet = wb[test_sheet_name]
     current_video_set = run_a_info["task"]
     current_ctc_list_a = return_ctc_set_list(run_a_info)

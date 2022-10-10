@@ -399,7 +399,7 @@ app.get('/ctc_report.xlsm', function (req, res) {
   const b = path.basename(String(req.query['b']));
   const a_file = runs_dst_dir + '/' + a;
   const b_file = runs_dst_dir + '/' + b;
-  let filename_to_send = 'CTC_Regular_v0-' + a + '-' + b + '.xlsm';
+  let filename_to_send = 'CTCv3_Regular_v7.2-' + a + '-' + b + '.xlsm';
   console.log(filename_to_send);
   console.log(runs_dst_dir)
   res.header("Content-Type", "application/vnd.ms-excel.sheet.macroEnabled.12");
