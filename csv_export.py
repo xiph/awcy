@@ -55,7 +55,9 @@ start_rows = {
     'B2': 350,
     'G1': 416,
     'G2': 440,
-    'E': 482
+    'E': 482,
+    'F1': 2,
+    'F2': 170
 }
 
 # CTC Configs
@@ -213,6 +215,8 @@ def write_set_data(run_path, writer, current_video_set):
         qp_list = info_data['qualities'].split()
     else:
         qp_list = quality_presets[info_data['codec']]
+        if current_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
+            qp_list = quality_presets['av2-f']
     try:
         for video in videos:
             v = open(os.path.join(videos_dir, video), "rb")
@@ -422,15 +426,21 @@ def write_xls_file(run_a, run_b):
     current_ctc_list_b = return_ctc_set_list(run_b_info)
 
     # Single Video Set Condition
-    if len(current_ctc_list_a) == 0 and len(current_ctc_list_a) == 0:
+    if len(current_ctc_list_a) == 0 and len(current_ctc_list_b) == 0:
         write_xls_rows(run_a, current_video_set, anchor_sheet)
         write_xls_rows(run_b, current_video_set, test_sheet)
         wb.save(xls_file)
     # Multi-Set Case
     else:
         for this_video_set in current_ctc_list_a:
+            if this_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
+                anchor_sheet_name = 'Anchor-Still'
+                anchor_sheet = wb[anchor_sheet_name]
             write_xls_rows(run_a, this_video_set, anchor_sheet)
         for this_video_set in current_ctc_list_b:
+            if this_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
+                test_sheet_name = 'Test-Still'
+                test_sheet = wb[test_sheet_name]
             write_xls_rows(run_b, this_video_set, test_sheet)
         wb.save(xls_file)
 
