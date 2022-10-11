@@ -68,11 +68,11 @@ export class DebugComponent extends React.Component<{}, {
     // <Button onClick={this.onCancelJobClick.bind(this)}>Cancel Random Job</Button>{' '}
     // <Button onClick={this.onSelectJobClick.bind(this)}>Select Random Job</Button>{' '}
     return <div><Panel>
-      <Button onClick={this.onPollClick.bind(this)}>Poll Server</Button>{' '}
       <Button onClick={this.onGetRunStatus.bind(this)}>Get run_status.json</Button>{' '}
       <Button onClick={this.onGetBuildStatus.bind(this)}>Get build_status.json</Button>{' '}
-      <Button onClick={this.onGetList.bind(this)}>Get list.json</Button>{' '}
       <Button onClick={this.onMachineUsage.bind(this)}>Get machine_usage.json</Button>{' '}
+      <Button onClick={this.onGetList.bind(this)}>Get list.json</Button>{' '}
+      <Button onClick={this.onPollClick.bind(this)}>Poll Server</Button>{' '}
     </Panel>
     <pre className="pre">{this.state.log}</pre>
     </div>

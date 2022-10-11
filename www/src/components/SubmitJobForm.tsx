@@ -272,7 +272,7 @@ export class SubmitJobFormComponent extends React.Component<{
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("ctcSets")}>
-        <ControlLabel>This will override default set (for CTC)</ControlLabel>
+        <ControlLabel>This will override the above set (for CTC)</ControlLabel>
         <Select multi placeholder="CTC Sets" value={this.state.ctcSets} options={ctcOptions} onChange={this.onCtcSetsSelection.bind(this)} />
       </FormGroup>
 
