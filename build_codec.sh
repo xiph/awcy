@@ -125,7 +125,7 @@ case "${CODEC}" in
   svt-av1)
     cd ${CODECS_SRC_DIR}/svt-av1
     cd Build/linux
-    ./build.sh --cc=gcc --cxx=g++
+    ./build.sh --cc=gcc --cxx=g++ --release --static
     ;;
 
   vvc-vtm)
