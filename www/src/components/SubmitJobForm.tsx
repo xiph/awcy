@@ -124,7 +124,7 @@ export class SubmitJobFormComponent extends React.Component<{
         if (job.ctcSets) return "success";
         break;
       case "ctcPresets":
-        if (job.ctcSets) return "success";
+        if (job.ctcPresets) return "success";
         break;
     }
     return "error";
