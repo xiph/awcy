@@ -368,6 +368,7 @@ export class Job {
   date: Date;
   arch: string = "x86_64";
   ctcSets: string[] = [];
+  ctcPresets: string[] = [];
 
   progress: JobProgress = new JobProgress(0, 0);
   selected: boolean = false;
@@ -425,11 +426,19 @@ export class Job {
   convex_hulls:  { [name: string]: number[][] } = null;
 
   totalReportUrl(): string {
-    return baseUrl + `runs/${this.id}/${this.task}/total.out`;
+    if (this.ctcPresets.length > 1) {
+      return baseUrl + `runs/${this.id}/${this.codec}/${this.task}/total.out`;
+    } else {
+      return baseUrl + `runs/${this.id}/${this.task}/total.out`;
+    }
   }
 
   reportUrl(name: string): string {
-    return baseUrl + `runs/${this.id}/${this.task}/${name}-daala.out`
+    if (this.ctcPresets.length > 1) {
+      return baseUrl + `runs/${this.id}/${this.codec}/${this.task}/${name}-daala.out`
+    } else {
+      return baseUrl + `runs/${this.id}/${this.task}/${name}-daala.out`
+    }
   }
 
   decoderUrl(): string {
@@ -441,7 +450,11 @@ export class Job {
   }
 
   ivfUrlPrefix() {
-    return baseUrl + `runs/${this.id}/${this.task}/`;
+    if (this.ctcPresets.length > 1) {
+      return baseUrl + `runs/${this.id}/${this.codec}/${this.task}/`;
+    } else {
+      return baseUrl + `runs/${this.id}/${this.task}/`;
+    }
   }
   ivfUrlName(name: string, quality: number) {
     if (this.codec.substring(0,3) == 'av2') {
@@ -549,6 +562,8 @@ export class Job {
     job.status = json.status;
     job.arch = json.arch || "x86_64";
     job.ctcSets = json.ctcSets || "";
+    job.ctcPresets = json.ctcPresets || "";
+
     job.saveEncodedFiles = parseBoolean(json.save_encode);
     job.runABCompare = parseBoolean(json.ab_compare);
     return job;
@@ -803,6 +818,7 @@ export class AppStore {
       save_encode: job.saveEncodedFiles,
       arch: job.arch,
       ctcSets: job.ctcSets,
+      ctcPresets: job.ctcPresets,
     });
   }
   cancelJob(job: Job) {
