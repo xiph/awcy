@@ -377,6 +377,7 @@ try:
         print("Runs do not match.")
         sys.exit(1)
     task = info_data[0]["task"]
+    codec = info_data[0]["codec"]
 except FileNotFoundError:
     # no info.json, using bare directories
     print("Couldn't open", args.run[0])
@@ -403,17 +404,25 @@ if info_data and not args.overlap:
 
 if info_data:
     for video in videos:
+        run_a = args.run[0] + "/" + task + "/" + video + args.suffix
+        run_b = args.run[1] + "/" + task + "/" + video + args.suffix
+        if 'ctcPresets' in info_data[0].keys():
+            if len(info_data[0]["ctcPresets"]) > 1:
+                run_a = args.run[0] + "/" + codec + "/" + task + "/" + video + args.suffix
+        if 'ctcPresets' in info_data[1].keys():
+            if len(info_data[1]["ctcPresets"]) > 1:
+                run_b = args.run[1] + "/" + codec + "/" + task + "/" + video + args.suffix
         if args.overlap:
             metric_data[video] = bdrate(
-                args.run[0] + "/" + task + "/" + video + args.suffix,
-                args.run[1] + "/" + task + "/" + video + args.suffix,
+                run_a,
+                run_b,
                 None,
                 args.fullrange,
             )
         else:
             metric_data[video] = bdrate(
-                args.run[0] + "/" + task + "/" + video + args.suffix,
-                args.run[1] + "/" + task + "/" + video + args.suffix,
+                run_a,
+                run_b,
                 args.anchordir[0]
                 + "/"
                 + sets[task]["anchor"]
