@@ -165,14 +165,15 @@ def return_start_rows(set_name):
             normalized_set = set_name.split('-')[1].upper()
             if normalized_set in start_rows.keys():
                 return start_rows[normalized_set], normalized_set
-    except BaseException:
-        print("Not a CTC set to Normalize, check the runs")
+    except BaseException as e:
+        print(
+            "DEBUG: E: return_start_rows: Not a CTC set to Normalize, check the runs,",
+            e)
         sys.exit(1)
 
 
-def return_ctc_set_list(run_info):
+def return_ctc_set_list(run_info, config):
     set_name = run_info['ctcSets']
-    config = run_info['codec']
     if 'aomctc-all' in set_name:
         if config == 'av2-ai':
             run_set_list = ctc_sets_mandatory_ai + ctc_sets_optional
@@ -190,7 +191,28 @@ def return_ctc_set_list(run_info):
     return run_set_list
 
 
-def write_set_data(run_path, writer, current_video_set):
+def return_ctc_cfg_list(run_info):
+    try:
+        cfg_name = run_info['ctcPresets']
+        if len(cfg_name) > 0:
+            return cfg_name
+        else:
+            return [run_info['codec']]
+    except BaseException as e:
+        print("DEBUG: W: return_ctc_cfg_list", e)
+        return [run_info['codec']]
+
+
+def return_config(this_config):
+    if 'av2-' in this_config:
+        if this_config.split('-')[1].upper() in run_cfgs:
+            this_cfg = this_config.split('-')[1].upper()
+    else:
+        this_cfg = 'RA'
+    return this_cfg
+
+
+def write_set_data(run_path, writer, current_video_set, current_config):
     info_data = json.load(open(run_path + "/info.json"))
     videos_dir = os.path.join(
         os.getenv("MEDIAS_SRC_DIR", "/mnt/runs/sets"), current_video_set
@@ -226,12 +248,21 @@ def write_set_data(run_path, writer, current_video_set):
             height = re.search(r"H([0-9]*)", line).group(1)
             if 'aomctc' in current_video_set:
                 normalized_set = current_video_set.split('-')[1].upper()
-            a = loadtxt(
-                os.path.join(
-                    run_path,
-                    current_video_set,
-                    video +
-                    "-daala.out"))
+                normalized_cfg = return_config(current_config)
+            daala_path = os.path.join(
+                run_path,
+                current_video_set,
+                video +
+                "-daala.out")
+            if 'ctcPresets' in info_data.keys():
+                if len(info_data['ctcPresets']) > 1:
+                    daala_path = os.path.join(
+                        run_path,
+                        current_config,
+                        current_video_set,
+                        video +
+                        "-daala.out")
+            a = loadtxt(daala_path)
             # This way, even partial information from the *daala.out can be
             # rendered by having key-value where key is QP.
             encoded_qp_list = {}
@@ -323,7 +354,7 @@ def write_set_data(run_path, writer, current_video_set):
                 # Case where the data is yet to be made
                 else:
                     writer.writerow([
-                        "RA",  # TestCfg # TODO: FIXME
+                        normalized_cfg,  # TestCfg
                         "aom",  # EncodeMethod
                         info_data["run_id"],  # CodecName
                         0,  # EncodePreset #TODO: FIXME
@@ -335,7 +366,8 @@ def write_set_data(run_path, writer, current_video_set):
                         str(width) + "x" + str(height),  # CodedRes
                         this_qp  # qp
                     ])
-    except BaseException:
+    except BaseException as e:
+        print("DEBUG: W: write_set_data ", e)
         # This allows partial rendering of CSV + XLS Reports
         pass
 
@@ -356,21 +388,25 @@ def save_ctc_export(run_path, cmd_args):
         )
     if not cmd_args.ctc_export:
         sys.stdout = Logger(run_path, cmd_args)
+        cfg_name = info_data['codec']
         w = csv.writer(sys.stdout, dialect="excel")
         w.writerow(row_header)
-        write_set_data(run_path, w, task)
+        write_set_data(run_path, w, task, cfg_name)
     else:
-        ctc_set_list = return_ctc_set_list(info_data)
+        ctc_set_list = return_ctc_set_list(info_data, info_data['codec'])
+        ctc_cfg_list = return_ctc_cfg_list(info_data)
         csv_writer_obj = open(run_path + "/csv_export.csv", 'w')
         w = csv.writer(csv_writer_obj, dialect="excel")
         w.writerow(row_header)
         # Abstract Writing per-set data
-        for set_name in ctc_set_list:
-            write_set_data(run_path, w, set_name)
+        for config_name in ctc_cfg_list:
+            ctc_set_list = return_ctc_set_list(info_data, config_name)
+            for set_name in ctc_set_list:
+                write_set_data(run_path, w, set_name, config_name)
         csv_writer_obj.close()
 
 
-def write_xls_rows(run_path, current_video_set, this_sheet):
+def write_xls_rows(run_path, current_video_set, current_config, this_sheet):
     run_file = open(run_path + '/csv_export.csv', 'r')
     start_id, normalized_set = return_start_rows(current_video_set)
 
@@ -378,7 +414,7 @@ def write_xls_rows(run_path, current_video_set, this_sheet):
     next(run_reader)
     this_row = start_id
     for this_line in run_reader:
-        if this_line[4] != normalized_set:
+        if this_line[0] != current_config or this_line[4] != normalized_set:
             continue
         else:
             this_col = 1
@@ -393,6 +429,38 @@ def write_xls_rows(run_path, current_video_set, this_sheet):
     run_file.close()
 
 
+def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
+                        run_a_info, run_b_info, xls_file, wb):
+    # Iterate through CFG lists.
+    for cfg_iter in run_cfg_list:
+        current_ctc_list_a = return_ctc_set_list(run_a_info, cfg_iter)
+        current_ctc_list_b = return_ctc_set_list(run_b_info, cfg_iter)
+        this_cfg = return_config(cfg_iter)
+        anchor_sheet_name = 'Anchor-%s' % this_cfg
+        anchor_sheet = wb[anchor_sheet_name]
+        test_sheet_name = 'Test-%s' % this_cfg
+        test_sheet = wb[test_sheet_name]
+        # Single Video Set Condition
+        if len(current_ctc_list_a) == 0 and len(current_ctc_list_b) == 0:
+            current_video_set = run_a_info["task"]
+            write_xls_rows(run_a, current_video_set, this_cfg, anchor_sheet)
+            write_xls_rows(run_b, current_video_set, this_cfg, test_sheet)
+            wb.save(xls_file)
+        # Multi-Set Case
+        else:
+            for this_video_set in current_ctc_list_a:
+                if this_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
+                    anchor_sheet_name = 'Anchor-Still'
+                    anchor_sheet = wb[anchor_sheet_name]
+                write_xls_rows(run_a, this_video_set, this_cfg, anchor_sheet)
+            for this_video_set in current_ctc_list_b:
+                if this_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
+                    test_sheet_name = 'Test-Still'
+                    test_sheet = wb[test_sheet_name]
+                write_xls_rows(run_b, this_video_set, this_cfg, test_sheet)
+            wb.save(xls_file)
+
+
 def write_xls_file(run_a, run_b):
     xls_template = os.path.join(
         os.getenv("CONFIG_DIR", "rd_tool"), 'AOM_CWG_Regular_CTCv3_v7.2.xlsm')
@@ -404,45 +472,24 @@ def write_xls_file(run_a, run_b):
         "CTCv3_Regular_v7.2-%s-%s.xlsm" % (run_id_a, run_id_b)
     shutil.copyfile(xls_template, xls_file)
     wb = load_workbook(xls_file, read_only=False, keep_vba=True)
-    sheet_a_codec = run_a_info['codec']
-    sheet_b_codec = run_b_info['codec']
-    # Since we can select two presets/codecs as A/B, parse them differently,
-    if '-' in sheet_a_codec:
-        if sheet_a_codec.split('-')[1].upper() in run_cfgs:
-            this_a_cfg = sheet_a_codec.split('-')[1].upper()
-    else:
-        this_a_cfg = 'RA'
-    anchor_sheet_name = 'Anchor-%s' % this_a_cfg
-    anchor_sheet = wb[anchor_sheet_name]
-    if '-' in sheet_b_codec:
-        if sheet_b_codec.split('-')[1].upper() in run_cfgs:
-            this_b_cfg = sheet_b_codec.split('-')[1].upper()
-    else:
-        this_b_cfg = 'RA'
-    test_sheet_name = 'Test-%s' % this_b_cfg
-    test_sheet = wb[test_sheet_name]
-    current_video_set = run_a_info["task"]
-    current_ctc_list_a = return_ctc_set_list(run_a_info)
-    current_ctc_list_b = return_ctc_set_list(run_b_info)
-
-    # Single Video Set Condition
-    if len(current_ctc_list_a) == 0 and len(current_ctc_list_b) == 0:
-        write_xls_rows(run_a, current_video_set, anchor_sheet)
-        write_xls_rows(run_b, current_video_set, test_sheet)
-        wb.save(xls_file)
-    # Multi-Set Case
-    else:
-        for this_video_set in current_ctc_list_a:
-            if this_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
-                anchor_sheet_name = 'Anchor-Still'
-                anchor_sheet = wb[anchor_sheet_name]
-            write_xls_rows(run_a, this_video_set, anchor_sheet)
-        for this_video_set in current_ctc_list_b:
-            if this_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
-                test_sheet_name = 'Test-Still'
-                test_sheet = wb[test_sheet_name]
-            write_xls_rows(run_b, this_video_set, test_sheet)
-        wb.save(xls_file)
+    run_a_cfg_list = return_ctc_cfg_list(run_a_info)
+    run_b_cfg_list = return_ctc_cfg_list(run_b_info)
+    write_xls_cfg_sheet(
+        run_a,
+        run_b,
+        run_a_cfg_list,
+        run_a_info,
+        run_b_info,
+        xls_file,
+        wb)
+    write_xls_cfg_sheet(
+        run_a,
+        run_b,
+        run_b_cfg_list,
+        run_a_info,
+        run_b_info,
+        xls_file,
+        wb)
 
 
 def main():
