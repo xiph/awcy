@@ -16,6 +16,7 @@ export class SubmitJobFormComponent extends React.Component<{
     codec: Option;
     arch: Option;
     ctcSets: Option[];
+    ctcPresets: Option[];
   }> {
   constructor() {
     super();
@@ -38,6 +39,7 @@ export class SubmitJobFormComponent extends React.Component<{
       job.taskType = template.taskType;
       job.arch = template.arch;
       job.ctcSets = template.ctcSets;
+      job.ctcPresets = template.ctcPresets;
     }
     let task = job.task ? job.task : "objective-1-fast";
     let codec = job.codec ? job.codec : "av1";
@@ -49,6 +51,7 @@ export class SubmitJobFormComponent extends React.Component<{
       codec: {label: Job.codecs[codec], value: codec},
       arch: {label: job.arch, value: job.arch},
       ctcSets: job.ctcSets,
+      ctcPresets: job.ctcPresets,
     } as any;
     job.saveEncodedFiles = true;
     this.setState({ job } as any);
@@ -120,11 +123,17 @@ export class SubmitJobFormComponent extends React.Component<{
       case "ctcSets":
         if (job.ctcSets) return "success";
         break;
+      case "ctcPresets":
+        if (job.ctcSets) return "success";
+        break;
     }
     return "error";
   }
   onCtcSetsSelection(ctcSets: Option) {
     this.setState({ ctcSets } as any, () => { });
+  }
+  onCtcPresetsSelection(ctcPresets: Option) {
+    this.setState({ ctcPresets } as any, () => { });
   }
   onInputChange(key: string, e: any) {
     let job = this.state.job;
@@ -142,7 +151,9 @@ export class SubmitJobFormComponent extends React.Component<{
     job.codec = this.state.codec.value;
     job.arch = this.state.arch.value;
     const checkAllSets = obj => obj.value === 'aomctc-all';
+    const checkAllPresets = obj => obj.value === 'av2-all';
     const checkMandatorySets = obj => obj.value === 'aomctc-mandatory';
+    // Case: CTC Sets
     if (typeof (this.state.ctcSets) !== 'undefined') {
       // Case 1: No CTC Sets
       if (this.state.ctcSets.length == 0) {
@@ -176,6 +187,33 @@ export class SubmitJobFormComponent extends React.Component<{
         // prority set now.
         job.task = this.state.ctcSets[0].value;
 
+      }
+    }
+    // Case: CTC Presets
+    if (typeof (this.state.ctcPresets) !== 'undefined') {
+      // Case 1: No CTC Presets
+      if (this.state.ctcPresets.length == 0) {
+        job.ctcPresets = []
+      }
+      // Case 2: If user has all preset, push only that, ignore rest
+      else if (this.state.ctcSets.some(checkAllPresets)) {
+        job.ctcSets = []
+        job.codec = 'av2-ra-st';
+        job.ctcSets.push('av2-all')
+      }
+      // Case 3: Creating/Cloning an existing job,
+      // For cloning, we compare by converting to string
+      else if (JSON.stringify(job.ctcPresets) != JSON.stringify(this.state.ctcPresets)) {
+        // Explictly setting Jobs ctcPresets List to Zero, and write the
+        // values from the current State's List.
+        job.ctcPresets = []
+        for (var i = 0; i < this.state.ctcPresets.length; i++) {
+          // Push only the actual CTC preset names and skip pushing labels.
+          job.ctcPresets.push(this.state.ctcPresets[i].value);
+        }
+        // As we have multiple sets, the frontend will render only the first
+        // preset now.
+        job.codec = this.state.ctcPresets[0].value;
       }
     }
     this.props.onCreate(job);
@@ -220,6 +258,7 @@ export class SubmitJobFormComponent extends React.Component<{
     const archOptions = [{value: 'x86_64', label: 'x86_64'}, {value: 'aarch64', label: 'aarch64'}];
     // CTC: Create a user-friendly CTC set list.
     const ctcOptions = [{ value: 'aomctc-a1-4k', label: 'A1' }, { value: 'aomctc-a2-2k', label: 'A2' }, { value: 'aomctc-a3-720p', label: 'A3' }, { value: 'aomctc-a4-360p', label: 'A4' }, { value: 'aomctc-a5-270p', label: 'A5' }, { value: 'aomctc-b1-syn', label: 'B1' }, { value: 'aomctc-b2-syn', label: 'B2' }, { value: 'aomctc-f1-hires', label: 'F1' }, { value: 'aomctc-f2-midres', label: 'F2' }, { value: 'aomctc-g1-hdr-4k', label: 'G1' }, { value: 'aomctc-g2-hdr-2k', label: 'G2' }, { value: 'aomctc-e-nonpristine', label: 'E' }, { value: 'aomctc-all', label: 'All' }, { value: 'aomctc-mandatory', label: 'Mandatory' }];
+    const ctcPresetOptions = [{ value: 'av2-ra-st', label: 'RA' }, { value: 'av2-ai', label: 'AI' }, { value: 'av2-ld', label: 'LD' }, { value: 'av2-all', label: 'All' }];
 
     return <Form>
       <FormGroup validationState={this.getValidationState("id")}>
@@ -274,6 +313,11 @@ export class SubmitJobFormComponent extends React.Component<{
       <FormGroup validationState={this.getValidationState("ctcSets")}>
         <ControlLabel>This will override the above set (for CTC)</ControlLabel>
         <Select multi placeholder="CTC Sets" value={this.state.ctcSets} options={ctcOptions} onChange={this.onCtcSetsSelection.bind(this)} />
+      </FormGroup>
+
+      <FormGroup validationState={this.getValidationState("ctcPresets")}>
+        <ControlLabel>This will override the above set (for CTC)</ControlLabel>
+        <Select multi placeholder="CTC Presets" value={this.state.ctcPresets} options={ctcPresetOptions} onChange={this.onCtcPresetsSelection.bind(this)} />
       </FormGroup>
 
       <FormGroup>

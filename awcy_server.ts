@@ -443,6 +443,11 @@ app.post('/submit/job',function(req,res) {
   } else {
     req.body.ctcSets = req.body.ctcSets.split(',')
   }
+  if (!req.body.ctcPresets) {
+    req.body.ctcPresets = []
+  } else {
+    req.body.ctcPresets = req.body.ctcPresets.split(',')
+  }
   const job = {
     'codec': req.body.codec,
     'commit': req.body.commit,
@@ -458,6 +463,7 @@ app.post('/submit/job',function(req,res) {
     'task_type': 'video',
     'arch': req.body.arch,
     'ctcSets': req.body.ctcSets,
+    'ctcPresets': req.body.ctcPresets,
   }
 
   const gerrit_detect_re = /I[0-9a-f]{40}/g;
