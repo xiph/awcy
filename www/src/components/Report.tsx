@@ -372,7 +372,9 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       if (!report) {
         let args = [
           "a=" + encodeURIComponent(a.id),
-          "b=" + encodeURIComponent(b.id)
+          "b=" + encodeURIComponent(b.id),
+          "codec_a="+ encodeURIComponent(a.codec),
+          "codec_b="+ encodeURIComponent(b.codec)
           ];
         let csvExportUrl = baseUrl + "ctc_report.xlsm?" + args.join("&");
         return <Panel header={"BD Rate Report"}>
@@ -419,8 +421,11 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     let textReport = this.state.textReport ? <pre>{this.state.textReport}</pre> : null;
     let args = [
       "a=" + encodeURIComponent(report.a.id),
-      "b=" + encodeURIComponent(report.b.id)
+      "b=" + encodeURIComponent(report.b.id),
+      "codec_a="+ encodeURIComponent(report.a.codec),
+      "codec_b="+ encodeURIComponent(report.b.codec)
       ];
+    console.log(args)
     let csvExportUrl = baseUrl + "ctc_report.xlsm?" + args.join("&");
       return <Panel header={`BD Rate Report ${report.a.selectedName + " " + report.a.id} → ${report.b.selectedName + " " + report.b.id}`}>
         <div style={{ paddingBottom: 8, paddingTop: 4 }}>
