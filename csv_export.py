@@ -140,6 +140,9 @@ row_header = [
     "EncMD5"
 ]
 
+# AS Header is different, so dynamically generating removing the cols
+row_header_as = [x for x in row_header if x not in ['CAMBI']]
+
 
 class Logger(object):
     def __init__(self, run_path, args):
@@ -173,21 +176,24 @@ def return_start_rows(set_name):
 
 
 def return_ctc_set_list(run_info, config):
-    set_name = run_info['ctcSets']
-    if 'aomctc-all' in set_name:
-        if config == 'av2-ai':
-            run_set_list = ctc_sets_mandatory_ai + ctc_sets_optional
-        elif config == 'av2-ra-st' or config == 'av2-ra':
-            run_set_list = ctc_sets_mandatory + ctc_sets_optional
-        elif config == 'av2-ld':
-            run_set_list = ctc_sets_mandatory
-    elif 'aomctc-mandatory' in set_name:
-        if config == 'av2-ra-st' or config == 'av2-ra' or config == 'av2-ld':
-            run_set_list = ctc_sets_mandatory
-        elif config == 'av2-ai':
-            run_set_list = ctc_sets_mandatory_ai
+    if len(run_info['ctcSets']) > 0:
+        set_name = run_info['ctcSets']
+        if 'aomctc-all' in set_name:
+            if config == 'av2-ai':
+                run_set_list = ctc_sets_mandatory_ai + ctc_sets_optional
+            elif config == 'av2-ra-st' or config == 'av2-ra':
+                run_set_list = ctc_sets_mandatory + ctc_sets_optional
+            elif config == 'av2-ld':
+                run_set_list = ctc_sets_mandatory
+        elif 'aomctc-mandatory' in set_name:
+            if config == 'av2-ra-st' or config == 'av2-ra' or config == 'av2-ld':
+                run_set_list = ctc_sets_mandatory
+            elif config == 'av2-ai':
+                run_set_list = ctc_sets_mandatory_ai
+        else:
+            run_set_list = run_info['ctcSets']
     else:
-        run_set_list = run_info['ctcSets']
+        run_set_list = [run_info['task']]
     return run_set_list
 
 
@@ -221,7 +227,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
         open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.json")))
     videos = sets[current_video_set]["sources"]
     # sort name ascending, resolution descending
-    if current_video_set != "av2-a1-4k-as":
+    if current_video_set != "aomctc-a1-4k-as":
         videos.sort(key=lambda s: s.lower())
     else:
         videos.sort(
@@ -283,7 +289,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 normalized_set,  # Class
                                 video,  # name
                                 "3840x2160",  # OrigRes
-                                "",  # FPS
+                                str(float(fps_n) / float(fps_d)),  # FPS
                                 10,  # BitDepth
                                 str(width) + "x" + str(height),  # CodedRes
                                 row[0],  # qp
@@ -307,6 +313,11 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 row[met_index["APSNR Cr (libvmaf)"] + 3],
                                 row[met_index["Encoding Time"] + 3],
                                 row[met_index["Decoding Time"] + 3],
+                                "",  # EncInstr
+                                "",  # DecInstr
+                                "",  # EncCycles
+                                "",  # DecCycles
+                                "",  # EncMD5
                             ]
                         )
                     else:
@@ -379,7 +390,7 @@ def save_ctc_export(run_path, cmd_args):
         open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.json")))
     videos = sets[task]["sources"]
     # sort name ascending, resolution descending
-    if task != "av2-a1-4k-as":
+    if task != "aomctc-a1-4k-as":
         videos.sort(key=lambda s: s.lower())
     else:
         videos.sort(
@@ -390,14 +401,21 @@ def save_ctc_export(run_path, cmd_args):
         sys.stdout = Logger(run_path, cmd_args)
         cfg_name = info_data['codec']
         w = csv.writer(sys.stdout, dialect="excel")
-        w.writerow(row_header)
+        if cfg_name == 'av2-as':
+            w.writerow(row_header_as)
+        else:
+            w.writerow(row_header)
         write_set_data(run_path, w, task, cfg_name)
     else:
         ctc_set_list = return_ctc_set_list(info_data, info_data['codec'])
         ctc_cfg_list = return_ctc_cfg_list(info_data)
         csv_writer_obj = open(run_path + "/csv_export.csv", 'w')
+        cfg_name = info_data['codec']
         w = csv.writer(csv_writer_obj, dialect="excel")
-        w.writerow(row_header)
+        if cfg_name == 'av2-as':
+            w.writerow(row_header_as)
+        else:
+            w.writerow(row_header)
         # Abstract Writing per-set data
         for config_name in ctc_cfg_list:
             ctc_set_list = return_ctc_set_list(info_data, config_name)
@@ -437,8 +455,11 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
         current_ctc_list_b = return_ctc_set_list(run_b_info, cfg_iter)
         this_cfg = return_config(cfg_iter)
         anchor_sheet_name = 'Anchor-%s' % this_cfg
-        anchor_sheet = wb[anchor_sheet_name]
         test_sheet_name = 'Test-%s' % this_cfg
+        if this_cfg == 'AS':
+            anchor_sheet_name = 'Anchor'
+            test_sheet_name = 'Test'
+        anchor_sheet = wb[anchor_sheet_name]
         test_sheet = wb[test_sheet_name]
         # Single Video Set Condition
         if len(current_ctc_list_a) == 0 and len(current_ctc_list_b) == 0:
@@ -462,14 +483,17 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
 
 
 def write_xls_file(run_a, run_b):
-    xls_template = os.path.join(
-        os.getenv("CONFIG_DIR", "rd_tool"), 'AOM_CWG_Regular_CTCv3_v7.2.xlsm')
     run_a_info = json.load(open(run_a + "/info.json"))
     run_b_info = json.load(open(run_b + "/info.json"))
     run_id_a = run_a_info["run_id"]
     run_id_b = run_b_info["run_id"]
+    xls_filename = 'AOM_CWG_Regular_CTCv3_v7.2'
+    if run_a_info["task"] == 'aomctc-a1-4k-as':
+        xls_filename = 'AOM_CWG_AS_CTC_v9.7'
+    xls_template = os.path.join(
+        os.getenv("CONFIG_DIR", "rd_tool"), xls_filename + '.xlsm')
     xls_file = run_a + '/../ctc_results/' + \
-        "CTCv3_Regular_v7.2-%s-%s.xlsm" % (run_id_a, run_id_b)
+        "%s-%s-%s.xlsm" % (xls_filename, run_id_a, run_id_b)
     shutil.copyfile(xls_template, xls_file)
     wb = load_workbook(xls_file, read_only=False, keep_vba=True)
     run_a_cfg_list = return_ctc_cfg_list(run_a_info)
