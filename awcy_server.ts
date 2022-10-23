@@ -397,10 +397,15 @@ app.get('/ctc_report.xlsm', function (req, res) {
   }
   const a = path.basename(String(req.query['a']));
   const b = path.basename(String(req.query['b']));
+  const codec_a = path.basename(String(req.query['codec_a']))
+  const codec_b = path.basename(String(req.query['codec_b']))
   const a_file = runs_dst_dir + '/' + a;
   const b_file = runs_dst_dir + '/' + b;
-  let filename_to_send = 'CTCv3_Regular_v7.2-' + a + '-' + b + '.xlsm';
-  console.log(filename_to_send);
+  let filename_to_send = 'AOM_CWG_Regular_CTCv3_v7.2-' + a + '-' + b + '.xlsm';
+  if ((codec_a == codec_b) && (codec_a == 'av2-as')) {
+  filename_to_send = 'AOM_CWG_AS_CTC_v9.7-' + a + '-' + b + '.xlsm';
+  }
+  console.log(filename_to_send, codec_a, String(req.query['codec_a']));
   console.log(runs_dst_dir)
   res.header("Content-Type", "application/vnd.ms-excel.sheet.macroEnabled.12");
   res.header('Content-Disposition', 'attachment; filename="' + filename_to_send + '"');
