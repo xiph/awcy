@@ -380,8 +380,8 @@ try:
     if info_data[0]["task"] != info_data[1]["task"]:
         print("Runs do not match.")
         sys.exit(1)
-    if info_data[0]["task"] != "av2-a1-4k-as":
-        print("This script only works on av2-a2-4k-as runs.")
+    if info_data[0]["task"] != "aomctc-a1-4k-as":
+        print("This script only works on aomctc-a2-4k-as runs.")
         sys.exit(1)
     task = info_data[0]["task"]
 except FileNotFoundError:
@@ -393,7 +393,7 @@ if info_data:
     sets = json.load(
         open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.json"))
     )
-    videos = sets["av2-a1-4k"]["sources"]  # only use 4k base sequences
+    videos = sets["aomctc-a1-4k"]["sources"]  # only use 4k base sequences
 else:
     if not args.overlap:
         print("You must specify an anchor to use if comparing bare result directories.")
