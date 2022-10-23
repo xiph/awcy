@@ -61,7 +61,7 @@ if __name__ == "__main__":
     test_cfg = 'AS'
     EncodePreset = 0
     ConvexHullTest.EncodePreset = EncodePreset
-    ConvexHullTest.Path_Bitstreams = os.path.join(args.run[0], 'av2-a1-4k-as')
+    ConvexHullTest.Path_Bitstreams = os.path.join(args.run[0], 'aomctc-a1-4k-as')
     ConvexHullTest.Path_QualityLog = ConvexHullTest.Path_Bitstreams
     ConvexHullTest.Path_PerfLog = ConvexHullTest.Path_Bitstreams
     ConvexHullTest.Path_RDResults = ConvexHullTest.Path_Bitstreams
