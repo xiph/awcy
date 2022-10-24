@@ -25,6 +25,7 @@
     "cookie-parser": "^1.4.5",
     "express": "^4.17.1",
     "fs-extra": "^2.0.0",
+    "archiver": "5.3.1",
     "glob": "^7.1.6",
     "irc": "^0.5.2",
     "request": "^2.88.2",
