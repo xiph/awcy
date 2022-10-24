@@ -126,6 +126,7 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
     });
     let reportUrl = hasIvfs ? this.props.job.reportUrl(this.props.name) : this.props.job.totalReportUrl();
     let csvExportUrl = `csv_export.csv?a=${encodeURIComponent(this.props.job.id)}`;
+    let jobDownloaderUrl = `download_run.zip?a=${encodeURIComponent(this.props.job.id)}`;
     let table = <div style={{overflowX: "scroll"}}>
       <Table striped bordered condensed hover style={{width: "100%"}}>
         <thead>
@@ -140,6 +141,7 @@ export class VideoReportComponent extends React.Component<VideoReportProps, {
       <h5>Raw Data:</h5><a href={reportUrl}>{reportUrl}</a>
       <br/>
       <Button href={csvExportUrl}>CTC CSV Export</Button>
+      <Button href={jobDownloaderUrl}>Download Job (zip)</Button>
     </div>
     return table;
   }
