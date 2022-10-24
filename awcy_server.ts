@@ -5,6 +5,7 @@ import path = require('path');
 import bodyParser = require('body-parser')
 import cookieParser = require('cookie-parser')
 import fs = require('fs-extra');
+import archiver = require('archiver');
 import cp = require('child_process');
 import irc = require('irc');
 import AWS = require('aws-sdk');
@@ -546,6 +547,46 @@ app.get('/dump_convex_hull.json',function(req,res) {
                   res.send(stdout);
                 }
               });
+});
+
+// Create API Endpoint to download the Run folder as a zip
+app.get('/download_run.zip', function (req, res) {
+  if (!req.query['a']) {
+    res.send('No Run ID specified');
+    return;
+  }
+  const run_id = path.basename(String(req.query['a']));
+  const tmp_run_zip = '/tmp/awcy_' + run_id + '.zip';
+  const output = fs.createWriteStream(tmp_run_zip);
+  const archive = archiver('zip', {
+    zlib: { level: 4 } // Sets the compression level.
+  });
+
+  // listen for all archive data to be written
+  // 'close' event is fired only when a file descriptor is involved
+  output.on('close', function () {
+    console.log(archive.pointer() + ' total bytes for ', tmp_run_zip);
+    console.log('Archiver has been finalized and the output file descriptor has closed.');
+    // Set the Headers
+    res.header("Content-Type", "application/zip");
+    res.header('Content-Disposition', 'attachment; filename="' + run_id + '.zip' + '"');
+    res.set('Content-Length', archive.pointer());
+    // Send the file
+    res.sendFile(path.resolve(tmp_run_zip));
+  });
+  // This event is fired when the data source is drained no matter what was the data source.
+  output.on('end', function () {
+    console.log('Data has been drained');
+  });
+  // good practice to catch this error explicitly
+  archive.on('error', function (err) {
+    throw err;
+  });
+  archive.pipe(output);
+  const run_folder = runs_dst_dir + '/' + run_id;
+  // Add the Run Folder to the archive
+  archive.directory(run_folder, false);
+  archive.finalize();
 });
 
 app.post('/submit/delete',function(req,res) {
