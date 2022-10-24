@@ -230,5 +230,8 @@ chown -R ${APP_USER}:${APP_USER} /home/${APP_USER}/.ssh
 chown -R ${APP_USER}:${APP_USER} /home/${APP_USER}/.ssh/authorized_keys
 chown -R ${APP_USER}:${APP_USER} $SSH_PRIVKEY_FILE
 
+# Link Videos [For Convex-Hull]
+ln -fs ${MEDIAS_SRC_DIR}/aomctc-a1-4k ${MEDIAS_SRC_DIR}/A1
+
 # run runit services
 exec tini -g -- /usr/bin/runsvdir -P /etc/service
