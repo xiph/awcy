@@ -92,7 +92,7 @@ export class FullReportComponent extends React.Component<{}, {
     }
     function addSeries(job, name, seriesName, color) {
       let values = [];
-      if (job.codec == 'av2-as') {
+      if (job.codec == 'av2-as' || job.codec == 'av2-as-st') {
         job.report[name].forEach(row => {
           let bitRate = (row[ReportField.Size] * 8) / 3840 / 2160;
           let quality = row[reportFieldIndex];
@@ -126,7 +126,7 @@ export class FullReportComponent extends React.Component<{}, {
         for (let name in job.report) {
           addSeries(job, name, job.selectedName + " " + name, (job, name) => getRandomColorForString(name));
         }
-      } else if (job.codec == 'av2-as') {
+      } else if (job.codec == 'av2-as' || job.codec == 'av2-as-st') {
         if (name.includes('Convex Hull')) {
           addConvexHullSeries(job, name.replace(" - Convex Hull",""), job.selectedName + " convex hull", (job, name) => job.color);
         } else {
