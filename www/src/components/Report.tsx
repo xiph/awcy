@@ -275,7 +275,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     }
     this.setState({report: null, textReport: null} as any);
     let method = 'report-overlap';
-    if (a.codec == 'av2-as') {
+    if (a.codec == 'av2-as' || a.codec == 'av2-as-st') {
       method = 'report-as';
     }
     AppStore.loadBDRateReport(a, b, a.task, method, range, interpolation).then((report) => {

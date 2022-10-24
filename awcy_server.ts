@@ -92,6 +92,7 @@ const binaries = {
   'av2-ra-st': ['aomenc','aomdec'],
   'av2-ld': ['aomenc','aomdec'],
   'av2-as': ['aomenc','aomdec'],
+  'av2-as-st': ['aomenc','aomdec'],
   'thor': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt'],
   'thor-rt': ['build/Thorenc','build/Thordec','config_HDB16_high_efficiency.txt','config_LDB_high_efficiency.txt'],
   'rav1e': ['target/release/rav1e'],
@@ -402,7 +403,7 @@ app.get('/ctc_report.xlsm', function (req, res) {
   const a_file = runs_dst_dir + '/' + a;
   const b_file = runs_dst_dir + '/' + b;
   let filename_to_send = 'AOM_CWG_Regular_CTCv3_v7.2-' + a + '-' + b + '.xlsm';
-  if ((codec_a == codec_b) && (codec_a == 'av2-as')) {
+  if ((codec_a == 'av2-as' || codec_a == 'av2-as-st') && (codec_b == 'av2-as' || codec_b == 'av2-as-st')) {
   filename_to_send = 'AOM_CWG_AS_CTC_v9.7-' + a + '-' + b + '.xlsm';
   }
   console.log(filename_to_send, codec_a, String(req.query['codec_a']));

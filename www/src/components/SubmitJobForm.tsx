@@ -88,7 +88,7 @@ export class SubmitJobFormComponent extends React.Component<{
         break;
       case "set":
         if (this.state.set.value) {
-          if (this.state.codec.value === "av2-as") {
+          if (this.state.codec.value === "av2-as" || this.state.codec.value === "av2-as-st") {
             if (this.state.set.value === "aomctc-a1-4k-as") {
               return "success";
             } else {

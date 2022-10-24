@@ -510,7 +510,7 @@ export class Job {
       let data = textArray.map(parse);
       this.report = zip(names, data);
     }).then(data => {
-      if (this.codec == 'av2-as') {
+      if (this.codec == 'av2-as' || this.codec == 'av2-as-st') {
         return this.loadConvexHulls();
       } else {
         return null;
@@ -577,7 +577,8 @@ export class Job {
     "av2-ra": "AVM Random Access (RA) GOP parallel",
     "av2-ra-st": "AVM Random Access (RA)",
     "av2-ld": "AVM Low Delay (LD)",
-    "av2-as": "AVM Adaptive Streaming (AS)",
+    "av2-as": "AVM Adaptive Streaming (AS) GOP Parallel",
+    "av2-as-st": "AVM Adaptive Streaming (AS)",
     "daala": "Daala",
     "x264": "x264",
     "x265": "x265",

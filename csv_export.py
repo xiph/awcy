@@ -98,6 +98,7 @@ quality_presets = {
     "av2-ra-st": [110, 135, 160, 185, 210, 235],
     "av2-ld": [110, 135, 160, 185, 210, 235],
     "av2-as": [110, 135, 160, 185, 210, 235],
+    "av2-as-st": [110, 135, 160, 185, 210, 235],
     "av2-f": [60, 85, 110, 135, 160, 185],
     "thor": list(range(7, 43, 3)),
     "thor-rt": list(range(7, 43, 3)),
@@ -279,7 +280,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                 if this_qp in encoded_qp_list.keys():
                     row = encoded_qp_list[this_qp]
                     frames = int(row[1]) / int(width) / int(height)
-                    if info_data["codec"] == "av2-as":
+                    if info_data["codec"] in ["av2-as", "av2-as-st"] :
                         writer.writerow(
                             [
                                 "AS",  # TestCfg
@@ -401,7 +402,7 @@ def save_ctc_export(run_path, cmd_args):
         sys.stdout = Logger(run_path, cmd_args)
         cfg_name = info_data['codec']
         w = csv.writer(sys.stdout, dialect="excel")
-        if cfg_name == 'av2-as':
+        if cfg_name in ['av2-as', 'av2-as-st']:
             w.writerow(row_header_as)
         else:
             w.writerow(row_header)
@@ -412,7 +413,7 @@ def save_ctc_export(run_path, cmd_args):
         csv_writer_obj = open(run_path + "/csv_export.csv", 'w')
         cfg_name = info_data['codec']
         w = csv.writer(csv_writer_obj, dialect="excel")
-        if cfg_name == 'av2-as':
+        if cfg_name == ['av2-as', 'av2-as-st']:
             w.writerow(row_header_as)
         else:
             w.writerow(row_header)
