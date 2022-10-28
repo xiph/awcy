@@ -671,7 +671,9 @@ app.post('/subjective/vote', function(req,res) {
           });
 });
 
-app.listen(config.port);
+let server = app.listen(config.port);
+server.setTimeout(600000, () => { });
+
 console.log('AWCY server started! Open a browser at http://'+external_addr+':' + config.port);
 console.log('')
 
