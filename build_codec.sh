@@ -119,7 +119,7 @@ case "${CODEC}" in
 
   rav1e)
     cd ${CODECS_SRC_DIR}/rav1e
-    cargo build --release
+    cargo build --release ${BUILD_OPTIONS}
     ;;
 
   svt-av1)
