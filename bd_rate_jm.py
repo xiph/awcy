@@ -6,8 +6,8 @@ from numpy import *
 from scipy import *
 from scipy.interpolate import interp1d
 
-a = loadtxt(sys.argv[1])
-b = loadtxt(sys.argv[2])
+a = genfromtxt(sys.argv[1])
+b = genfromtxt(sys.argv[2])
 rates = [0.005, 0.02, 0.06, 0.2]
 ra = a[:, 2] * 8.0 / a[:, 1]
 rb = b[:, 2] * 8.0 / b[:, 1]

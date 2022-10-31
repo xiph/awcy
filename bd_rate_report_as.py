@@ -345,8 +345,8 @@ def bdrate_as(args, task, video, file1, file2):
         video_chres = re.sub(r"(3840x2160)", res, video)
         file1 = open(args.run[0] + "/" + task + "/" + video_chres + args.suffix)
         file2 = open(args.run[1] + "/" + task + "/" + video_chres + args.suffix)
-        a = loadtxt(file1)
-        b = loadtxt(file2)
+        a = genfromtxt(file1)
+        b = genfromtxt(file2)
         a = a[a[:, 0].argsort()]
         b = b[b[:, 0].argsort()]
         a = flipud(a)
