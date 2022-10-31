@@ -42,6 +42,7 @@ met_index = {
     "APSNR Cb (libvmaf)": 27,
     "APSNR Cr (libvmaf)": 28,
     "CAMBI (libvmaf)": 29,
+    "Enc MD5": 30,
 }
 
 # row_id for different sets inside template.
@@ -269,7 +270,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                         current_video_set,
                         video +
                         "-daala.out")
-            a = loadtxt(daala_path)
+            a = genfromtxt(daala_path, dtype=None, encoding=None)
             # This way, even partial information from the *daala.out can be
             # rendered by having key-value where key is QP.
             encoded_qp_list = {}
@@ -280,7 +281,10 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                 if this_qp in encoded_qp_list.keys():
                     row = encoded_qp_list[this_qp]
                     frames = int(row[1]) / int(width) / int(height)
-                    if info_data["codec"] in ["av2-as", "av2-as-st"] :
+                    enc_md5 = ''
+                    if len(row) > 33:
+                        enc_md5 = str(row[met_index["Enc MD5"] + 3])
+                    if info_data["codec"] in ["av2-as", "av2-as-st"]:
                         writer.writerow(
                             [
                                 "AS",  # TestCfg
@@ -318,7 +322,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 "",  # DecInstr
                                 "",  # EncCycles
                                 "",  # DecCycles
-                                "",  # EncMD5
+                                enc_md5,  # EncMD5
                             ]
                         )
                     else:
@@ -360,7 +364,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 "",  # DecInstr
                                 "",  # EncCycles
                                 "",  # DecCycles
-                                "",  # EncMD5
+                                enc_md5,  # EncMD5
                             ]
                         )
                 # Case where the data is yet to be made
