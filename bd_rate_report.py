@@ -270,9 +270,9 @@ error_strings = []
 
 def bdrate(file1, file2, anchorfile, fullrange):
     if anchorfile:
-        anchor = flipud(loadtxt(anchorfile))
-    a = loadtxt(file1)
-    b = loadtxt(file2)
+        anchor = flipud(genfromtxt(anchorfile))
+    a = genfromtxt(file1)
+    b = genfromtxt(file2)
     a = a[a[:, 0].argsort()]
     b = b[b[:, 0].argsort()]
     a = flipud(a)
