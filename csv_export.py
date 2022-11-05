@@ -43,6 +43,10 @@ met_index = {
     "APSNR Cr (libvmaf)": 28,
     "CAMBI (libvmaf)": 29,
     "Enc MD5": 30,
+    "Enc Instr Cnt": 31,
+    "Enc Cycle Cnt": 32,
+    "Dec Instr Cnt": 33,
+    "Dec Cycle Cnt": 34,
 }
 
 # row_id for different sets inside template.
@@ -242,7 +246,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
         normalized_cfg = 'RA'
     # Get the Quality values, if user defined, use that, else do defaults
     if 'qualities' in list(info_data.keys()):
-        qp_list = info_data['qualities'].split()
+        qp_list = [int(x) for x in info_data['qualities'].split()]
     else:
         qp_list = quality_presets[info_data['codec']]
         if current_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
@@ -282,8 +286,20 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                     row = encoded_qp_list[this_qp]
                     frames = int(row[1]) / int(width) / int(height)
                     enc_md5 = ''
+                    enc_instr_cnt = 0
+                    enc_cycle_cnt = 0
+                    dec_instr_cnt = 0
+                    dec_cycle_cnt = 0
                     if len(row) > 33:
                         enc_md5 = str(row[met_index["Enc MD5"] + 3])
+                        enc_instr_cnt = str(
+                            row[met_index["Enc Instr Cnt"] + 3])
+                        enc_cycle_cnt = str(
+                            row[met_index["Enc Cycle Cnt"] + 3])
+                        dec_instr_cnt = str(
+                            row[met_index["Dec Instr Cnt"] + 3])
+                        dec_cycle_cnt = str(
+                            row[met_index["Dec Cycle Cnt"] + 3])
                     if info_data["codec"] in ["av2-as", "av2-as-st"]:
                         writer.writerow(
                             [
@@ -318,11 +334,11 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 row[met_index["APSNR Cr (libvmaf)"] + 3],
                                 row[met_index["Encoding Time"] + 3],
                                 row[met_index["Decoding Time"] + 3],
-                                "",  # EncInstr
-                                "",  # DecInstr
-                                "",  # EncCycles
-                                "",  # DecCycles
-                                enc_md5,  # EncMD5
+                                enc_instr_cnt,  # EncInstr
+                                dec_instr_cnt,  # DecInstr
+                                enc_cycle_cnt,  # EncCycles
+                                dec_cycle_cnt,  # DecCycles
+                                enc_md5,        # EncMD5
                             ]
                         )
                     else:
@@ -360,11 +376,11 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 row[met_index["CAMBI (libvmaf)"] + 3],
                                 row[met_index["Encoding Time"] + 3],
                                 row[met_index["Decoding Time"] + 3],
-                                "",  # ENCInstr
-                                "",  # DecInstr
-                                "",  # EncCycles
-                                "",  # DecCycles
-                                enc_md5,  # EncMD5
+                                enc_instr_cnt,  # EncInstr
+                                dec_instr_cnt,  # DecInstr
+                                enc_cycle_cnt,  # EncCycles
+                                dec_cycle_cnt,  # DecCycles
+                                enc_md5,        # EncMD5
                             ]
                         )
                 # Case where the data is yet to be made
