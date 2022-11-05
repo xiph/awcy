@@ -196,10 +196,10 @@ export class SubmitJobFormComponent extends React.Component<{
         job.ctcPresets = []
       }
       // Case 2: If user has all preset, push only that, ignore rest
-      else if (this.state.ctcSets.some(checkAllPresets)) {
-        job.ctcSets = []
+      else if (this.state.ctcPresets.some(checkAllPresets)) {
+        job.ctcPresets = []
         job.codec = 'av2-ra-st';
-        job.ctcSets.push('av2-all')
+        job.ctcPresets.push('av2-all')
       }
       // Case 3: Creating/Cloning an existing job,
       // For cloning, we compare by converting to string
@@ -311,12 +311,12 @@ export class SubmitJobFormComponent extends React.Component<{
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("ctcSets")}>
-        <ControlLabel>This will override the above set (for CTC)</ControlLabel>
+        <ControlLabel>This will override the above set (for AOM-CTC)</ControlLabel>
         <Select multi placeholder="CTC Sets" value={this.state.ctcSets} options={ctcOptions} onChange={this.onCtcSetsSelection.bind(this)} />
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("ctcPresets")}>
-        <ControlLabel>This will override the above set (for CTC)</ControlLabel>
+        <ControlLabel>This will override the above preset (for AOM-CTC)</ControlLabel>
         <Select multi placeholder="CTC Presets" value={this.state.ctcPresets} options={ctcPresetOptions} onChange={this.onCtcPresetsSelection.bind(this)} />
       </FormGroup>
 
