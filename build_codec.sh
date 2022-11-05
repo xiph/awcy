@@ -128,9 +128,11 @@ case "${CODEC}" in
     ./build.sh --cc=gcc --cxx=g++ --release --static
     ;;
 
-  vvc-vtm)
+  vvc-vtm*)
     cd ${CODECS_SRC_DIR}/vvc-vtm
-    cmake . -DCMAKE_BUILD_TYPE=Release
+    mkdir build
+    pushd build
+    cmake .. -DCMAKE_BUILD_TYPE=Release
     make -j
     ;;
   *)
