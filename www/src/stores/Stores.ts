@@ -459,6 +459,8 @@ export class Job {
   ivfUrlName(name: string, quality: number) {
     if (this.codec.substring(0,3) == 'av2') {
       return `${name}-${quality}.obu`;
+    } else if (this.codec.substring(0,3) == 'vvc') {
+      return `${name}-${quality}.bin`;
     } else {
       return `${name}-${quality}.ivf`;
     }
@@ -591,7 +593,11 @@ export class Job {
     "thor": "Thor",
     "thor-rt": "Thor Realtime",
     "rav1e": "rav1e",
-    "vvc-vtm": "VVC VTM"
+    "vvc-vtm": "VVC VTM",
+    "vvc-vtm-ra": "VVC VTM Random Access (RA) GOP Parallel",
+    "vvc-vtm-ra-st": "VVC VTM Random Access (RA)",
+    "vvc-vtm-ld": "VVC VTM Low Delay (LD)",
+    "vvc-vtm-ai": "VVC VTM All Intra (AI)"
   };
 
   static sets = {};
