@@ -185,7 +185,7 @@ export class SubmitJobFormComponent extends React.Component<{
         job.ctcSets = job.ctcSets.sort()
         // As we have multiple sets, the frontend will render only the highest
         // prority set now.
-        job.task = this.state.ctcSets[0].value;
+        job.task = job.ctcSets[0];
 
       }
     }
@@ -213,7 +213,7 @@ export class SubmitJobFormComponent extends React.Component<{
         }
         // As we have multiple sets, the frontend will render only the first
         // preset now.
-        job.codec = this.state.ctcPresets[0].value;
+        job.codec = job.ctcPresets[0];
       }
     }
     this.props.onCreate(job);
