@@ -294,7 +294,7 @@ export class SubmitJobFormComponent extends React.Component<{
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("nick")}>
-        <ControlLabel>Your name or IRC nick</ControlLabel>
+        <ControlLabel>Your name or IRC nick or email</ControlLabel>
         <FormControl type="text" placeholder="(auto-notifies on #daala)"
           value={job.nick} onChange={this.onInputChange.bind(this, "nick")} />
       </FormGroup>
