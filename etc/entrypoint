@@ -105,6 +105,12 @@ fi
 
 if [ ! -d "${CODECS_SRC_DIR}/svt-av1" ]; then
 	gosu ${APP_USER}:${APP_USER} git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git ${CODECS_SRC_DIR}/svt-av1
+	ln -s ${CODECS_SRC_DIR}/svt-av1 ${CODECS_SRC_DIR}/svt-av1-ra
+	ln -s ${CODECS_SRC_DIR}/svt-av1 ${CODECS_SRC_DIR}/svt-av1-ra-crf
+	ln -s ${CODECS_SRC_DIR}/svt-av1 ${CODECS_SRC_DIR}/svt-av1-ra-vbr
+	ln -s ${CODECS_SRC_DIR}/svt-av1 ${CODECS_SRC_DIR}/svt-av1-ra-vbr-2p
+	ln -s ${CODECS_SRC_DIR}/svt-av1 ${CODECS_SRC_DIR}/svt-av1-ld-cbr
+	ln -s ${CODECS_SRC_DIR}/svt-av1 ${CODECS_SRC_DIR}/svt-av1-ra-cq
 fi
 
 if [ ! -d "${CODECS_SRC_DIR}/vvc-vtm" ]; then

@@ -122,7 +122,7 @@ case "${CODEC}" in
     cargo build --release ${BUILD_OPTIONS}
     ;;
 
-  svt-av1)
+  svt-av1*)
     cd ${CODECS_SRC_DIR}/svt-av1
     cd Build/linux
     ./build.sh --cc=gcc --cxx=g++ --release --static
