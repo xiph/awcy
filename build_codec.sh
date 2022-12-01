@@ -107,14 +107,14 @@ case "${CODEC}" in
 
   vp8 | vp8-rt)
     cd ${CODECS_SRC_DIR}/vp8
-    ./configure --enable-vp8 --disable-vp9 ${BUILD_OPTIONS}
-    make
+    CONFIG_DIR=${CODECS_SRC_DIR}/vp8/ ./configure --enable-vp8 --disable-vp9 ${BUILD_OPTIONS}
+    CONFIG_DIR=${CODECS_SRC_DIR}/vp8/ make
     ;;
 
   vp9 | vp9-rt)
     cd ${CODECS_SRC_DIR}/vp9
-    ./configure --enable-vp9 --disable-vp8 ${BUILD_OPTIONS}
-    make
+    CONFIG_DIR=${CODECS_SRC_DIR}/vp9/ ./configure --enable-vp9 --disable-vp8 ${BUILD_OPTIONS}
+    CONFIG_DIR=${CODECS_SRC_DIR}/vp9/ make
     ;;
 
   rav1e)
