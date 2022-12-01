@@ -137,8 +137,12 @@ fi
 
 if [ ! -d "${CODECS_SRC_DIR}/libvpx" ]; then
 	gosu ${APP_USER}:${APP_USER} git clone https://github.com/webmproject/libvpx.git ${CODECS_SRC_DIR}/libvpx
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/vp8
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/vp8-rt
 	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp8
 	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp8-rt
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/vp9
+	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/vp9-rt
 	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp9
 	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvp9-rt
 	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvpx-rt
