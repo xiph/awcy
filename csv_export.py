@@ -193,20 +193,29 @@ def return_start_rows(set_name):
 
 
 def return_ctc_set_list(run_info, config):
+    run_set_list = []
+    # TODO: Extend multipreset to other codecs, but catch this edge case for
+    # now
     if len(run_info['ctcSets']) > 0:
         set_name = run_info['ctcSets']
-        if 'aomctc-all' in set_name:
+        if 'aomctc-all' in set_name and 'av2' in config:
             if config == 'av2-ai':
                 run_set_list = ctc_sets_mandatory_ai + ctc_sets_optional
             elif config == 'av2-ra-st' or config == 'av2-ra':
                 run_set_list = ctc_sets_mandatory + ctc_sets_optional
             elif config == 'av2-ld':
                 run_set_list = ctc_sets_mandatory
-        elif 'aomctc-mandatory' in set_name:
+            else:
+                run_set_list = [run_info['task']]
+        elif 'aomctc-mandatory' in set_name and 'av2' in config:
             if config == 'av2-ra-st' or config == 'av2-ra' or config == 'av2-ld':
                 run_set_list = ctc_sets_mandatory
             elif config == 'av2-ai':
                 run_set_list = ctc_sets_mandatory_ai
+            else:
+                run_set_list = [run_info['task']]
+        if 'av2' not in config:
+            run_set_list = [run_info['task']]
         else:
             run_set_list = run_info['ctcSets']
     else:
@@ -429,30 +438,26 @@ def save_ctc_export(run_path, cmd_args):
             key=lambda x: x.split("_")[0]
             + "%08d" % (100000 - int(x.split("_")[1].split("x")[0]))
         )
+    ctc_set_list = return_ctc_set_list(info_data, info_data['codec'])
+    ctc_cfg_list = return_ctc_cfg_list(info_data)
+    cfg_name = info_data['codec']
     if not cmd_args.ctc_export:
         sys.stdout = Logger(run_path, cmd_args)
-        cfg_name = info_data['codec']
-        w = csv.writer(sys.stdout, dialect="excel")
-        if cfg_name in ['av2-as', 'av2-as-st']:
-            w.writerow(row_header_as)
-        else:
-            w.writerow(row_header)
-        write_set_data(run_path, w, task, cfg_name)
+        csv_writer_obj = sys.stdout
     else:
-        ctc_set_list = return_ctc_set_list(info_data, info_data['codec'])
-        ctc_cfg_list = return_ctc_cfg_list(info_data)
         csv_writer_obj = open(run_path + "/csv_export.csv", 'w')
-        cfg_name = info_data['codec']
-        w = csv.writer(csv_writer_obj, dialect="excel")
-        if cfg_name == ['av2-as', 'av2-as-st']:
-            w.writerow(row_header_as)
-        else:
-            w.writerow(row_header)
-        # Abstract Writing per-set data
-        for config_name in ctc_cfg_list:
-            ctc_set_list = return_ctc_set_list(info_data, config_name)
-            for set_name in ctc_set_list:
-                write_set_data(run_path, w, set_name, config_name)
+    w = csv.writer(csv_writer_obj, dialect="excel")
+    if cfg_name == ['av1-as', 'av2-as-st']:
+        w.writerow(row_header_as)
+    else:
+        w.writerow(row_header)
+    # Abstract Writing per-set data
+    for config_name in ctc_cfg_list:
+        ctc_set_list = return_ctc_set_list(info_data, config_name)
+        for set_name in ctc_set_list:
+            write_set_data(run_path, w, set_name, config_name)
+    # For CTC XLSM case which do not output to STDOUT
+    if cmd_args.ctc_export:
         csv_writer_obj.close()
 
 
