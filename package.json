@@ -23,7 +23,7 @@
     "aws-sdk": "^2.659.0",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "fs-extra": "^2.0.0",
     "archiver": "5.3.1",
     "glob": "^7.1.6",
