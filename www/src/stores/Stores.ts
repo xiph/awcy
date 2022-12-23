@@ -429,7 +429,11 @@ export class Job {
     if (this.ctcPresets.length > 1) {
       return baseUrl + `runs/${this.id}/${this.codec}/${this.task}/total.out`;
     } else {
-      return baseUrl + `runs/${this.id}/${this.task}/total.out`;
+      if ((this.ctcPresets.length == 1) && (this.ctcPresets[0] == 'av2-all')) {
+        return baseUrl + `runs/${this.id}/${this.codec}/${this.task}/total.out`
+      } else {
+        return baseUrl + `runs/${this.id}/${this.task}/total.out`;
+      }
     }
   }
 
@@ -437,7 +441,11 @@ export class Job {
     if (this.ctcPresets.length > 1) {
       return baseUrl + `runs/${this.id}/${this.codec}/${this.task}/${name}-daala.out`
     } else {
-      return baseUrl + `runs/${this.id}/${this.task}/${name}-daala.out`
+      if ((this.ctcPresets.length == 1) && (this.ctcPresets[0] == 'av2-all')) {
+        return baseUrl + `runs/${this.id}/${this.codec}/${this.task}/${name}-daala.out`
+      } else {
+        return baseUrl + `runs/${this.id}/${this.task}/${name}-daala.out`
+      }
     }
   }
 
