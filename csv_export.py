@@ -228,7 +228,10 @@ def return_ctc_cfg_list(run_info):
     try:
         cfg_name = run_info['ctcPresets']
         if len(cfg_name) > 0:
-            return cfg_name
+            if 'av2-all' in cfg_name:
+                return ['av2-ra-st', 'av2-ai', 'av2-ld']
+            else:
+                return cfg_name
         else:
             return [run_info['codec']]
     except BaseException as e:
@@ -270,8 +273,11 @@ def write_set_data(run_path, writer, current_video_set, current_config):
         qp_list = [int(x) for x in info_data['qualities'].split()]
     else:
         qp_list = quality_presets[info_data['codec']]
-        if current_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
-            qp_list = quality_presets['av2-f']
+        if current_config == 'av2-ai':
+            if current_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
+                qp_list = quality_presets['av2-f']
+            else:
+                qp_list = quality_presets['av2-ai']
     try:
         for video in videos:
             v = open(os.path.join(videos_dir, video), "rb")
@@ -288,7 +294,8 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                 video +
                 "-daala.out")
             if 'ctcPresets' in info_data.keys():
-                if len(info_data['ctcPresets']) > 1:
+                if len(info_data['ctcPresets']
+                       ) > 1 or 'av2-all' in info_data['ctcPresets']:
                     daala_path = os.path.join(
                         run_path,
                         current_config,
@@ -508,13 +515,21 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
         # Multi-Set Case
         else:
             for this_video_set in current_ctc_list_a:
-                if this_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
+                if this_video_set in ['aomctc-f1-hires',
+                                      'aomctc-f2-midres'] and cfg_iter == 'av2-ai':
                     anchor_sheet_name = 'Anchor-Still'
+                    anchor_sheet = wb[anchor_sheet_name]
+                else:
+                    anchor_sheet_name = 'Anchor-%s' % this_cfg
                     anchor_sheet = wb[anchor_sheet_name]
                 write_xls_rows(run_a, this_video_set, this_cfg, anchor_sheet)
             for this_video_set in current_ctc_list_b:
-                if this_video_set in ['aomctc-f1-hires', 'aomctc-f2-midres']:
+                if this_video_set in ['aomctc-f1-hires',
+                                      'aomctc-f2-midres'] and cfg_iter == 'av2-ai':
                     test_sheet_name = 'Test-Still'
+                    test_sheet = wb[test_sheet_name]
+                else:
+                    test_sheet_name = 'Test-%s' % this_cfg
                     test_sheet = wb[test_sheet_name]
                 write_xls_rows(run_b, this_video_set, this_cfg, test_sheet)
             wb.save(xls_file)
@@ -544,14 +559,15 @@ def write_xls_file(run_a, run_b):
         run_b_info,
         xls_file,
         wb)
-    write_xls_cfg_sheet(
-        run_a,
-        run_b,
-        run_b_cfg_list,
-        run_a_info,
-        run_b_info,
-        xls_file,
-        wb)
+    if run_a_cfg_list != run_b_cfg_list:
+        write_xls_cfg_sheet(
+            run_a,
+            run_b,
+            run_b_cfg_list,
+            run_a_info,
+            run_b_info,
+            xls_file,
+            wb)
 
 
 def main():
