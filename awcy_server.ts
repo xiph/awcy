@@ -414,23 +414,40 @@ app.get('/ctc_report.xlsm', function (req, res) {
   const a_file = runs_dst_dir + '/' + a;
   const b_file = runs_dst_dir + '/' + b;
   let filename_to_send = 'AOM_CWG_Regular_CTCv3_v7.2-' + a + '-' + b + '.xlsm';
+  let ctc_report_process = null;
   if ((codec_a == 'av2-as' || codec_a == 'av2-as-st') && (codec_b == 'av2-as' || codec_b == 'av2-as-st')) {
   filename_to_send = 'AOM_CWG_AS_CTC_v9.7-' + a + '-' + b + '.xlsm';
   }
-  console.log(filename_to_send, codec_a, String(req.query['codec_a']));
-  console.log(runs_dst_dir)
   res.header("Content-Type", "application/vnd.ms-excel.sheet.macroEnabled.12");
   res.header('Content-Disposition', 'attachment; filename="' + filename_to_send + '"');
-  cp.execFile('./csv_export.py', [a_file, '--ctc_export', '--run_b=' + b_file],
-    {},
-    function (error, stdout, stderr) {
-      if (error) {
-        res.send(stdout + stderr);
-        throw error;
-      } else {
+  const env = { ...process.env };
+  env['PYTHONUNBUFFERED'] = '1';
+  fs.writeFile(runs_dst_dir + '/ctc_results/' + filename_to_send.slice(0, -5) + '.txt', " ");
+  ctc_report_process = cp.spawn('./csv_export.py', [a_file, '--ctc_export', '--run_b=' + b_file], { shell: true, env: env });
+  // Write progress of CTC XLSM generation
+  ctc_report_process.stdout.on('data', function (data) {
+    fs.appendFile(runs_dst_dir + '/ctc_results/' + filename_to_send.slice(0, -5) + '.txt', data);
+  });
+  ctc_report_process.stderr.on('data', function (data) {
+    console.log(data.toString());
+    fs.appendFile(runs_dst_dir + '/ctc_results/' + filename_to_send.slice(0, -5) + '.txt', data);
+  });
+  ctc_report_process.on('close', function (error) {
+    if (error == 0) {
+      try {
         res.sendFile(path.join(runs_dst_dir, '/ctc_results/' + filename_to_send));
+      } catch (e) {
+        console.log(e);
+        fs.appendFile(runs_dst_dir + '/ctc_results/' + filename_to_send.slice(0, -5) + '.txt', e);
+        res.sendFile(runs_dst_dir + '/ctc_results/' + filename_to_send.slice(0, -5) + '.txt');
       }
-    });
+    } else {
+      // XLSM generation error, send the error as plain text
+      res.header("Content-Type", "text/plain");
+      res.header('Content-Disposition', 'attachment; filename="' + filename_to_send.slice(0, -5) + '.txt"');
+      res.sendFile(runs_dst_dir + '/ctc_results/' + filename_to_send.slice(0, -5) + '.txt');
+    }
+  });
 });
 
 app.use('/submit',check_key);

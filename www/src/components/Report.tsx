@@ -2,7 +2,7 @@ import * as React from "react";
 import { Glyphicon, Panel, Table } from "react-bootstrap";
 import { Button, FormGroup, } from "react-bootstrap";
 import { Option } from "./Widgets";
-import { BDRateReport, Report, AppStore, Job, reportFieldNames, outFileFieldNames, analyzerBaseUrl, baseUrl } from "../stores/Stores";
+import { BDRateReport, Report, AppStore, Job, reportFieldNames, outFileFieldNames, analyzerBaseUrl, baseUrl,loadXHR2 } from "../stores/Stores";
 
 declare var require: any;
 
@@ -286,6 +286,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
   }
   componentDidMount() {
     this.loadReport(this.props, this.state.range.value, this.state.interpolation.value);
+    this.startPollingCtcLog();
   }
   onReverseClick() {
     let report = this.state.report;
@@ -365,6 +366,35 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     text += rows.map(row => `| ${row.join(" | ")} |`).join("\n");
     this.setState({textReport: text} as any);
   }
+
+  logInterval: any;
+  ctc_xls_logs: any;
+
+  // Read the CTC XLSM generation stdout every 5 seconds
+  startPollingCtcLog() {
+    if (this.logInterval) {
+      clearInterval(this.logInterval);
+    }
+    this.logInterval = setInterval(() => {
+      this.loadCtcLog(true);
+    }, 5000);
+  }
+
+  loadCtcLog(refresh = false): Promise<string> {
+    if (this.props.a && this.props.b) {
+      if (this.ctc_xls_logs && !refresh) {
+        return Promise.resolve(this.ctc_xls_logs);
+      }
+      let filename_to_send = 'AOM_CWG_Regular_CTCv3_v7.2-' + this.props.a.id + '-' + this.props.b.id + '.txt';
+      let path = baseUrl + 'runs/ctc_results/' + filename_to_send;
+      return loadXHR2<string>(path, "text").then((log) => {
+        this.ctc_xls_logs = log;
+      }).catch(() => {
+        this.ctc_xls_logs = "";
+      }) as any;
+    }
+  }
+
   render() {
     console.debug("Rendering BDRateReport");
     let a = this.props.a;
@@ -383,6 +413,18 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
           <Button href={csvExportUrl}>Get Partial CTC Report</Button>{' '}
           <br></br>
           <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Full Report loading ...
+          <details style={{
+            position: 'relative',
+            top: 4,
+            fontFamily: "'Roboto Mono',monospace",
+            fontSize: 12,
+          }}>
+            <summary className="Select-control" style={{
+              paddingBottom: 8,
+              paddingTop: 6, paddingLeft: 8
+            }}>CTC XLSM Export Logs</summary>
+            <pre className="log">{this.ctc_xls_logs}</pre>
+          </details>
         </Panel>
       }
     } else {
@@ -427,7 +469,6 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       "codec_a="+ encodeURIComponent(report.a.codec),
       "codec_b="+ encodeURIComponent(report.b.codec)
       ];
-    console.log(args)
     let csvExportUrl = baseUrl + "ctc_report.xlsm?" + args.join("&");
       return <Panel header={`BD Rate Report ${report.a.selectedName + " " + report.a.id} → ${report.b.selectedName + " " + report.b.id}`}>
         <div style={{ paddingBottom: 8, paddingTop: 4 }}>
@@ -439,6 +480,18 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
             </Select>
             <Select clearable={false} value={this.state.interpolation} onChange={this.onChangeInterpolation.bind(this)} options={interpolationOptions} placeholder="interpolation">
             </Select>
+            <details style={{
+              position: 'relative',
+              top: 4,
+              fontFamily: "'Roboto Mono',monospace",
+              fontSize: 12,
+            }}>
+              <summary className="Select-control" style={{
+                paddingBottom: 8,
+                paddingTop: 6, paddingLeft: 8
+              }}>CTC XLSM Export Logs</summary>
+              <pre className="log">{this.ctc_xls_logs}</pre>
+            </details>
           </FormGroup>
         </div>
         {errors}
