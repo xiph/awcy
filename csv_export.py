@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import shutil
+from datetime import datetime
 from openpyxl import load_workbook
 from numpy import *
 
@@ -509,12 +510,42 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
         # Single Video Set Condition
         if len(current_ctc_list_a) == 0 and len(current_ctc_list_b) == 0:
             current_video_set = run_a_info["task"]
+            print(
+                datetime.isoformat(
+                    datetime.now()),
+                "Writing data for run",
+                run_a,
+                "with set",
+                current_video_set,
+                "and",
+                this_cfg,
+                "config")
             write_xls_rows(run_a, current_video_set, this_cfg, anchor_sheet)
+            print(
+                datetime.isoformat(
+                    datetime.now()),
+                "Writing data for run",
+                run_b,
+                "with set",
+                current_video_set,
+                "and",
+                this_cfg,
+                "config")
             write_xls_rows(run_b, current_video_set, this_cfg, test_sheet)
             wb.save(xls_file)
         # Multi-Set Case
         else:
             for this_video_set in current_ctc_list_a:
+                print(
+                    datetime.isoformat(
+                        datetime.now()),
+                    "Writing data for run",
+                    run_a,
+                    "with set",
+                    this_video_set,
+                    "and",
+                    this_cfg,
+                    "config")
                 if this_video_set in ['aomctc-f1-hires',
                                       'aomctc-f2-midres'] and cfg_iter == 'av2-ai':
                     anchor_sheet_name = 'Anchor-Still'
@@ -524,6 +555,16 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
                     anchor_sheet = wb[anchor_sheet_name]
                 write_xls_rows(run_a, this_video_set, this_cfg, anchor_sheet)
             for this_video_set in current_ctc_list_b:
+                print(
+                    datetime.isoformat(
+                        datetime.now()),
+                    "Writing data for run",
+                    run_b,
+                    "with set",
+                    this_video_set,
+                    "and",
+                    this_cfg,
+                    "config")
                 if this_video_set in ['aomctc-f1-hires',
                                       'aomctc-f2-midres'] and cfg_iter == 'av2-ai':
                     test_sheet_name = 'Test-Still'
@@ -551,6 +592,7 @@ def write_xls_file(run_a, run_b):
     wb = load_workbook(xls_file, read_only=False, keep_vba=True)
     run_a_cfg_list = return_ctc_cfg_list(run_a_info)
     run_b_cfg_list = return_ctc_cfg_list(run_b_info)
+    print(datetime.isoformat(datetime.now()), "Start writing data of", run_a)
     write_xls_cfg_sheet(
         run_a,
         run_b,
@@ -560,6 +602,12 @@ def write_xls_file(run_a, run_b):
         xls_file,
         wb)
     if run_a_cfg_list != run_b_cfg_list:
+        print(
+            datetime.isoformat(
+                datetime.now()),
+            "Start writing data of",
+            run_b,
+            "as config is different.")
         write_xls_cfg_sheet(
             run_a,
             run_b,
@@ -585,10 +633,32 @@ def main():
         if not args.run_b:
             print("ERROR: Missing Target, aborting")
             sys.exit(1)
+        if args.ctc_export:
+            print(
+                datetime.isoformat(
+                    datetime.now()),
+                "CSV Generation for run",
+                args.run[0])
         save_ctc_export(args.run[0], args)
+        if args.ctc_export:
+            print(
+                datetime.isoformat(
+                    datetime.now()),
+                "CSV Generation for run",
+                args.run_b)
         save_ctc_export(args.run_b, args)
-
+        if args.ctc_export:
+            print(
+                datetime.isoformat(
+                    datetime.now()),
+                "XLSM Generation for run",
+                args.run[0],
+                "and",
+                args.run_b)
         write_xls_file(args.run[0], args.run_b)
+        if args.ctc_export:
+            print(datetime.isoformat(datetime.now()),
+                  "Completed XLSM Generation for the selected jobs")
 
 
 if __name__ == "__main__":
