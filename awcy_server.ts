@@ -173,6 +173,14 @@ function process_build_queue() {
       }
       if (error) {
         fs.writeFile(runs_dst_dir+'/'+build_job.run_id+'/status.txt','buildfailed');
+        let notifer_args = [
+          "run_id=" + encodeURIComponent(build_job.run_id),
+          "failtype=" + encodeURIComponent('buildfailed'),
+          "nick=" + encodeURIComponent(build_job.nick)
+        ];
+        request(config.rd_server_url + '/fail_job_notifier?' + notifer_args.join('&'), function (error, response, body) {
+          console.log(body, error);
+        });
         if (ircclient) {
           ircclient.say(channel,build_job.nick+': Failed to build! '+build_job.run_id+
                       ' '+config.base_url+'/runs/'+build_job.run_id+'/output.txt');
