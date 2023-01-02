@@ -116,6 +116,7 @@ fi
 if [ ! -d "${CODECS_SRC_DIR}/vvc-vtm" ]; then
 	gosu ${APP_USER}:${APP_USER} git clone https://vcgit.hhi.fraunhofer.de/jvet/VVCSoftware_VTM.git ${CODECS_SRC_DIR}/vvc-vtm
 	ln -s ${CODECS_SRC_DIR}/vvc-vtm ${CODECS_SRC_DIR}/vvc-vtm-ra
+	ln -s ${CODECS_SRC_DIR}/vvc-vtm ${CODECS_SRC_DIR}/vvc-vtm-ra-ctc
 	ln -s ${CODECS_SRC_DIR}/vvc-vtm ${CODECS_SRC_DIR}/vvc-vtm-ra-st
 	ln -s ${CODECS_SRC_DIR}/vvc-vtm ${CODECS_SRC_DIR}/vvc-vtm-ld
 	ln -s ${CODECS_SRC_DIR}/vvc-vtm ${CODECS_SRC_DIR}/vvc-vtm-ai
