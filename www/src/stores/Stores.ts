@@ -609,6 +609,7 @@ export class Job {
     "rav1e": "rav1e",
     "vvc-vtm": "VVC VTM",
     "vvc-vtm-ra": "VVC VTM Random Access (RA) GOP Parallel",
+    "vvc-vtm-ra-ctc": "VVC VTM AOM Random Access (RA) GOP Parallel",
     "vvc-vtm-ra-st": "VVC VTM Random Access (RA)",
     "vvc-vtm-ld": "VVC VTM Low Delay (LD)",
     "vvc-vtm-ai": "VVC VTM All Intra (AI)"
