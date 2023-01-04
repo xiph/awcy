@@ -200,7 +200,7 @@ def return_ctc_set_list(run_info, config):
     # now
     if len(run_info['ctcSets']) > 0:
         set_name = run_info['ctcSets']
-        if 'aomctc-all' in set_name and 'av2' in config:
+        if 'aomctc-all' in set_name and ('av2' in config or 'vvc' in config):
             if config == 'av2-ai':
                 run_set_list = ctc_sets_mandatory_ai + ctc_sets_optional
             elif config == 'av2-ra-st' or config == 'av2-ra':
@@ -209,15 +209,16 @@ def return_ctc_set_list(run_info, config):
                 run_set_list = ctc_sets_mandatory
             else:
                 run_set_list = [run_info['task']]
-        elif 'aomctc-mandatory' in set_name and 'av2' in config:
-            if config == 'av2-ra-st' or config == 'av2-ra' or config == 'av2-ld':
+        elif 'aomctc-mandatory' in set_name and ('av2' in config or 'vvc' in config):
+            if config in ['av2-ra-st', 'av2-ra', 'av2-ld', 'vvc-vtm',
+                          'vvc-vtm-ra', 'vvc-vtm-ra-ctc', 'vvc-ra-st', 'vvc-ra-ld']:
                 run_set_list = ctc_sets_mandatory
-            elif config == 'av2-ai':
+            elif config in ['av2-ai', 'vvc-vtm-ai']:
                 run_set_list = ctc_sets_mandatory_ai
             else:
                 run_set_list = [run_info['task']]
-        # Case of AOM Sets but not AVM codec
-        elif 'av2' not in config:
+        # Case of AOM Sets but not AVM/VVC codec
+        elif 'av2' not in config and 'vvc' not in config:
             run_set_list = [run_info['task']]
         else:
             run_set_list = run_info['ctcSets']
