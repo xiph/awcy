@@ -407,10 +407,10 @@ if info_data:
         run_a = args.run[0] + "/" + task + "/" + video + args.suffix
         run_b = args.run[1] + "/" + task + "/" + video + args.suffix
         if 'ctcPresets' in info_data[0].keys():
-            if len(info_data[0]["ctcPresets"]) > 1:
+            if len(info_data[0]["ctcPresets"]) > 1 or 'av2-all' in info_data[0]["ctcPresets"]:
                 run_a = args.run[0] + "/" + codec + "/" + task + "/" + video + args.suffix
         if 'ctcPresets' in info_data[1].keys():
-            if len(info_data[1]["ctcPresets"]) > 1:
+            if len(info_data[1]["ctcPresets"]) > 1 or 'av2-all' in info_data[1]["ctcPresets"]:
                 run_b = args.run[1] + "/" + codec + "/" + task + "/" + video + args.suffix
         if args.overlap:
             metric_data[video] = bdrate(
