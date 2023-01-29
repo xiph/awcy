@@ -107,6 +107,7 @@ const binaries = {
   'vvc-vtm': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
   'vvc-vtm-ra': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
   'vvc-vtm-ra-ctc': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
+  'vvc-vtm-as-ctc': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
   'vvc-vtm-ra-st': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
   'vvc-vtm-ld': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
   'vvc-vtm-ai': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic']
@@ -424,7 +425,7 @@ app.get('/ctc_report.xlsm', function (req, res) {
   const b_file = runs_dst_dir + '/' + b;
   let filename_to_send = 'AOM_CWG_Regular_CTCv3_v7.2-' + a + '-' + b + '.xlsm';
   let ctc_report_process = null;
-  if ((codec_a == 'av2-as' || codec_a == 'av2-as-st') && (codec_b == 'av2-as' || codec_b == 'av2-as-st')) {
+  if ((codec_a == 'av2-as' || codec_a == 'av2-as-st' || codec_a == 'vvc-vtm-as-ctc') && (codec_b == 'av2-as' || codec_b == 'av2-as-st' || codec_b == 'vvc-vtm-as-ctc')) {
   filename_to_send = 'AOM_CWG_AS_CTC_v9.7-' + a + '-' + b + '.xlsm';
   }
   res.header("Content-Type", "application/vnd.ms-excel.sheet.macroEnabled.12");
