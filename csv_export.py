@@ -67,7 +67,7 @@ start_rows = {
 }
 
 # CTC Configs
-# LD : ctc_sets_mandatory
+# LD : ctc_sets_mandatory - A1-4K
 # RA: ctc_sets_mandatory  + ctc_sets_optional
 # AI: ctc_sets_mandatory_ai + ctc_sets_optional
 # AS: A1 with Downsampling
@@ -81,6 +81,7 @@ ctc_sets_mandatory = [
     "aomctc-b2-syn"]
 ctc_sets_mandatory_ai = ctc_sets_mandatory + \
     ["aomctc-f1-hires", "aomctc-f2-midres"]
+ctc_sets_mandatory_ld = [x for x in ctc_sets_mandatory if x != 'aomctc-a1-4k']
 ctc_sets_optional = ["aomctc-g1-hdr-4k",
                      "aomctc-g2-hdr-2k", "aomctc-e-nonpristine"]
 
@@ -207,13 +208,15 @@ def return_ctc_set_list(run_info, config):
             elif config == 'av2-ra-st' or config == 'av2-ra':
                 run_set_list = ctc_sets_mandatory + ctc_sets_optional
             elif config == 'av2-ld':
-                run_set_list = ctc_sets_mandatory
+                run_set_list = ctc_sets_mandatory_ld
             else:
                 run_set_list = [run_info['task']]
         elif 'aomctc-mandatory' in set_name and ('av2' in config or 'vvc' in config):
             if config in ['av2-ra-st', 'av2-ra', 'vvc-vtm',
                           'vvc-vtm-ra', 'vvc-vtm-ra-ctc', 'vvc-vtm-as-ctc', 'vvc-vtm-ra-st', 'vvc-vtm-ld']:
                 run_set_list = ctc_sets_mandatory
+            elif config in ['av2-ld', 'vvc-ra-ld']:
+                run_set_list = ctc_sets_mandatory_ld
             elif config in ['av2-ai', 'vvc-vtm-ai']:
                 run_set_list = ctc_sets_mandatory_ai
             else:
