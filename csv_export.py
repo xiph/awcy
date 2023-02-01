@@ -561,7 +561,10 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
                     anchor_sheet_name = 'Anchor-Still'
                     anchor_sheet = wb[anchor_sheet_name]
                 else:
-                    anchor_sheet_name = 'Anchor-%s' % this_cfg
+                    if this_cfg == 'AS':
+                        anchor_sheet_name = 'Anchor'
+                    else:
+                        anchor_sheet_name = 'Anchor-%s' % this_cfg
                     anchor_sheet = wb[anchor_sheet_name]
                 write_xls_rows(run_a, this_video_set, this_cfg, anchor_sheet)
             for this_video_set in current_ctc_list_b:
@@ -580,7 +583,10 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
                     test_sheet_name = 'Test-Still'
                     test_sheet = wb[test_sheet_name]
                 else:
-                    test_sheet_name = 'Test-%s' % this_cfg
+                    if this_cfg == 'AS':
+                        test_sheet_name = 'Test'
+                    else:
+                        test_sheet_name = 'Test-%s' % this_cfg
                     test_sheet = wb[test_sheet_name]
                 write_xls_rows(run_b, this_video_set, this_cfg, test_sheet)
             wb.save(xls_file)
