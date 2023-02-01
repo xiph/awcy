@@ -381,7 +381,7 @@ try:
         print("Runs do not match.")
         sys.exit(1)
     if info_data[0]["task"] != "aomctc-a1-4k-as":
-        print("This script only works on aomctc-a2-4k-as runs.")
+        print("This script only works on aomctc-a1-4k-as runs.")
         sys.exit(1)
     task = info_data[0]["task"]
 except FileNotFoundError:
