@@ -331,13 +331,13 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                     dec_cycle_cnt = 0
                     if len(row) > 33:
                         enc_md5 = str(row[met_index["Enc MD5"] + 3])
-                        enc_instr_cnt = str(
+                        enc_instr_cnt = int(
                             row[met_index["Enc Instr Cnt"] + 3])
-                        enc_cycle_cnt = str(
+                        enc_cycle_cnt = int(
                             row[met_index["Enc Cycle Cnt"] + 3])
-                        dec_instr_cnt = str(
+                        dec_instr_cnt = int(
                             row[met_index["Dec Instr Cnt"] + 3])
-                        dec_cycle_cnt = str(
+                        dec_cycle_cnt = int(
                             row[met_index["Dec Cycle Cnt"] + 3])
                     if info_data["codec"] in [
                             "av2-as", "av2-as-st", 'vvc-vtm-as-ctc']:
@@ -374,10 +374,10 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 row[met_index["APSNR Cr (libvmaf)"] + 3],
                                 row[met_index["Encoding Time"] + 3],
                                 row[met_index["Decoding Time"] + 3],
-                                enc_instr_cnt,  # EncInstr
-                                dec_instr_cnt,  # DecInstr
-                                enc_cycle_cnt,  # EncCycles
-                                dec_cycle_cnt,  # DecCycles
+                                int(enc_instr_cnt),  # EncInstr
+                                int(dec_instr_cnt),  # DecInstr
+                                int(enc_cycle_cnt),  # EncCycles
+                                int(dec_cycle_cnt),  # DecCycles
                                 enc_md5,        # EncMD5
                             ]
                         )
@@ -416,10 +416,10 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 row[met_index["CAMBI (libvmaf)"] + 3],
                                 row[met_index["Encoding Time"] + 3],
                                 row[met_index["Decoding Time"] + 3],
-                                enc_instr_cnt,  # EncInstr
-                                dec_instr_cnt,  # DecInstr
-                                enc_cycle_cnt,  # EncCycles
-                                dec_cycle_cnt,  # DecCycles
+                                int(enc_instr_cnt),  # EncInstr
+                                int(dec_instr_cnt),  # DecInstr
+                                int(enc_cycle_cnt),  # EncCycles
+                                int(dec_cycle_cnt),  # DecCycles
                                 enc_md5,        # EncMD5
                             ]
                         )
@@ -484,7 +484,9 @@ def save_ctc_export(run_path, cmd_args):
 def write_xls_rows(run_path, current_video_set, current_config, this_sheet):
     run_file = open(run_path + '/csv_export.csv', 'r')
     start_id, normalized_set = return_start_rows(current_video_set)
-
+    row_end_idx = 31
+    if current_config == 'AS':
+        row_end_idx = 30
     run_reader = csv.reader(run_file)
     next(run_reader)
     this_row = start_id
@@ -495,7 +497,8 @@ def write_xls_rows(run_path, current_video_set, current_config, this_sheet):
             this_col = 1
             for this_values in this_line:
                 this_cell = this_sheet.cell(row=this_row, column=this_col)
-                if this_col >= 12 and this_col <= 30 and this_values != "":
+                # QP_val:perf_stats
+                if this_col >= 11 and this_col <= row_end_idx and this_values != "":
                     this_cell.value = float(this_values)
                 else:
                     this_cell.value = this_values
