@@ -324,6 +324,12 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                 if this_qp in encoded_qp_list.keys():
                     row = encoded_qp_list[this_qp]
                     frames = int(row[1]) / int(width) / int(height)
+                    # For still-images set compute Bytes
+                    if normalized_set in ['F1', 'F2']:
+                        enc_bitrate = round(int(row[2]) * 8.0, 6)
+                    else:
+                        enc_bitrate = round(
+                            int(row[2]) * 8.0 * float(fps_n) / float(fps_d) / frames / 1000.0, 6)
                     enc_md5 = ''
                     enc_instr_cnt = 0
                     enc_cycle_cnt = 0
@@ -354,12 +360,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 10,  # BitDepth
                                 str(width) + "x" + str(height),  # CodedRes
                                 row[0],  # qp
-                                int(row[2])
-                                * 8.0
-                                * float(fps_n)
-                                / float(fps_d)
-                                / frames
-                                / 1000.0,  # bitrate
+                                enc_bitrate,  # bitrate
                                 row[met_index["PSNR Y (libvmaf)"] + 3],
                                 row[met_index["PSNR Cb (libvmaf)"] + 3],
                                 row[met_index["PSNR Cr (libvmaf)"] + 3],
@@ -395,12 +396,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 10,  # BitDepth #TODO: FIXME
                                 str(width) + "x" + str(height),  # CodedRes
                                 int(row[0]),  # qp
-                                int(row[2])
-                                * 8.0
-                                * float(fps_n)
-                                / float(fps_d)
-                                / frames
-                                / 1000.0,  # bitrate
+                                enc_bitrate,  # bitrate
                                 row[met_index["PSNR Y (libvmaf)"] + 3],
                                 row[met_index["PSNR Cb (libvmaf)"] + 3],
                                 row[met_index["PSNR Cr (libvmaf)"] + 3],
