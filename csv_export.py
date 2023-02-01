@@ -269,7 +269,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
     videos = sets[current_video_set]["sources"]
     # sort name ascending, resolution descending
     if current_video_set != "aomctc-a1-4k-as":
-        videos.sort(key=lambda s: s.lower())
+        videos.sort()
     else:
         videos.sort(
             key=lambda x: x.split("_")[0]
@@ -452,7 +452,7 @@ def save_ctc_export(run_path, cmd_args):
     videos = sets[task]["sources"]
     # sort name ascending, resolution descending
     if task != "aomctc-a1-4k-as":
-        videos.sort(key=lambda s: s.lower())
+        videos.sort()
     else:
         videos.sort(
             key=lambda x: x.split("_")[0]
