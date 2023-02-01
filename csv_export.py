@@ -119,6 +119,7 @@ quality_presets = {
     "vvc-vtm": [22, 27, 32, 37],
     "vvc-vtm-ra": [22, 27, 32, 37],
     "vvc-vtm-ra-ctc": [22, 27, 32, 37, 42, 47],
+    "vvc-vtm-as-ctc": [22, 27, 32, 37, 42, 47],
     "vvc-vtm-ra-st": [22, 27, 32, 37],
     "vvc-vtm-ld": [22, 27, 32, 37],
     "vvc-vtm-ai": [22, 27, 32, 37],
@@ -210,8 +211,8 @@ def return_ctc_set_list(run_info, config):
             else:
                 run_set_list = [run_info['task']]
         elif 'aomctc-mandatory' in set_name and ('av2' in config or 'vvc' in config):
-            if config in ['av2-ra-st', 'av2-ra', 'av2-ld', 'vvc-vtm',
-                          'vvc-vtm-ra', 'vvc-vtm-ra-ctc', 'vvc-ra-st', 'vvc-ra-ld']:
+            if config in ['av2-ra-st', 'av2-ra', 'vvc-vtm',
+                          'vvc-vtm-ra', 'vvc-vtm-ra-ctc', 'vvc-vtm-as-ctc', 'vvc-vtm-ra-st', 'vvc-vtm-ld']:
                 run_set_list = ctc_sets_mandatory
             elif config in ['av2-ai', 'vvc-vtm-ai']:
                 run_set_list = ctc_sets_mandatory_ai
@@ -246,6 +247,10 @@ def return_config(this_config):
     if 'av2-' in this_config:
         if this_config.split('-')[1].upper() in run_cfgs:
             this_cfg = this_config.split('-')[1].upper()
+    # VVC has VVC-VTM-* style of naming presets!
+    elif 'vvc-' in this_config:
+        if this_config.split('-')[2].upper() in run_cfgs:
+            this_cfg = this_config.split('-')[2].upper()
     else:
         this_cfg = 'RA'
     return this_cfg
@@ -331,7 +336,8 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                             row[met_index["Dec Instr Cnt"] + 3])
                         dec_cycle_cnt = str(
                             row[met_index["Dec Cycle Cnt"] + 3])
-                    if info_data["codec"] in ["av2-as", "av2-as-st"]:
+                    if info_data["codec"] in [
+                            "av2-as", "av2-as-st", 'vvc-vtm-as-ctc']:
                         writer.writerow(
                             [
                                 "AS",  # TestCfg
@@ -458,7 +464,7 @@ def save_ctc_export(run_path, cmd_args):
     else:
         csv_writer_obj = open(run_path + "/csv_export.csv", 'w')
     w = csv.writer(csv_writer_obj, dialect="excel")
-    if cfg_name == ['av1-as', 'av2-as-st']:
+    if cfg_name in ['av2-as', 'av2-as-st', 'vvc-vtm-as-ctc']:
         w.writerow(row_header_as)
     else:
         w.writerow(row_header)
