@@ -418,7 +418,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
             top: 4,
             fontFamily: "'Roboto Mono',monospace",
             fontSize: 12,
-          }}>
+          }} open>
             <summary className="Select-control" style={{
               paddingBottom: 8,
               paddingTop: 6, paddingLeft: 8
@@ -485,7 +485,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
               top: 4,
               fontFamily: "'Roboto Mono',monospace",
               fontSize: 12,
-            }}>
+            }} open>
               <summary className="Select-control" style={{
                 paddingBottom: 8,
                 paddingTop: 6, paddingLeft: 8
