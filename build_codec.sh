@@ -133,7 +133,7 @@ case "${CODEC}" in
     mkdir build
     pushd build
     cmake .. -DCMAKE_BUILD_TYPE=Release
-    make -j
+    make -j 8
     ;;
   *)
     echo "Unknown codec '${CODEC}'" >&2
