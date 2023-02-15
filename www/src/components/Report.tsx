@@ -377,7 +377,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     }
     this.logInterval = setInterval(() => {
       this.loadCtcLog(true);
-    }, 5000);
+    }, 2500);
   }
 
   loadCtcLog(refresh = false): Promise<string> {
