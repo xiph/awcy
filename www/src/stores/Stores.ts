@@ -965,8 +965,10 @@ export class AppStore {
             job.status = JobStatus.Running;
             console.log("detected zombie job:",o.run_id);
           }
-          job.progress.value = o.completed;
-          job.progress.total = o.total;
+          // Migrate to use multi_completed/total as we can have more than 1
+          // task and configuration (for eg. AOM-CTC config combinations)
+          job.progress.value = o.multi_completed;
+          job.progress.total = o.multi_total;
           job.loadLog(true);
           job.onChange.post("updated status");
         });
