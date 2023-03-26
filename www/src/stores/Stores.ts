@@ -369,6 +369,7 @@ export class Job {
   arch: string = "x86_64";
   ctcSets: string[] = [];
   ctcPresets: string[] = [];
+  submit_time: Date;
 
   progress: JobProgress = new JobProgress(0, 0);
   selected: boolean = false;
@@ -573,6 +574,7 @@ export class Job {
     job.arch = json.arch || "x86_64";
     job.ctcSets = json.ctcSets || "";
     job.ctcPresets = json.ctcPresets || "";
+    job.submit_time = json.submit_time || "";
 
     job.saveEncodedFiles = parseBoolean(json.save_encode);
     job.runABCompare = parseBoolean(json.ab_compare);

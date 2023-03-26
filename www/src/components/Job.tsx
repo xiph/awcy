@@ -118,7 +118,13 @@ export class JobComponent extends React.Component<JobProps, {
     //     hasReport = <div className="jobWarning">Report failed to build or is not yet available.</div>
     //   }
     // }
-    let date = job.date ? `${timeSince(job.date)}`: "";
+    // This is a new field in the info.json which stores the submission time.
+    job.submit_time = new Date(job.submit_time);
+    // Making this backward compatible for old jobs without submit_time metadata
+    if (isNaN(job.submit_time.valueOf())) {
+      job.submit_time = new Date(job.date);
+    }
+    let date = job.submit_time ? `${timeSince(job.submit_time)}` : "";
 
     let borderRight = job.selected ? "4px solid " + job.color : undefined;
     let borderLeft = borderRight;
