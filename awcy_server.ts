@@ -496,7 +496,7 @@ app.post('/submit/job',function(req,res) {
     'codec': req.body.codec,
     'commit': req.body.commit,
     'nick': req.body.nick,
-    'run_id': req.body.run_id.replace(' ','_'),
+    'run_id': req.body.run_id.replace(/\s/g,'_'),
     'task': req.body.task,
     'extra_options': req.body.extra_options,
     'build_options': req.body.build_options,
