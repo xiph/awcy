@@ -423,7 +423,7 @@ app.get('/ctc_report.xlsm', function (req, res) {
   const codec_b = path.basename(String(req.query['codec_b']))
   const a_file = runs_dst_dir + '/' + a;
   const b_file = runs_dst_dir + '/' + b;
-  let filename_to_send = 'AOM_CWG_Regular_CTCv3_v7.2-' + a + '-' + b + '.xlsm';
+  let filename_to_send = 'AOM_CWG_Regular_CTCv4_v7.3.2-' + a + '-' + b + '.xlsm';
   let ctc_report_process = null;
   if ((codec_a == 'av2-as' || codec_a == 'av2-as-st' || codec_a == 'vvc-vtm-as-ctc') && (codec_b == 'av2-as' || codec_b == 'av2-as-st' || codec_b == 'vvc-vtm-as-ctc')) {
   filename_to_send = 'AOM_CWG_AS_CTC_v9.7-' + a + '-' + b + '.xlsm';

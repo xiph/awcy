@@ -385,7 +385,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       if (this.ctc_xls_logs && !refresh) {
         return Promise.resolve(this.ctc_xls_logs);
       }
-      let filename_to_send = 'AOM_CWG_Regular_CTCv3_v7.2-' + this.props.a.id + '-' + this.props.b.id + '.txt';
+      let filename_to_send = 'AOM_CWG_Regular_CTCv4_v7.3.2-' + this.props.a.id + '-' + this.props.b.id + '.txt';
       let path = baseUrl + 'runs/ctc_results/' + filename_to_send;
       return loadXHR2<string>(path, "text").then((log) => {
         this.ctc_xls_logs = log;
