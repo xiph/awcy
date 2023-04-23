@@ -597,7 +597,7 @@ def write_xls_file(run_a, run_b):
     run_b_info = json.load(open(run_b + "/info.json"))
     run_id_a = run_a_info["run_id"]
     run_id_b = run_b_info["run_id"]
-    xls_filename = 'AOM_CWG_Regular_CTCv3_v7.2'
+    xls_filename = 'AOM_CWG_Regular_CTCv4_v7.3.2'
     if run_a_info["task"] == 'aomctc-a1-4k-as':
         xls_filename = 'AOM_CWG_AS_CTC_v9.7'
     xls_template = os.path.join(
