@@ -118,9 +118,9 @@ RUN \
 	/tmp/rustup-init -y --no-modify-path --default-toolchain ${RUST_VERSION} && \
 	rm -vf /tmp/rustup-init
 
-# install node 12.x
+# install node 18.x
 RUN \
-	NODE_VERSION=12.16.1 && \
+	NODE_VERSION=18.6.0 && \
 	ARCH=`uname -m` && \
 	if [ "$ARCH" = "aarch64" ]; then \
 		ARCH='arm64'; \
