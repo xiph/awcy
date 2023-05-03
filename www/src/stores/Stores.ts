@@ -609,6 +609,7 @@ export class Job {
     "thor": "Thor",
     "thor-rt": "Thor Realtime",
     "rav1e": "rav1e",
+    "rav1e-bitrate": "rav1e bitrate mode",
     "vvc-vtm": "VVC VTM",
     "vvc-vtm-ra": "VVC VTM Random Access (RA) GOP Parallel",
     "vvc-vtm-ra-ctc": "VVC VTM AOM Random Access (RA) GOP Parallel",
