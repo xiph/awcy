@@ -268,13 +268,15 @@ def write_set_data(run_path, writer, current_video_set, current_config):
         open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.json")))
     videos = sets[current_video_set]["sources"]
     # sort name ascending, resolution descending
-    if current_video_set != "aomctc-a1-4k-as":
-        videos.sort()
-    else:
+    if current_video_set == "aomctc-a1-4k-as":
         videos.sort(
             key=lambda x: x.split("_")[0]
             + "%08d" % (100000 - int(x.split("_")[1].split("x")[0]))
         )
+    # Case of normal CTC clips apart from AS,
+    # Deprecrate sorting for CTC reasons now!!
+    else:
+        pass
     if 'av2' in info_data['codec']:
         normalized_cfg = info_data['codec'].split('-')[1].upper()
     else:
@@ -447,13 +449,16 @@ def save_ctc_export(run_path, cmd_args):
         open(os.path.join(os.getenv("CONFIG_DIR", "rd_tool"), "sets.json")))
     videos = sets[task]["sources"]
     # sort name ascending, resolution descending
-    if task != "aomctc-a1-4k-as":
-        videos.sort()
-    else:
+    if task == "aomctc-a1-4k-as":
         videos.sort(
             key=lambda x: x.split("_")[0]
             + "%08d" % (100000 - int(x.split("_")[1].split("x")[0]))
         )
+    # Case of normal CTC clips apart from AS,
+    # Deprecrate sorting for CTC reasons now!!
+    else:
+        pass
+
     ctc_set_list = return_ctc_set_list(info_data, info_data['codec'])
     ctc_cfg_list = return_ctc_cfg_list(info_data)
     cfg_name = info_data['codec']
