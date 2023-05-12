@@ -258,7 +258,7 @@ export class SubmitJobFormComponent extends React.Component<{
     const archOptions = [{value: 'x86_64', label: 'x86_64'}, {value: 'aarch64', label: 'aarch64'}];
     // CTC: Create a user-friendly CTC set list.
     const ctcOptions = [{ value: 'aomctc-a1-4k', label: 'A1' }, { value: 'aomctc-a2-2k', label: 'A2' }, { value: 'aomctc-a3-720p', label: 'A3' }, { value: 'aomctc-a4-360p', label: 'A4' }, { value: 'aomctc-a5-270p', label: 'A5' }, { value: 'aomctc-b1-syn', label: 'B1' }, { value: 'aomctc-b2-syn', label: 'B2' }, { value: 'aomctc-f1-hires', label: 'F1' }, { value: 'aomctc-f2-midres', label: 'F2' }, { value: 'aomctc-g1-hdr-4k', label: 'G1' }, { value: 'aomctc-g2-hdr-2k', label: 'G2' }, { value: 'aomctc-e-nonpristine', label: 'E' }, { value: 'aomctc-all', label: 'All' }, { value: 'aomctc-mandatory', label: 'Mandatory' }];
-    const ctcPresetOptions = [{ value: 'av2-ra-st', label: 'RA' }, { value: 'av2-ai', label: 'AI' }, { value: 'av2-ld', label: 'LD' }, { value: 'av2-all', label: 'All' }];
+    const ctcPresetOptions = [{ value: 'av2-ra-st', label: 'RA' }, { value: 'av2-ra', label: 'RA (GOP parallel)' }, { value: 'av2-ai', label: 'AI' }, { value: 'av2-ld', label: 'LD' }, { value: 'av2-all', label: 'All' }];
 
     return <Form>
       <FormGroup validationState={this.getValidationState("id")}>
