@@ -222,7 +222,7 @@ def return_ctc_set_list(run_info, config):
             else:
                 run_set_list = [run_info['task']]
         # Case of AOM Sets but not AVM/VVC codec
-        elif 'av2' not in config and 'vvc' not in config:
+        elif 'av2' not in config and 'vvc' not in config and 'rav1e' not in config:
             run_set_list = [run_info['task']]
         else:
             run_set_list = run_info['ctcSets']
@@ -562,7 +562,7 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
                     this_cfg,
                     "config")
                 if this_video_set in ['aomctc-f1-hires',
-                                      'aomctc-f2-midres'] and cfg_iter == 'av2-ai':
+                                      'aomctc-f2-midres'] and (cfg_iter == 'av2-ai' or cfg_iter == 'rav1e'):
                     anchor_sheet_name = 'Anchor-Still'
                     anchor_sheet = wb[anchor_sheet_name]
                 else:
@@ -584,7 +584,7 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
                     this_cfg,
                     "config")
                 if this_video_set in ['aomctc-f1-hires',
-                                      'aomctc-f2-midres'] and cfg_iter == 'av2-ai':
+                                      'aomctc-f2-midres'] and (cfg_iter == 'av2-ai' or cfg_iter == 'rav1e'):
                     test_sheet_name = 'Test-Still'
                     test_sheet = wb[test_sheet_name]
                 else:
