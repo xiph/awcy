@@ -378,6 +378,8 @@ try:
         sys.exit(1)
     task = info_data[0]["task"]
     codec = info_data[0]["codec"]
+    codec_a = info_data[0]["codec"]
+    codec_b = info_data[1]["codec"]
 except FileNotFoundError:
     # no info.json, using bare directories
     print("Couldn't open", args.run[0])
@@ -408,10 +410,10 @@ if info_data:
         run_b = args.run[1] + "/" + task + "/" + video + args.suffix
         if 'ctcPresets' in info_data[0].keys():
             if len(info_data[0]["ctcPresets"]) > 1 or 'av2-all' in info_data[0]["ctcPresets"]:
-                run_a = args.run[0] + "/" + codec + "/" + task + "/" + video + args.suffix
+                run_a = args.run[0] + "/" + codec_a + "/" + task + "/" + video + args.suffix
         if 'ctcPresets' in info_data[1].keys():
             if len(info_data[1]["ctcPresets"]) > 1 or 'av2-all' in info_data[1]["ctcPresets"]:
-                run_b = args.run[1] + "/" + codec + "/" + task + "/" + video + args.suffix
+                run_b = args.run[1] + "/" + codec_b + "/" + task + "/" + video + args.suffix
         if args.overlap:
             metric_data[video] = bdrate(
                 run_a,
