@@ -492,6 +492,9 @@ app.post('/submit/job',function(req,res) {
   } else {
     req.body.ctcPresets = req.body.ctcPresets.split(',')
   }
+  if (!req.body.ctcVersion) {
+    req.body.ctcVersion = "5.0"
+  }
   if (!req.body.date) {
     req.body.date = new Date(Date.now());
   }
@@ -511,6 +514,7 @@ app.post('/submit/job',function(req,res) {
     'arch': req.body.arch,
     'ctcSets': req.body.ctcSets,
     'ctcPresets': req.body.ctcPresets,
+    'ctcVersion': req.body.ctcVersion,
     'submit_time': req.body.date,
   }
 

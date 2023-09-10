@@ -155,6 +155,7 @@ export class JobComponent extends React.Component<JobProps, {
       details.push(keyValue("Save Encoded Files", job.saveEncodedFiles));
       if (job.ctcSets) details.push(keyValue("CTC Sets", JSON.stringify(job.ctcSets)));
       if (job.ctcPresets) details.push(keyValue("CTC Presets", JSON.stringify(job.ctcPresets)));
+      if (job.ctcVersion) details.push(keyValue("CTC Version", job.ctcVersion));
       details.push(keyValue("Status", JobStatus[job.status]));
     }
     let award = null;
