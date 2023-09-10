@@ -17,6 +17,7 @@ export class SubmitJobFormComponent extends React.Component<{
     arch: Option;
     ctcSets: Option[];
     ctcPresets: Option[];
+    ctcVersion: Option;
   }> {
   constructor() {
     super();
@@ -40,6 +41,7 @@ export class SubmitJobFormComponent extends React.Component<{
       job.arch = template.arch;
       job.ctcSets = template.ctcSets;
       job.ctcPresets = template.ctcPresets;
+      job.ctcVersion = template.ctcVersion;
     }
     let task = job.task ? job.task : "objective-1-fast";
     let codec = job.codec ? job.codec : "av1";
@@ -52,6 +54,7 @@ export class SubmitJobFormComponent extends React.Component<{
       arch: {label: job.arch, value: job.arch},
       ctcSets: job.ctcSets,
       ctcPresets: job.ctcPresets,
+      ctcVersion: {label: job.ctcVersion, value: job.ctcVersion},
     } as any;
     job.saveEncodedFiles = true;
     this.setState({ job } as any);
@@ -126,6 +129,9 @@ export class SubmitJobFormComponent extends React.Component<{
       case "ctcPresets":
         if (job.ctcPresets) return "success";
         break;
+      case "ctcVersion":
+        if (job.ctcVersion) return "success";
+        break;
     }
     return "error";
   }
@@ -134,6 +140,9 @@ export class SubmitJobFormComponent extends React.Component<{
   }
   onCtcPresetsSelection(ctcPresets: Option) {
     this.setState({ ctcPresets } as any, () => { });
+  }
+  onCtcVersionSelection(ctcVersion: Option) {
+    this.setState({ ctcVersion } as any, () => { });
   }
   onInputChange(key: string, e: any) {
     let job = this.state.job;
@@ -216,6 +225,9 @@ export class SubmitJobFormComponent extends React.Component<{
         job.codec = job.ctcPresets[0];
       }
     }
+    // AOM: Add CTC version for each jobs
+    job.ctcVersion = this.state.ctcVersion.value;
+
     this.props.onCreate(job);
   }
   onCancel() {
@@ -259,6 +271,7 @@ export class SubmitJobFormComponent extends React.Component<{
     // CTC: Create a user-friendly CTC set list.
     const ctcOptions = [{ value: 'aomctc-a1-4k', label: 'A1' }, { value: 'aomctc-a2-2k', label: 'A2' }, { value: 'aomctc-a3-720p', label: 'A3' }, { value: 'aomctc-a4-360p', label: 'A4' }, { value: 'aomctc-a5-270p', label: 'A5' }, { value: 'aomctc-b1-syn', label: 'B1' }, { value: 'aomctc-b2-syn', label: 'B2' }, { value: 'aomctc-f1-hires', label: 'F1' }, { value: 'aomctc-f2-midres', label: 'F2' }, { value: 'aomctc-g1-hdr-4k', label: 'G1' }, { value: 'aomctc-g2-hdr-2k', label: 'G2' }, { value: 'aomctc-e-nonpristine', label: 'E' }, { value: 'aomctc-all', label: 'All' }, { value: 'aomctc-mandatory', label: 'Mandatory' }];
     const ctcPresetOptions = [{ value: 'av2-ra-st', label: 'RA' }, { value: 'av2-ra', label: 'RA (GOP parallel)' }, { value: 'av2-ai', label: 'AI' }, { value: 'av2-ld', label: 'LD' }, { value: 'av2-all', label: 'All' }];
+    const ctcVersionOptions = [{ value: '5.0', label: 'CTCv5.0' }, { value: '4.0', label: 'CTCv4.0' }];
 
     return <Form>
       <FormGroup validationState={this.getValidationState("id")}>
@@ -318,6 +331,11 @@ export class SubmitJobFormComponent extends React.Component<{
       <FormGroup validationState={this.getValidationState("ctcPresets")}>
         <ControlLabel>This will override the above preset (for AOM-CTC)</ControlLabel>
         <Select multi placeholder="CTC Presets" value={this.state.ctcPresets} options={ctcPresetOptions} onChange={this.onCtcPresetsSelection.bind(this)} />
+      </FormGroup>
+
+      <FormGroup validationState={this.getValidationState("ctcVersion")}>
+        <ControlLabel> Choose the AOM-CTC Version (Default: Current AVM Anchor)</ControlLabel>
+        <Select placeholder="CTC Version" value={this.state.ctcVersion} options={ctcVersionOptions} onChange={this.onCtcVersionSelection.bind(this)} />
       </FormGroup>
 
       <FormGroup>
