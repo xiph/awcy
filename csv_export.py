@@ -183,10 +183,29 @@ class Logger(object):
         self.log.flush()
 
 
-def return_start_rows(set_name):
+def update_start_rows(ctc_version, start_rows):
+    # Multiple clips are removed/moved for AOM-CTCv5.0
+    if ctc_version >= 5.0:
+        start_rows['A3'] = 164
+        start_rows['A4'] = 212
+        start_rows['A5'] = 248
+        start_rows['B1'] = 272
+        start_rows['B2'] = 332
+        start_rows['G1'] = 386
+        start_rows['G2'] = 410
+        start_rows['E'] = 452
+
+
+def return_start_rows(set_name, run_info):
     try:
         if 'aomctc' in set_name:
             normalized_set = set_name.split('-')[1].upper()
+            if 'ctcVersion' in run_info:
+                this_ctc_version = float(run_info['ctcVersion'])
+            else:
+                this_ctc_version = 4.0
+            # Update the Row IDs for CTCv5.0
+            update_start_rows(this_ctc_version, start_rows)
             if normalized_set in start_rows.keys():
                 return start_rows[normalized_set], normalized_set
     except BaseException as e:
@@ -277,6 +296,16 @@ def write_set_data(run_path, writer, current_video_set, current_config):
     # Deprecrate sorting for CTC reasons now!!
     else:
         pass
+    # CTCv5: Obtain CTC version
+    if 'ctcVersion' in info_data:
+        ctc_version = float(info_data['ctcVersion'])
+    else:
+        ctc_version = 4.0
+    # CTCv4.0: Rollback to CTCv4.0
+    if ctc_version < 5.0:
+        if current_video_set in ['aomctc-a2-2k',
+                                 'aomctc-b2-syn', 'aomctc-e-nonpristine']:
+            videos = sets[current_video_set]['CTC_4.0']
     if 'av2' in info_data['codec']:
         normalized_cfg = info_data['codec'].split('-')[1].upper()
     else:
@@ -482,9 +511,11 @@ def save_ctc_export(run_path, cmd_args):
         csv_writer_obj.close()
 
 
-def write_xls_rows(run_path, current_video_set, current_config, this_sheet):
+def write_xls_rows(run_path, current_video_set,
+                   current_config, this_sheet, this_run_info):
     run_file = open(run_path + '/csv_export.csv', 'r')
-    start_id, normalized_set = return_start_rows(current_video_set)
+    start_id, normalized_set = return_start_rows(
+        current_video_set, this_run_info)
     row_end_idx = 31
     if current_config == 'AS':
         row_end_idx = 30
@@ -535,7 +566,12 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
                 "and",
                 this_cfg,
                 "config")
-            write_xls_rows(run_a, current_video_set, this_cfg, anchor_sheet)
+            write_xls_rows(
+                run_a,
+                current_video_set,
+                this_cfg,
+                anchor_sheet,
+                run_a_info)
             print(
                 datetime.isoformat(
                     datetime.now()),
@@ -546,7 +582,12 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
                 "and",
                 this_cfg,
                 "config")
-            write_xls_rows(run_b, current_video_set, this_cfg, test_sheet)
+            write_xls_rows(
+                run_b,
+                current_video_set,
+                this_cfg,
+                test_sheet,
+                run_b_info)
             wb.save(xls_file)
         # Multi-Set Case
         else:
@@ -571,7 +612,12 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
                     else:
                         anchor_sheet_name = 'Anchor-%s' % this_cfg
                     anchor_sheet = wb[anchor_sheet_name]
-                write_xls_rows(run_a, this_video_set, this_cfg, anchor_sheet)
+                write_xls_rows(
+                    run_a,
+                    this_video_set,
+                    this_cfg,
+                    anchor_sheet,
+                    run_a_info)
             for this_video_set in current_ctc_list_b:
                 print(
                     datetime.isoformat(
@@ -593,7 +639,12 @@ def write_xls_cfg_sheet(run_a, run_b, run_cfg_list,
                     else:
                         test_sheet_name = 'Test-%s' % this_cfg
                     test_sheet = wb[test_sheet_name]
-                write_xls_rows(run_b, this_video_set, this_cfg, test_sheet)
+                write_xls_rows(
+                    run_b,
+                    this_video_set,
+                    this_cfg,
+                    test_sheet,
+                    run_b_info)
             wb.save(xls_file)
 
 
@@ -605,6 +656,12 @@ def write_xls_file(run_a, run_b):
     xls_filename = 'AOM_CWG_Regular_CTCv4_v7.3.2'
     if run_a_info["task"] == 'aomctc-a1-4k-as':
         xls_filename = 'AOM_CWG_AS_CTC_v9.7'
+    if ('ctcVersion' in run_a_info) or ('ctcVersion' in run_b_info):
+        if float(
+                run_a_info['ctcVersion']) == 5.0:
+            xls_filename = 'AOM_CWG_Regular_CTCv5_v7.4.5'
+            if run_a_info["task"] == 'aomctc-a1-4k-as':
+                xls_filename = 'AOM_CWG_AS_CTC_v9.9'
     xls_template = os.path.join(
         os.getenv("CONFIG_DIR", "rd_tool"), xls_filename + '.xlsm')
     xls_file = run_a + '/../ctc_results/' + \
