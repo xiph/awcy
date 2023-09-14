@@ -382,10 +382,27 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
 
   loadCtcLog(refresh = false): Promise<string> {
     if (this.props.a && this.props.b) {
+      let codec_a = this.props.a.codec;
+      let codec_b = this.props.b.codec;
+      let ctcVersion_a = this.props.a.ctcVersion;
+      let ctcVersion_b = this.props.b.ctcVersion;
+      let ctcVersion_target = "5.0";
+      let ctc_as_flag = false;
+      if ((codec_a == 'av2-as' || codec_a == 'av2-as-st' || codec_a == 'vvc-vtm-as-ctc') && (codec_b == 'av2-as' || codec_b == 'av2-as-st' || codec_b == 'vvc-vtm-as-ctc')) {
+        ctc_as_flag = true;
+      }
       if (this.ctc_xls_logs && !refresh) {
         return Promise.resolve(this.ctc_xls_logs);
       }
-      let filename_to_send = 'AOM_CWG_Regular_CTCv4_v7.3.2-' + this.props.a.id + '-' + this.props.b.id + '.txt';
+      let ctc_xlsm = 'AOM_CWG_Regular_CTCv4_v7.3.2-';
+      if (ctc_as_flag == true)
+        ctc_xlsm = 'AOM_CWG_AS_CTC_v9.7-';
+      if (ctcVersion_a == ctcVersion_target || ctcVersion_b == ctcVersion_target) {
+        ctc_xlsm = 'AOM_CWG_Regular_CTCv5_v7.4.5-';
+        if (ctc_as_flag == true)
+          ctc_xlsm = 'AOM_CWG_AS_CTC_v9.9-';
+      }
+      let filename_to_send = ctc_xlsm + this.props.a.id + '-' + this.props.b.id + '.txt';
       let path = baseUrl + 'runs/ctc_results/' + filename_to_send;
       return loadXHR2<string>(path, "text").then((log) => {
         this.ctc_xls_logs = log;
@@ -406,7 +423,9 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
           "a=" + encodeURIComponent(a.id),
           "b=" + encodeURIComponent(b.id),
           "codec_a="+ encodeURIComponent(a.codec),
-          "codec_b="+ encodeURIComponent(b.codec)
+          "codec_b="+ encodeURIComponent(b.codec),
+          "ctcVersion_a="+ encodeURIComponent(a.ctcVersion),
+          "ctcVersion_b="+ encodeURIComponent(b.ctcVersion)
           ];
         let csvExportUrl = baseUrl + "ctc_report.xlsm?" + args.join("&");
         return <Panel header={"BD Rate Report"}>
