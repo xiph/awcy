@@ -575,7 +575,7 @@ export class Job {
     job.arch = json.arch || "x86_64";
     job.ctcSets = json.ctcSets || "";
     job.ctcPresets = json.ctcPresets || "";
-    job.ctcVersion = json.ctcVersion || "5.0";
+    job.ctcVersion = json.ctcVersion || "4.0";
     job.submit_time = json.submit_time || "";
 
     job.saveEncodedFiles = parseBoolean(json.save_encode);
