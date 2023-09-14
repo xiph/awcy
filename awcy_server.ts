@@ -421,13 +421,27 @@ app.get('/ctc_report.xlsm', function (req, res) {
   const b = path.basename(String(req.query['b']));
   const codec_a = path.basename(String(req.query['codec_a']))
   const codec_b = path.basename(String(req.query['codec_b']))
+  const ctcVersion_a = path.basename(String(req.query['ctcVersion_a']))
+  const ctcVersion_b = path.basename(String(req.query['ctcVersion_b']))
+  let ctcVersion_target = "5.0";
+  let ctc_as_flag = false;
+  if ((codec_a == 'av2-as' || codec_a == 'av2-as-st' || codec_a == 'vvc-vtm-as-ctc') && (codec_b == 'av2-as' || codec_b == 'av2-as-st' || codec_b == 'vvc-vtm-as-ctc')) {
+    ctc_as_flag = true;
+  }
   const a_file = runs_dst_dir + '/' + a;
   const b_file = runs_dst_dir + '/' + b;
-  let filename_to_send = 'AOM_CWG_Regular_CTCv4_v7.3.2-' + a + '-' + b + '.xlsm';
-  let ctc_report_process = null;
-  if ((codec_a == 'av2-as' || codec_a == 'av2-as-st' || codec_a == 'vvc-vtm-as-ctc') && (codec_b == 'av2-as' || codec_b == 'av2-as-st' || codec_b == 'vvc-vtm-as-ctc')) {
-  filename_to_send = 'AOM_CWG_AS_CTC_v9.7-' + a + '-' + b + '.xlsm';
+  let ctc_xlsm = 'AOM_CWG_Regular_CTCv4_v7.3.2-';
+  if (ctc_as_flag == true)
+    ctc_xlsm = 'AOM_CWG_AS_CTC_v9.7-';
+  if ((ctcVersion_a == ctcVersion_target) || (ctcVersion_b == ctcVersion_target)) {
+    ctc_xlsm = 'AOM_CWG_Regular_CTCv5_v7.4.5-';
+    if (ctc_as_flag == true)
+      ctc_xlsm = 'AOM_CWG_AS_CTC_v9.9-';
   }
+
+  let filename_to_send = ctc_xlsm + a + '-' + b + '.xlsm';
+  let ctc_report_process = null;
+
   res.header("Content-Type", "application/vnd.ms-excel.sheet.macroEnabled.12");
   res.header('Content-Disposition', 'attachment; filename="' + filename_to_send + '"');
   const env = { ...process.env };
