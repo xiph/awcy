@@ -117,7 +117,7 @@ case "${CODEC}" in
     CONFIG_DIR=${CODECS_SRC_DIR}/vp9/ make
     ;;
 
-  rav1e)
+  rav1e*)
     cd ${CODECS_SRC_DIR}/rav1e
     cargo build --release ${BUILD_OPTIONS}
     ;;
