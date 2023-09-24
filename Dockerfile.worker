@@ -207,6 +207,11 @@ RUN \
     ln -s /opt/dump_ciede2000 /home/${APP_USER}/awcy_temp/dump_ciede2000 && \
     ln -s /opt/dav1d /home/${APP_USER}/awcy_temp/dav1d
 
+# substitute our modded perf script that's more Docker-friendly when the
+# host isn't a Debian/Ubuntu machine
+ADD perf /usr/bin/perf
+RUN chmod ag+x /usr/bin/perf
+
 # set entrypoint
 ADD etc/entrypoint.worker /etc/entrypoint.worker
 ENTRYPOINT [ "/etc/entrypoint.worker" ]
