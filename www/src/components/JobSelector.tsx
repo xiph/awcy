@@ -1,5 +1,5 @@
 import * as React from "react";
-import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile } from "../stores/Stores";
+import { appStore, AppDispatcher, Jobs, Job, metricNames, AnalyzeFile, reportDisplayedMetrics } from "../stores/Stores";
 import { Option, arraysEqual } from "./Widgets";
 declare var require: any;
 let Select = require('react-select');
@@ -22,7 +22,7 @@ export class JobSelectorComponent extends React.Component<JobSelectorProps, {
     this.state = {
       video: null,
       metric: null,
-      metrics: metricNames.map(name => {
+      metrics: reportDisplayedMetrics.map(name => {
         return { value: name, label: name };
       }),
       videos: []
