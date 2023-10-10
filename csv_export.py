@@ -330,6 +330,8 @@ def write_set_data(run_path, writer, current_video_set, current_config):
             if 'aomctc' in current_video_set:
                 normalized_set = current_video_set.split('-')[1].upper()
                 normalized_cfg = return_config(current_config)
+            else:
+                normalized_set = ''
             daala_path = os.path.join(
                 run_path,
                 current_video_set,
