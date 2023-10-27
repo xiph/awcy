@@ -593,6 +593,7 @@ export class Job {
     "svt-av1-ra-vbr-2p": "AV1 (SVT-AV1) 2-Pass VBR Random Access (RA)",
     "svt-av1-ld-cbr": "AV1 (SVT-AV1) 1-Pass CBR Low Delay (LD)",
     "svt-av1-ra-cq": "AV1 (SVT-AV1) 1-Pass CQP Random Access (RA)",
+    "svt-av1-as": "AV1 (SVT-AV1) Adaptive Streaming (AS)",
     "av2-ai": "AVM All Intra (AI)",
     "av2-ra": "AVM Random Access (RA) GOP parallel",
     "av2-ra-st": "AVM Random Access (RA)",
