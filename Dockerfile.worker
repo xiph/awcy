@@ -186,6 +186,14 @@ RUN \
 	ninja -C build && \
 	ninja -C build install
 
+# Intall FFmpeg 6.0 with reduced VMAF
+# Custom FFmpeg 6.0 Static autobuild with GPL license
+#  Reduced VMAF = LIBVMAF - {CIEDE2000, MS-SSIM, CAMBI, PSNR_HVS}
+RUN \
+	wget https://github.com/vibhoothi/FFmpeg-Builds/releases/download/latest/ffmpeg-n6.0-latest-linux64-gpl-6.0.tar.xz && \
+	tar -xf ffmpeg-n6.0-latest-linux64-gpl-6.0.tar.xz && \
+	cp ffmpeg-n6.0-latest-linux64-gpl-6.0/bin/ffmpeg /usr/local/bin/ffmpeg
+
 # clear package manager cache
 RUN \
 	apt-get clean && \
