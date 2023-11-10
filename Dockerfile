@@ -118,6 +118,10 @@ RUN \
 	/tmp/rustup-init -y --no-modify-path --default-toolchain ${RUST_VERSION} && \
 	rm -vf /tmp/rustup-init
 
+# install cross-compile target (aarch64) for rust-based library
+RUN \
+	/usr/local/cargo/bin/rustup target add aarch64-unknown-linux-gnu
+
 # install node 18.x
 RUN \
 	NODE_VERSION=18.6.0 && \
