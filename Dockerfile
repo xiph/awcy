@@ -112,7 +112,7 @@ ENV \
 # install rust
 RUN \
 	ARCH=`uname -m` && \
-	RUST_VERSION=1.64.0 && \
+	RUST_VERSION=1.73.0 && \
 	curl -sSf --output /tmp/rustup-init https://static.rust-lang.org/rustup/archive/1.25.0/${ARCH}-unknown-linux-gnu/rustup-init && \
 	chmod +x /tmp/rustup-init && \
 	/tmp/rustup-init -y --no-modify-path --default-toolchain ${RUST_VERSION} && \
