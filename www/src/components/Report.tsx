@@ -454,6 +454,10 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
     let headers = [<th key="video" className="tableHeader">Video</th>];
     headers = headers.concat(displayedBDRateMetrics.map(name => <th key={name} className="tableHeader">{name}</th>));
 
+    // Add (%) to the Encoding/Decoding Time Headers of the Table
+    headers[1].props.children = headers[1].key + " (%)";
+    headers[2].props.children = headers[2].key + " (%)"
+
     let rows = [];
     function toRow(video: string, data, big = false) {
       let cols = [<td key={"fileName"} className="longTableValue">{video}</td>];
