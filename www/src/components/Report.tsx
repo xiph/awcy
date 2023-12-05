@@ -486,7 +486,9 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       "a=" + encodeURIComponent(report.a.id),
       "b=" + encodeURIComponent(report.b.id),
       "codec_a="+ encodeURIComponent(report.a.codec),
-      "codec_b="+ encodeURIComponent(report.b.codec)
+      "codec_b="+ encodeURIComponent(report.b.codec),
+      "ctcVersion_a="+ encodeURIComponent(a.ctcVersion),
+      "ctcVersion_b="+ encodeURIComponent(b.ctcVersion)
       ];
     let csvExportUrl = baseUrl + "ctc_report.xlsm?" + args.join("&");
       return <Panel header={`BD Rate Report ${report.a.selectedName + " " + report.a.id} → ${report.b.selectedName + " " + report.b.id}`}>
