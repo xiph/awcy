@@ -28,6 +28,7 @@ export class JobsComponent extends React.Component<JobsProps, {
     author: Option;
     configs: Option[];
     jobId: Option[];
+    extraOptions: Option[];
   }> {
   constructor(props: JobsProps) {
     super();
@@ -45,6 +46,10 @@ export class JobsComponent extends React.Component<JobsProps, {
 
   onChangeRunId(jobId: Option) {
     this.setState({ jobId } as any, () => { });
+  }
+
+  onChangeExtraOptions(extraOptions: Option) {
+    this.setState({ extraOptions } as any, () => { });
   }
 
   onChangeCodec(codec: Option) {
@@ -87,9 +92,11 @@ export class JobsComponent extends React.Component<JobsProps, {
     let authorOptions = [];
     let configOptions = [];
     let jobIdOptions = [];
+    let extraCliOptions = [];
     let uniqueAuthors = [];
     let uniqueBuildsFlags = [];
     let uniqueJobId = [];
+    let uniqueExtraCli = [];
     jobs.forEach(job => {
       if (uniqueAuthors.indexOf(job.nick) < 0) {
         uniqueAuthors.push(job.nick);
@@ -105,6 +112,9 @@ export class JobsComponent extends React.Component<JobsProps, {
           }
         })
       }
+      if (uniqueExtraCli.indexOf(job.extraOptions) < 0) {
+        uniqueExtraCli.push(job.extraOptions);
+      }
     });
     configOptions = uniqueBuildsFlags.map(option => {
       return { value: option, label: option };
@@ -114,6 +124,9 @@ export class JobsComponent extends React.Component<JobsProps, {
     });
     jobIdOptions = uniqueJobId.map(jobName =>{
       return { value: jobName, label: jobName };
+    });
+    extraCliOptions = uniqueExtraCli.map(jobExtraOptions =>{
+      return { value: jobExtraOptions, label: jobExtraOptions };
     });
     return <div>
       <div style={{ width: "100%", paddingTop: "10px", paddingBottom: "10px" }}>
@@ -134,6 +147,9 @@ export class JobsComponent extends React.Component<JobsProps, {
       </div>
       <div style={{ width: "100%", paddingTop: "10px", paddingBottom: "10px" }}>
         <Select multi placeholder="Config" value={this.state.configs} options={configOptions} onChange={this.onChangeConfigs.bind(this)} />
+      </div>
+      <div style={{ width: "100%", paddingBottom: "10px" }}>
+        <Select multi placeholder="Extra Options" value={this.state.extraOptions} options={extraCliOptions} onChange={this.onChangeExtraOptions.bind(this)} />
       </div>
     </div>
   }
@@ -170,6 +186,11 @@ export class JobsComponent extends React.Component<JobsProps, {
             }
             if (this.state.configs) {
               if (!this.state.configs.every(option => job.buildOptions.indexOf(option.value) >= 0)) {
+                return false;
+              }
+            }
+            if (this.state.extraOptions && this.state.extraOptions.length != 0 ) {
+              if (!this.state.extraOptions.some(option => job.extraOptions == option.value)) {
                 return false;
               }
             }
