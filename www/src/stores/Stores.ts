@@ -514,6 +514,18 @@ export class Job {
       // TODO: Fix -daala suffix.
       return this.reportUrl(name);
     }));
+
+    // For large sets of videos like more than 500, it is too slow to load and
+    // cache all the videos, so we can partially load only 20 videos in the
+    // frontend.
+    // For now, only do this for "elfuente-1080p-as" set from SIWG-CTC.
+    if (paths.length > 500) {
+      if (this.task == 'elfuente-1080p-as') {
+        paths = paths.slice(0, 20);
+        names = names.slice(0, 20);
+      }
+    }
+
     return this.loadFiles(paths).then(textArray => {
       function parse(text) {
         if (text === null) return null;
