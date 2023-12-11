@@ -562,24 +562,45 @@ app.post('/submit/job',function(req,res) {
   res.send('ok');
 });
 
-app.get('/csv_export.csv',function(req,res) {
+app.get('/csv_export.csv', function (req, res) {
   if (!req.query['a']) {
     res.send('No run specified');
     return;
   }
   const a = path.basename(String(req.query['a']));
-  const a_file = runs_dst_dir+'/'+a;
+  const a_file = runs_dst_dir + '/' + a;
   res.header("Content-Type", "text/csv");
-  res.header('Content-Disposition', 'attachment; filename="'+a+'.csv"')
-  cp.execFile('./csv_export.py',[a_file],
-              {},
-              function(error,stdout,stderr) {
-                if (error) {
-                  res.send(stderr);
-                } else {
-                  res.send(stdout);
-                }
-              });
+  let filename_to_send = a + '.csv';
+  res.header('Content-Disposition', 'attachment; filename="' + filename_to_send + '"')
+
+  const env = { ...process.env };
+  env['PYTHONUNBUFFERED'] = '1';
+  let csv_process = null;
+  csv_process = cp.spawn('./csv_export.py', [a_file], { shell: true, env: env });
+  var stdout_data = '';
+  var stderr_data = '';
+  // Write progress of CSV generation
+  csv_process.stdout.on('data', function (data) {
+    stdout_data += data.toString();
+  });
+  csv_process.stderr.on('data', function (data) {
+    stderr_data += data.toString();
+  });
+  csv_process.on('close', function (error) {
+    if (error == 0) {
+      try {
+        res.send(stdout_data);
+      } catch (e) {
+        console.log(e);
+      }
+    } else {
+      // CSV generation error, send the error as plain text
+      res.header("Content-Type", "text/plain");
+      res.header('Content-Disposition', 'attachment; filename="' + filename_to_send.slice(0, -5) + '.txt"');
+      console.log(stderr_data);
+      res.send(stderr_data);
+    }
+  });
 });
 
 app.get('/dump_convex_hull.json',function(req,res) {
