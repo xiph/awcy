@@ -112,6 +112,7 @@ if [ ! -d "${CODECS_SRC_DIR}/svt-av1" ]; then
 	ln -s ${CODECS_SRC_DIR}/svt-av1 ${CODECS_SRC_DIR}/svt-av1-ld-cbr
 	ln -s ${CODECS_SRC_DIR}/svt-av1 ${CODECS_SRC_DIR}/svt-av1-ra-cq
 	ln -s ${CODECS_SRC_DIR}/svt-av1 ${CODECS_SRC_DIR}/svt-av1-as
+	ln -s ${CODECS_SRC_DIR}/svt-av1 ${CODECS_SRC_DIR}/svt-av1-as-ctc
 fi
 
 if [ ! -d "${CODECS_SRC_DIR}/vvc-vtm" ]; then
