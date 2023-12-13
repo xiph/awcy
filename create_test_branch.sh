@@ -13,6 +13,13 @@ BRANCH=t-$(echo "${TESTNAME}" | sed "s/:/_/g")
 
 cd ${CODECS_SRC_DIR}/${CODEC}
 git reset --hard
+
+if [[ ${COMMIT} == "HEAD" ]];then
+    echo "Fetching latest changes from origin, and checking out to current HEAD"
+    git fetch origin
+    git checkout origin/HEAD
+fi
+
 if git checkout ${COMMIT}; then
     echo "Commit found, skipping fetch."
 else
