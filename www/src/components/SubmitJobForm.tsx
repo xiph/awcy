@@ -85,6 +85,9 @@ export class SubmitJobFormComponent extends React.Component<{
         if (commit.length === 41 && commit.charAt(0) === 'I') {
           return "error"; // Gerrit Change-ID format, not a git reference
         }
+        if (commit.length == 0) {
+          return "error";
+        }
         if (job.commit) return "success";
       case "codec":
         if (this.state.codec.value) return "success";
@@ -280,7 +283,7 @@ export class SubmitJobFormComponent extends React.Component<{
       </FormGroup>
 
       <FormGroup validationState={this.getValidationState("commit")}>
-        <FormControl type="text" placeholder="Git Commit Reference (Hash/Branch/Tag)"
+        <FormControl type="text" placeholder="Git Commit Reference (Hash/Branch/Tag/HEAD)"
           value={job.commit} onChange={this.onInputChange.bind(this, "commit")} />
       </FormGroup>
 
