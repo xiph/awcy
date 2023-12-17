@@ -320,11 +320,12 @@ export class SubmitJobFormComponent extends React.Component<{
         <FormControl type="text" placeholder="30 40 50 ..."
           value={job.qualities} onChange={this.onInputChange.bind(this, "qualities")} />
       </FormGroup>
-
+      {/*
       <FormGroup validationState={this.getValidationState("arch")}>
         <ControlLabel>Architecture</ControlLabel>
         <Select clearable={false} placeholder="Encoder" value={this.state.arch} options={archOptions} onChange={this.onChangeArch.bind(this)} />
       </FormGroup>
+      */}
 
       <FormGroup validationState={this.getValidationState("ctcSets")}>
         <ControlLabel>This will override the above set (for AOM-CTC)</ControlLabel>
