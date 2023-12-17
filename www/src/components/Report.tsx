@@ -192,6 +192,20 @@ export class AnalyzerLinksComponent extends React.Component<{
     let report = this.props.jobs[0].report;
     let videoRows = [];
     let videos = [];
+    // As the Web analyzer is only made for AV1, check the codec and then
+    // display the analyzer links, so users do not get confused
+    let analyzer_codecs = ['rav1e', 'svt-av1', 'av1'];
+
+    function isCodecMatch(job: Job): boolean {
+      return analyzer_codecs.some(codec => job.codec.includes(codec));
+    }
+
+    let areAllMatches = jobs.every(isCodecMatch);
+    if (areAllMatches == false) {
+      return <Panel header="Analyzer Links">
+        <p>Currently AWCY supports only AV1 for web analyzer</p>
+      </Panel>
+    }
 
     for (let video in report) {
       if (video != "Total") {
