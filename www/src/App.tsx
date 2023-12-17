@@ -79,11 +79,11 @@ export class App extends React.Component<{}, void> {
           <DebugComponent />
         </div>
       </Tab>,
-      <Tab eventKey={9} key="status" title="AWS Status">
-        <div style={{ padding: 10, height: height - 100, overflow: "scroll" }}>
-          <AppStatusComponent />
-        </div>
-      </Tab>,
+//      <Tab eventKey={9} key="status" title="AWS Status">
+//       <div style={{ padding: 10, height: height - 100, overflow: "scroll" }}>
+//        <AppStatusComponent />
+//    </div>
+//    </Tab>,
       <Tab eventKey={10} key="login" title="Login">
         <div style={{ padding: 10 }}>
           <LoginComponent/>
