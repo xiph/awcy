@@ -149,10 +149,10 @@ export class JobComponent extends React.Component<JobProps, {
       if (job.buildOptions) details.push(keyValue("Build", job.buildOptions));
       details.push(keyValue("Codec", job.codec));
       details.push(keyValue("Commit", job.commit));
-      details.push(keyValue("Task", job.task));
+      details.push(keyValue("Set", job.task));
       details.push(keyValue("Qualities", job.qualities));
-      details.push(keyValue("Run A/B Compare", job.runABCompare));
-      details.push(keyValue("Save Encoded Files", job.saveEncodedFiles));
+    //  details.push(keyValue("Run A/B Compare", job.runABCompare));
+    // details.push(keyValue("Save Encoded Files", job.saveEncodedFiles));
       if (job.ctcSets) details.push(keyValue("CTC Sets", JSON.stringify(job.ctcSets)));
       if (job.ctcPresets) details.push(keyValue("CTC Presets", JSON.stringify(job.ctcPresets)));
       if (job.ctcVersion) details.push(keyValue("CTC Version", job.ctcVersion));
