@@ -662,7 +662,7 @@ def write_xls_file(run_a, run_b):
         xls_filename = 'AOM_CWG_AS_CTC_v9.7'
     if ('ctcVersion' in run_a_info) or ('ctcVersion' in run_b_info):
         if float(
-                run_a_info['ctcVersion']) == 5.0:
+                run_a_info['ctcVersion']) >= 5.0:
             xls_filename = 'AOM_CWG_Regular_CTCv5_v7.4.5'
             if run_a_info["task"] == 'aomctc-a1-4k-as':
                 xls_filename = 'AOM_CWG_AS_CTC_v9.9'

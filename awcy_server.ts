@@ -425,7 +425,7 @@ app.get('/ctc_report.xlsm', function (req, res) {
   const codec_b = path.basename(String(req.query['codec_b']))
   const ctcVersion_a = path.basename(String(req.query['ctcVersion_a']))
   const ctcVersion_b = path.basename(String(req.query['ctcVersion_b']))
-  let ctcVersion_target = "5.0";
+  let ctcVersion_target = 5.0;
   let ctc_as_flag = false;
   if ((codec_a == 'av2-as' || codec_a == 'av2-as-st' || codec_a == 'vvc-vtm-as-ctc') && (codec_b == 'av2-as' || codec_b == 'av2-as-st' || codec_b == 'vvc-vtm-as-ctc')) {
     ctc_as_flag = true;
@@ -435,7 +435,7 @@ app.get('/ctc_report.xlsm', function (req, res) {
   let ctc_xlsm = 'AOM_CWG_Regular_CTCv4_v7.3.2-';
   if (ctc_as_flag == true)
     ctc_xlsm = 'AOM_CWG_AS_CTC_v9.7-';
-  if ((ctcVersion_a == ctcVersion_target) || (ctcVersion_b == ctcVersion_target)) {
+  if ((parseFloat(ctcVersion_a) >= ctcVersion_target) || (parseFloat(ctcVersion_b) >= ctcVersion_target)) {
     ctc_xlsm = 'AOM_CWG_Regular_CTCv5_v7.4.5-';
     if (ctc_as_flag == true)
       ctc_xlsm = 'AOM_CWG_AS_CTC_v9.9-';
