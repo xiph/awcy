@@ -289,7 +289,7 @@ RUN \
 # install VMAF
 ENV \
 	VMAF_DIR=/opt/vmaf \
-	VMAF_VERSION=v2.3.1
+	VMAF_VERSION=v3.0.0
 
 RUN \
 	mkdir -p ${VMAF_DIR} && \
