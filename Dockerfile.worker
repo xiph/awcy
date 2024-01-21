@@ -156,6 +156,10 @@ RUN \
 		bc \
 		python3-numpy \
 		python3-scipy \
+		python3-pip \
+		python3-setuptools \
+		python3-wheel \
+		ninja-build \
 		ssh \
 		time \
 		&& \
@@ -166,7 +170,7 @@ ENV \
 	DAV1D_DIR=/opt/dav1d
 
 RUN \
-	apt-get install -y meson && \
+	pip3 install meson && \
 	git clone https://code.videolan.org/videolan/dav1d.git ${DAV1D_DIR} && \
 	cd ${DAV1D_DIR} && \
 	mkdir build && cd build && \
