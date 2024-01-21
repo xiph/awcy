@@ -400,7 +400,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       let codec_b = this.props.b.codec;
       let ctcVersion_a = this.props.a.ctcVersion;
       let ctcVersion_b = this.props.b.ctcVersion;
-      let ctcVersion_target = "5.0";
+      let ctcVersion_target = 5.0;
       let ctc_as_flag = false;
       if ((codec_a == 'av2-as' || codec_a == 'av2-as-st' || codec_a == 'vvc-vtm-as-ctc') && (codec_b == 'av2-as' || codec_b == 'av2-as-st' || codec_b == 'vvc-vtm-as-ctc')) {
         ctc_as_flag = true;
@@ -411,7 +411,7 @@ export class BDRateReportComponent extends React.Component<BDRateReportProps, {
       let ctc_xlsm = 'AOM_CWG_Regular_CTCv4_v7.3.2-';
       if (ctc_as_flag == true)
         ctc_xlsm = 'AOM_CWG_AS_CTC_v9.7-';
-      if (ctcVersion_a == ctcVersion_target || ctcVersion_b == ctcVersion_target) {
+      if(parseFloat(ctcVersion_a) >= ctcVersion_target || parseFloat(ctcVersion_b) >= ctcVersion_target) {
         ctc_xlsm = 'AOM_CWG_Regular_CTCv5_v7.4.5-';
         if (ctc_as_flag == true)
           ctc_xlsm = 'AOM_CWG_AS_CTC_v9.9-';
