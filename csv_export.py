@@ -357,6 +357,11 @@ def write_set_data(run_path, writer, current_video_set, current_config):
             # This way, even partial information from the *daala.out can be
             # rendered by having key-value where key is QP.
             encoded_qp_list = {}
+            # Sometimes we would be having only 1 QP in the list to encode, this
+            # causes problem when we try to iterate as it is a 0-D array and
+            # numpy do not like it, so we can convert them to 1D and then iterate
+            if len(a.shape) == 0:
+                 a = atleast_1d(a)
             for row in a:
                 encoded_qp_list[int(row[0])] = row
             for this_qp in qp_list:
@@ -392,7 +397,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 "AS",  # TestCfg
                                 "aom",  # EncodeMethod
                                 info_data["run_id"],  # CodecName
-                                "",  # EncodePreset
+                                info["codec"],  # EncodePreset
                                 normalized_set,  # Class
                                 video,  # name
                                 "3840x2160",  # OrigRes
@@ -428,7 +433,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 normalized_cfg,  # TestCfg
                                 "aom",  # EncodeMethod
                                 info_data["run_id"],  # CodecName
-                                0,  # EncodePreset #TODO: FIXME
+                                info["codec"],  # EncodePreset
                                 normalized_set,  # Class
                                 video,  # name
                                 str(width) + "x" + str(height),  # OrigRes
