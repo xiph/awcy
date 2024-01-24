@@ -397,7 +397,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 "AS",  # TestCfg
                                 "aom",  # EncodeMethod
                                 info_data["run_id"],  # CodecName
-                                info["codec"],  # EncodePreset
+                                info_data["codec"],  # EncodePreset
                                 normalized_set,  # Class
                                 video,  # name
                                 "3840x2160",  # OrigRes
@@ -433,7 +433,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
                                 normalized_cfg,  # TestCfg
                                 "aom",  # EncodeMethod
                                 info_data["run_id"],  # CodecName
-                                info["codec"],  # EncodePreset
+                                info_data["codec"],  # EncodePreset
                                 normalized_set,  # Class
                                 video,  # name
                                 str(width) + "x" + str(height),  # OrigRes
