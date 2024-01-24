@@ -224,19 +224,19 @@ def return_ctc_set_list(run_info, config):
     if len(run_info['ctcSets']) > 0:
         set_name = run_info['ctcSets']
         if 'aomctc-all' in set_name and ('av2' in config or 'vvc' in config):
-            if config == 'av2-ai':
+            if config in ['av2-ai', 'vvc-vtm-ai']:
                 run_set_list = ctc_sets_mandatory_ai + ctc_sets_optional
-            elif config == 'av2-ra-st' or config == 'av2-ra':
+            elif config in ['av2-ra-st', 'av2-ra', 'vvc-vtm-ra', 'vvc-vtm-ra-st', 'vvc-vtm-ra-ctc']:
                 run_set_list = ctc_sets_mandatory + ctc_sets_optional
-            elif config == 'av2-ld':
+            elif config in ['av2-ld', 'vvc-vtm-ld']:
                 run_set_list = ctc_sets_mandatory_ld
             else:
                 run_set_list = [run_info['task']]
         elif 'aomctc-mandatory' in set_name and ('av2' in config or 'vvc' in config):
-            if config in ['av2-ra-st', 'av2-ra', 'vvc-vtm',
-                          'vvc-vtm-ra', 'vvc-vtm-ra-ctc', 'vvc-vtm-as-ctc', 'vvc-vtm-ra-st', 'vvc-vtm-ld']:
+            if config in ['av2-ra-st', 'av2-ra', 'vvc-vtm-ra',
+                          'vvc-vtm-ra-st', 'vvc-vtm-ra-ctc']:
                 run_set_list = ctc_sets_mandatory
-            elif config in ['av2-ld', 'vvc-ra-ld']:
+            elif config in ['av2-ld', 'vvc-vtm-ld']:
                 run_set_list = ctc_sets_mandatory_ld
             elif config in ['av2-ai', 'vvc-vtm-ai']:
                 run_set_list = ctc_sets_mandatory_ai
@@ -310,6 +310,11 @@ def write_set_data(run_path, writer, current_video_set, current_config):
             videos = sets[current_video_set]['CTC_4.0']
     if 'av2' in info_data['codec']:
         normalized_cfg = info_data['codec'].split('-')[1].upper()
+    elif 'vvc' in info_data['codec']:
+        try:
+            normalized_cfg = info_data['codec'].split('-')[2].upper()
+        except:
+            normalized_cfg = ''
     else:
         normalized_cfg = 'RA'
     # Get the Quality values, if user defined, use that, else do defaults
