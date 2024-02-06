@@ -119,7 +119,22 @@ case "${CODEC}" in
 
   rav1e)
     cd ${CODECS_SRC_DIR}/rav1e
-    cargo build --release ${BUILD_OPTIONS}
+    if [[ "${ARCH}" == "aarch64" ]]; then
+      ARCH_OPTIONS="--target aarch64-unknown-linux-gnu"
+      # Rust need aarch64 as environment variable or as a config inside cargo
+      # folder. So we chose latter for maintainability.
+      mkdir -p .cargo
+      echo -e "[target.aarch64-unknown-linux-gnu]\nlinker = \"aarch64-linux-gnu-gcc\"\nar = \"aarch64-linux-gnu-gcc\"" > .cargo/config
+      mkdir -p target/release
+    else
+      ARCH_OPTIONS=""
+    fi
+    cargo build --release ${ARCH_OPTIONS} ${BUILD_OPTIONS}
+    # Rust tries to create a target arch folder, it messes up lot more things,
+    # so easy is faking the path
+    if [[ "${ARCH}" == "aarch64" ]]; then
+      cp target/aarch64-unknown-linux-gnu/release/rav1e target/release/rav1e
+    fi
     ;;
 
   svt-av1*)
