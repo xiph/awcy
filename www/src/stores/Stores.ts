@@ -369,7 +369,7 @@ export class Job {
   arch: string = "x86_64";
   ctcSets: string[] = [];
   ctcPresets: string[] = [];
-  ctcVersion: string = "6.0";
+  ctcVersion: string = "7.0";
   submit_time: Date;
 
   progress: JobProgress = new JobProgress(0, 0);
