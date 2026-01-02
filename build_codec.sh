@@ -100,7 +100,7 @@ case "${CODEC}" in
     make -j$(nproc)
     popd
     mkdir -p "$ARCH"
-    mv cmake-build/aomenc cmake-build/aomdec ./ || mv cmake-build/avmenc cmake-build/avmdec ./
+    mv cmake-build/avmenc cmake-build/avmdec ./
     echo "-- Finished $ARCH Build --"
     ;;
 
