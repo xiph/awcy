@@ -205,7 +205,7 @@ def return_start_rows(set_name, run_info):
             if 'ctcVersion' in run_info:
                 this_ctc_version = float(run_info['ctcVersion'])
             else:
-                this_ctc_version = 4.0
+                this_ctc_version = 8.0
             # Update the Row IDs for CTCv5.0
             update_start_rows(this_ctc_version, start_rows)
             if normalized_set in start_rows.keys():
@@ -302,7 +302,7 @@ def write_set_data(run_path, writer, current_video_set, current_config):
     if 'ctcVersion' in info_data:
         ctc_version = float(info_data['ctcVersion'])
     else:
-        ctc_version = 4.0
+        ctc_version = 8.0
     # CTCv4.0: Rollback to CTCv4.0
     if ctc_version < 5.0:
         if current_video_set in ['aomctc-a2-2k',

@@ -369,7 +369,7 @@ export class Job {
   arch: string = "x86_64";
   ctcSets: string[] = [];
   ctcPresets: string[] = [];
-  ctcVersion: string = "7.0";
+  ctcVersion: string = "8.0";
   submit_time: Date;
 
   progress: JobProgress = new JobProgress(0, 0);
@@ -587,7 +587,7 @@ export class Job {
     job.arch = json.arch || "x86_64";
     job.ctcSets = json.ctcSets || "";
     job.ctcPresets = json.ctcPresets || "";
-    job.ctcVersion = json.ctcVersion || "4.0";
+    job.ctcVersion = json.ctcVersion || "8.0";
     job.submit_time = json.submit_time || "";
 
     job.saveEncodedFiles = parseBoolean(json.save_encode);

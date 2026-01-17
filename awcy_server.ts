@@ -425,7 +425,7 @@ app.get('/ctc_report.xlsm', function (req, res) {
   const codec_b = path.basename(String(req.query['codec_b']))
   const ctcVersion_a = path.basename(String(req.query['ctcVersion_a']))
   const ctcVersion_b = path.basename(String(req.query['ctcVersion_b']))
-  let ctcVersion_target = 5.0;
+  let ctcVersion_target = 8.0;
   let ctc_as_flag = false;
   if ((codec_a == 'av2-as' || codec_a == 'av2-as-st' || codec_a == 'vvc-vtm-as-ctc') && (codec_b == 'av2-as' || codec_b == 'av2-as-st' || codec_b == 'vvc-vtm-as-ctc')) {
     ctc_as_flag = true;
@@ -509,7 +509,7 @@ app.post('/submit/job',function(req,res) {
     req.body.ctcPresets = req.body.ctcPresets.split(',')
   }
   if (!req.body.ctcVersion) {
-    req.body.ctcVersion = "5.0"
+    req.body.ctcVersion = "8.0"
   }
   if (!req.body.date) {
     req.body.date = new Date(Date.now());
