@@ -1,4 +1,4 @@
-FROM ubuntu:focal
+FROM ubuntu:noble
 
 # environment variables
 ENV \
@@ -12,8 +12,8 @@ ENV \
 
 # add runtime user
 RUN \
-	groupadd --gid 1000 ${APP_USER} && \
-	useradd --uid 1000 --gid ${APP_USER} --shell /bin/bash --create-home ${APP_USER}
+	groupadd --gid 1001 ${APP_USER} && \
+	useradd --uid 1001 --gid ${APP_USER} --shell /bin/bash --create-home ${APP_USER}
 
 
 # install common/useful packages
@@ -40,7 +40,7 @@ RUN \
 		check \
 		cmake \
 		cmake-extras \
-		ctags \
+		universal-ctags \
 		curl \
 		dirmngr \
 		file \
@@ -89,9 +89,9 @@ RUN \
 	if [ "$ARCH" = "x86_64" ]; then \
 		DIR=/tmp/nasm && \
 		NASM_URL=http://debian-archive.trafficmanager.net/debian/pool/main/n/nasm && \
-		NASM_VERSION=2.15.05-1 && \
+		NASM_VERSION=2.16.01-1 && \
 		NASM_DEB=nasm_${NASM_VERSION}_amd64.deb && \
-		NASM_SUM=c860caec653b865d5b83359452d97b11f1b3ba5b18b07cac554cf72550b3bfc9 && \
+		NASM_SUM=0180693ad5d2da8b36e7d73b9b596dc3e9f900238e3de699976c0576875b878f && \
 		mkdir -p ${DIR} && \
 		cd ${DIR} && \
 		curl -O ${NASM_URL}/${NASM_DEB} && \
@@ -112,7 +112,7 @@ ENV \
 # install rust
 RUN \
 	ARCH=`uname -m` && \
-	RUST_VERSION=1.64.0 && \
+	RUST_VERSION=1.94.1 && \
 	curl -sSf --output /tmp/rustup-init https://static.rust-lang.org/rustup/archive/1.25.0/${ARCH}-unknown-linux-gnu/rustup-init && \
 	chmod +x /tmp/rustup-init && \
 	/tmp/rustup-init -y --no-modify-path --default-toolchain ${RUST_VERSION} && \
@@ -217,20 +217,10 @@ RUN \
 	./configure --disable-player && \
 	make tools -j4
 
-# install ciede2000
-ENV \
-	CIEDE2000_DIR=/opt/dump_ciede2000
-
-RUN \
-	mkdir -p $(dirname ${CIEDE2000_DIR}) && \
-	git clone https://github.com/KyleSiefring/dump_ciede2000.git ${CIEDE2000_DIR} && \
-	cd ${CIEDE2000_DIR} && \
-	cargo build --release
-
 # install hdrtools
 ENV \
 	HDRTOOLS_DIR=/opt/hdrtools \
-	HDRTOOLS_VERSION=0.22
+	HDRTOOLS_VERSION=0.26
 
 RUN \
 	ARCH=`uname -m` && \
@@ -238,9 +228,6 @@ RUN \
 	curl -sSfL --output HDRTools.tar.bz2 https://gitlab.com/standards/HDRTools/-/archive/v${HDRTOOLS_VERSION}/HDRTools-v${HDRTOOLS_VERSION}.tar.bz2 && \
 	tar -xvf HDRTools.tar.bz2 --strip-components=1 -C ${HDRTOOLS_DIR} && \
 	cd ${HDRTOOLS_DIR} && \
-	sed -i 's/std::modff/modff/g' common/src/OutputY4M.cpp && \
-	sed -i 's/using ::hdrtoolslib::Y_COMP;//g' projects/HDRConvScaler/src/HDRConvScalerYUV.cpp && \
-	sed -i 's/\[Y_COMP\]/\[hdrtoolslib::Y_COMP\]/g' projects/HDRConvScaler/src/HDRConvScalerYUV.cpp && \
 	if [ "$ARCH" = "aarch64" ]; then \
 		# temporary patches until ARM support is upstream
 		sed -i 's/-msse2//g' common/Makefile projects/*/Makefile; \
@@ -249,6 +236,8 @@ RUN \
 		sed -i 's/#include <mmintrin.h>//g' common/src/DistortionMetricVQM.cpp; \
 		sed -i 's/#if defined(ENABLE_SSE_OPT)/#if ENABLE_SSE_OPT/g' common/src/ResizeBiCubic.cpp; \
 	fi && \
+	mkdir build && cd build && \
+	cmake .. -DCMAKE_BUILD_TYPE=Release && \ 
 	make # -j is broken
 
 # install rd_tool and dependencies
@@ -273,7 +262,7 @@ RUN \
 # install meson
 RUN \
 	apt-get install -y python3 python3-pip python3-setuptools python3-wheel ninja-build && \
-	pip3 install meson
+	pip3 install meson --break-system-packages
 
 # install dav1d and dependencies
 ENV \
@@ -289,7 +278,7 @@ RUN \
 # install VMAF
 ENV \
 	VMAF_DIR=/opt/vmaf \
-	VMAF_VERSION=v3.0.0
+	VMAF_VERSION=v3.1.0
 
 RUN \
 	mkdir -p ${VMAF_DIR} && \
@@ -327,7 +316,7 @@ ADD *.m *.sh *.py ${APP_DIR}/
 
 # AOM_CTC: Install Openpyxl
 RUN \
-	pip3 install openpyxl xlrd==1.2.0 xlsxwriter matplotlib
+	pip3 install openpyxl xlrd==1.2.0 xlsxwriter matplotlib --break-system-packages
 
 
 # environment variables
