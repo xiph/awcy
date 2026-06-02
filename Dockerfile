@@ -62,6 +62,8 @@ RUN \
 		netcat-openbsd \
 		net-tools \
 		openjdk-8-jdk-headless \
+		openssh-client \
+		openssh-server \
 		openssl \
 		pkg-config \
 		procps \
@@ -240,28 +242,16 @@ RUN \
 	cmake .. -DCMAKE_BUILD_TYPE=Release && \ 
 	make # -j is broken
 
-# install rd_tool and dependencies
+# copy rd_tool sources (sets.json is served statically by awcy_server)
 ENV \
 	RD_TOOL_DIR=/opt/rd_tool
 
-RUN \
-	apt-get update && \
-	apt-get install -y --no-install-recommends \
-		bc \
-		python3-boto3 \
-		python3-numpy \
-		python3-scipy \
-		python3-tornado \
-		ssh \
-		time \
-		&& \
-	mkdir -p ${RD_TOOL_DIR} && \
-	rm -vf /etc/ssh/ssh_host_* && \
-	curl -sSL https://github.com/xiph/rd_tool/tarball/master | tar zxf - -C ${RD_TOOL_DIR} --strip-components=1
+COPY rd_tool ${RD_TOOL_DIR}/
 
 # install meson
 RUN \
-	apt-get install -y python3 python3-pip python3-setuptools python3-wheel ninja-build && \
+	apt-get update && \
+	apt-get install -y --no-install-recommends python3 python3-pip python3-setuptools python3-wheel ninja-build && \
 	pip3 install meson --break-system-packages
 
 # install dav1d and dependencies
@@ -335,7 +325,7 @@ ENV \
 # add configuration scripts
 ADD etc/* /etc/
 ADD etc/service/awcy /etc/service/awcy
-ADD etc/service/job-scheduler /etc/service/job-scheduler
+# ADD etc/service/job-scheduler /etc/service/job-scheduler
 
 # set entrypoint
 ENTRYPOINT [ "/etc/entrypoint" ]
