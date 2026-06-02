@@ -108,7 +108,7 @@ const binaries = {
   'svt-av1-as-ctc': ['Bin/Release/SvtAv1EncApp'],
   'vvc-vtm': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
   'vvc-vtm-ra': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
-  'vvc-vtm-ra-ctc': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
+  'vvc-vtm-ra-ctc': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic', 'cfg/encoder_randomaccess_vtm_gop16.cfg', 'cfg/per-class/classH1.cfg'],
   'vvc-vtm-as-ctc': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
   'vvc-vtm-ra-st': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
   'vvc-vtm-ld': ['bin/EncoderAppStatic', 'bin/DecoderAppStatic', 'bin/parcatStatic'],
