@@ -88,7 +88,7 @@ const binaries = {
   'vp10-rt': ['vpxenc','vpxdec'],
   'av1': ['aomenc','aomdec'],
   'av1-rt': ['aomenc','aomdec'],
-  'av2-ai': ['aomenc','aomdec'],
+  'av2-ai': ['avmenc','avmdec'],
   'av2-ra': ['avmenc','avmdec'],
   'av2-ra-st': ['avmenc','avmdec'],
   'av2-as': ['avmenc','avmdec'],
