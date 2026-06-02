@@ -21,13 +21,20 @@ for dir in \
 	"${WORK_DIR}" \
 	"${MEDIAS_SRC_DIR}" \
 ; do
+	if [ -e "${dir}" ]; then
+        echo "Skipping ${dir} - path already exists."
+        continue
+    fi
 	mkdir -p ${dir}
 	chown ${APP_USER}:${APP_USER} ${dir}
 done
 
 # CTC result storage folder
-mkdir -p "${RUNS_DST_DIR}/ctc_results"
-
+if [ ! -e "${RUNS_DST_DIR}/ctc_results" ]; then
+    mkdir -p "${RUNS_DST_DIR}/ctc_results"
+else
+    echo "Skipping ctc_results - path already exists."
+fi
 # detect main IP external address if not set/forced
 net_iface=$(awk '{ if ($2 == "00000000") { print $1; exit; } }' /proc/net/route)
 net_ip_addr=$(ip addr show dev ${net_iface} | awk -F'[ \t/]+' '/inet / { print $3; exit; }')
@@ -60,14 +67,15 @@ fi
 
 # prepare awcy sets file if needed (and inject a quicktest set for scheduling testing)
 if [ ! -f "${CONFIG_DIR}/sets.json" ]; then
-	mv ${RD_TOOL_DIR}/sets.json ${RD_TOOL_DIR}/sets.dist.json
+	cp ${RD_TOOL_DIR}/sets.json ${RD_TOOL_DIR}/sets.dist.json
 
 	# create fast set for testing
 	set_name=awcy-builder-quicktest
 	rm -rf ${MEDIAS_SRC_DIR}/${set_name}
-	mkdir -p ${MEDIAS_SRC_DIR}/${set_name}
+	if [ ! -e "${MEDIAS_SRC_DIR}/${set_name}" ]; then
+        mkdir -p "${MEDIAS_SRC_DIR}/${set_name}"
+    fi
 	wget --output-document ${MEDIAS_SRC_DIR}/${set_name}/test_frame.y4m https://media.xiph.org/video/av2ctc/test_set/f2_still_MidRes/part1/Claudette.y4m
-	jq '. + {"'${set_name}'": {"type": "image", "sources": ["test_frame.y4m"]}}' ${RD_TOOL_DIR}/sets.dist.json >${CONFIG_DIR}/sets.json
 	chown -R ${APP_USER}:${APP_USER} ${MEDIAS_SRC_DIR}/${set_name}
 fi
 
@@ -93,6 +101,8 @@ if [ ! -d "${CODECS_SRC_DIR}/av2" ]; then
 	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ra-st
 	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ld
 	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-ai
+	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-as
+	ln -s ${CODECS_SRC_DIR}/av2 ${CODECS_SRC_DIR}/av2-as-st
 fi
 
 if [ ! -d "${CODECS_SRC_DIR}/daala" ]; then
@@ -152,32 +162,11 @@ if [ ! -d "${CODECS_SRC_DIR}/libvpx" ]; then
 	ln -s ${CODECS_SRC_DIR}/libvpx ${CODECS_SRC_DIR}/libvpx-rt
 fi
 
-# configure rd_tools
-if [ ! -f "${CONFIG_DIR}/machines.json" ]; then
-	if [ "${LOCAL_WORKER_ENABLED:-false}" != "true" ]; then
-		echo "[]" >${CONFIG_DIR}/machines.json
-
-	else
-		cat >${CONFIG_DIR}/machines.json <<-EOF
-		[
-			{
-				"host": "127.0.0.1",
-				"user": "${APP_USER}",
-				"cores": ${LOCAL_WORKER_SLOTS:-$(nproc)},
-				"port": 22,
-				"work_root": "${WORK_DIR}",
-				"media_path": "${MEDIAS_SRC_DIR}"
-			}
-		]
-		EOF
-	fi
-
-	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/machines.json
-fi
-
 # configure ssh client
 if [ ! -f "/home/${APP_USER}/.ssh/config" ]; then
-	mkdir -p /home/${APP_USER}/.ssh
+	if [ ! -e "/home/${APP_USER}/.ssh" ]; then
+        mkdir -p "/home/${APP_USER}/.ssh"
+    fi
 	cat >/home/${APP_USER}/.ssh/config <<-EOF
 	Host *
 		UserKnownHostsFile /dev/null
@@ -206,8 +195,13 @@ fi
 
 # configure local worker services if needed
 if [ "${LOCAL_WORKER_ENABLED:-false}" = "true" ]; then
-	mkdir -p /var/run/sshd
-	mkdir -p /etc/service/sshd
+if [ ! -e "/var/run/sshd" ]; then
+        mkdir -p "/var/run/sshd"
+    fi
+    
+    if [ ! -e "/etc/service/sshd" ]; then
+        mkdir -p "/etc/service/sshd"
+    fi
 
 	cat >/etc/service/sshd/run <<-EOF
 	#!/bin/sh
