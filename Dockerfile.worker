@@ -61,6 +61,7 @@ RUN \
 		unzip \
 		uuid \
 		vim \
+		xxd \
 		wget \
 		linux-tools-generic \
 		linux-cloud-tools-generic \
