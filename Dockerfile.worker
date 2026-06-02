@@ -63,9 +63,17 @@ RUN \
 		vim \
 		wget \
 		linux-tools-generic \
+		linux-cloud-tools-generic \
 		xz-utils && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists
+
+
+# perf-hack: Force the symlink using a generic perf wildcard match
+# 101 bad way(?)
+RUN RM_PATH=$(which perf) && [ -n "$RM_PATH" ] && rm "$RM_PATH" || true; \
+    PERF_BIN=$(ls /usr/lib/linux-tools/*/perf | head -n 1) && \
+    ln -s "$PERF_BIN" /usr/bin/perf
 
 # install nasm
 RUN \
