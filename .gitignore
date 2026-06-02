@@ -52,3 +52,7 @@ www/dist
 *.swp
 *.swn
 *.swo
+
+# Node
+node_modules_6
+node_modules_*
