@@ -39,6 +39,11 @@ fi
 net_iface=$(awk '{ if ($2 == "00000000") { print $1; exit; } }' /proc/net/route)
 net_ip_addr=$(ip addr show dev ${net_iface} | awk -F'[ \t/]+' '/inet / { print $3; exit; }')
 export EXTERNAL_ADDR=${EXTERNAL_ADDR:-${net_ip_addr}}
+# RD_SERVER_HOST: hostname/IP used to reach rdtool from inside the container network.
+# Defaults to EXTERNAL_ADDR for backward compat (single-container mode).
+# In docker-compose, set RD_SERVER_HOST=rdtool and leave EXTERNAL_ADDR as the
+# public-facing hostname so the browser URL message is correct.
+export RD_SERVER_HOST=${RD_SERVER_HOST:-${EXTERNAL_ADDR}}
 
 # prepare awcy server configuration if needed
 if [ ! -f "${CONFIG_DIR}/config.json" ]; then
@@ -47,7 +52,7 @@ if [ ! -f "${CONFIG_DIR}/config.json" ]; then
 		"channel": "${IRC_CHANNEL}",
 		"have_aws": false,
 		"port": ${AWCY_SERVER_PORT},
-		"rd_server_url": "http://${EXTERNAL_ADDR}:${RD_SERVER_PORT}"
+		"rd_server_url": "http://${RD_SERVER_HOST}:${RD_SERVER_PORT}"
 	}
 	EOF
 	chown ${APP_USER}:${APP_USER} ${CONFIG_DIR}/config.json
@@ -177,10 +182,12 @@ if [ ! -f "/home/${APP_USER}/.ssh/config" ]; then
 	chown -R ${APP_USER}:${APP_USER} /home/${APP_USER}/.ssh
 fi
 
-# create SSH host keys if none exist
-if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
-	echo "Generating SSH host keys"
-	dpkg-reconfigure openssh-server >/dev/null 2>&1
+# create SSH host keys if none exist (only when acting as local worker)
+if [ "${LOCAL_WORKER_ENABLED:-false}" = "true" ]; then
+	if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+		echo "Generating SSH host keys"
+		dpkg-reconfigure openssh-server >/dev/null 2>&1
+	fi
 fi
 
 # configure ssh authentication

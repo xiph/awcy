@@ -1,0 +1,111 @@
+#!/bin/sh
+
+# exit on failure
+set -e
+
+# exit on unassigned variable
+set -u
+
+# run command if specified (and skip the rest of this script)
+if [ -n "${1:-}" ]; then
+	exec "$@"
+fi
+
+# create data directories
+for dir in "${CONFIG_DIR}" "${RUNS_DST_DIR}"; do
+	if [ -e "${dir}" ]; then
+        echo "Skipping ${dir} - path already exists."
+        continue
+    fi
+	mkdir -p "${dir}"
+	chown ${APP_USER}:${APP_USER} "${dir}"
+done
+
+# configure machines.json
+if [ ! -f "${CONFIG_DIR}/machines.json" ]; then
+	if [ "${LOCAL_WORKER_ENABLED:-false}" != "true" ]; then
+		echo "[]" > "${CONFIG_DIR}/machines.json"
+	else
+		cat > "${CONFIG_DIR}/machines.json" <<-EOF
+		[
+			{
+				"host": "127.0.0.1",
+				"user": "${APP_USER}",
+				"cores": ${LOCAL_WORKER_SLOTS:-$(nproc)},
+				"port": 22,
+				"work_root": "${WORK_DIR}",
+				"media_path": "${MEDIAS_SRC_DIR}"
+			}
+		]
+		EOF
+	fi
+	chown ${APP_USER}:${APP_USER} "${CONFIG_DIR}/machines.json"
+fi
+
+# configure SSH client (StrictHostKeyChecking off so workers can be reached without manual approval)
+if [ ! -d "/home/${APP_USER}/.ssh" ]; then
+	mkdir -p "/home/${APP_USER}/.ssh"
+fi
+if [ ! -f "/home/${APP_USER}/.ssh/config" ]; then
+	cat > "/home/${APP_USER}/.ssh/config" <<-EOF
+	Host *
+		UserKnownHostsFile /dev/null
+		StrictHostKeyChecking no
+		LogLevel quiet
+		Port 22
+	EOF
+fi
+
+# generate SSH keypair used by sshslot.py to authenticate against workers
+# sshslot.py passes this as: ssh -i ${SSH_PRIVKEY_FILE} / rsync -e "ssh -i ${SSH_PRIVKEY_FILE}"
+if [ -z "${SSH_PRIVKEY_FILE:-}" ]; then
+    if [ ! -f "${CONFIG_DIR}/awcy.pem" ]; then
+        echo "[rd_tool] SSH_PRIVKEY_FILE is empty. Generating SSH keypair at ${CONFIG_DIR}/awcy.pem ..."
+        gosu ${APP_USER}:${APP_USER} ssh-keygen -t rsa -b 4096 -f "${CONFIG_DIR}/awcy.pem" -N ''
+        mv "${CONFIG_DIR}/awcy.pem.pub" "${CONFIG_DIR}/awcy.pub"
+    fi
+fi
+
+# install public key into authorized_keys (required for LOCAL_WORKER_ENABLED loopback SSH,
+# and as a convenience template for adding to remote workers)
+if [ ! -f "/home/${APP_USER}/.ssh/authorized_keys" ]; then
+	cp "${CONFIG_DIR}/awcy.pub" "/home/${APP_USER}/.ssh/authorized_keys"
+fi
+
+# enforce correct SSH file permissions (SSH client refuses keys with loose perms)
+# note: awcy.pem may be a bind-mounted file -- skip chmod to avoid EROFS, it is already 600
+chmod 700 "/home/${APP_USER}/.ssh"
+chmod 600 "/home/${APP_USER}/.ssh/authorized_keys"
+chown -R ${APP_USER}:${APP_USER} "/home/${APP_USER}/.ssh"
+chown ${APP_USER}:${APP_USER} "${CONFIG_DIR}/awcy.pub"
+
+# start local sshd when acting as a worker on loopback
+if [ "${LOCAL_WORKER_ENABLED:-false}" = "true" ]; then
+	if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+		echo "[rd_tool] Generating SSH host keys..."
+		ssh-keygen -A
+	fi
+	mkdir -p /var/run/sshd
+	echo "[rd_tool] Starting local sshd (LOCAL_WORKER_ENABLED=true)..."
+	/usr/sbin/sshd
+fi
+
+# SSH_PRIVKEY_FILE: sshslot.py reads this env var to supply -i to every ssh/rsync call.
+# Must be exported so python3 subprocess inherits it.
+export SSH_PRIVKEY_FILE="${CONFIG_DIR}/awcy.pem"
+
+# fast-fail if key file is missing (e.g. volume not mounted, wrong CONFIG_DIR)
+if [ ! -f "${SSH_PRIVKEY_FILE}" ]; then
+	echo "[rd_tool] ERROR: SSH_PRIVKEY_FILE not found at ${SSH_PRIVKEY_FILE}" >&2
+	echo "[rd_tool]   Make sure CONFIG_DIR (${CONFIG_DIR}) is volume-mounted." >&2
+	exit 1
+fi
+
+echo "[rd_tool] SSH_PRIVKEY_FILE : ${SSH_PRIVKEY_FILE}"
+echo "[rd_tool] CONFIG_DIR       : ${CONFIG_DIR}"
+echo "[rd_tool] RUNS_DST_DIR     : ${RUNS_DST_DIR}"
+echo "[rd_tool] machines.json    : $(cat ${CONFIG_DIR}/machines.json | python3 -c 'import json,sys; m=json.load(sys.stdin); print(f"{len(m)} machine(s)")')"
+
+exec gosu ${APP_USER}:${APP_USER} python3 "${APP_DIR}/rd_server.py" \
+	-machineconf "${CONFIG_DIR}/machines.json" \
+	-port "${RD_SERVER_PORT}"
