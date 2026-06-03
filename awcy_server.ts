@@ -303,17 +303,31 @@ function check_for_completed_runs() {
       for (let run of JSON.parse(body)) {
         current_runs[run.run_id] = run;
       }
-      var list_updated = false;
       for (let runid in last_runs) {
         if (!(runid in current_runs)) {
-          list_updated = true;
+          generate_list(runid);
           if (ircclient) {
             ircclient.say(channel,last_runs[runid]['info']['nick']+': Finished '+runid);
           }
         }
       }
-      if (list_updated) generate_list(null);
       last_runs = current_runs;
+      // Reconcile runs stuck in 'waiting' in list.json that are no longer
+      // active in rdtool (e.g. completed while awcy was restarted).
+      try {
+        const list = JSON.parse(fs.readFileSync(config_dir+'/list.json').toString());
+        for (const entry of list) {
+          if (entry.status === 'waiting' && !(entry.run_id in current_runs)) {
+            const statusPath = runs_dst_dir+'/'+entry.run_id+'/status.txt';
+            try {
+              const diskStatus = fs.readFileSync(statusPath,'utf8').trim();
+              if (diskStatus && diskStatus !== 'waiting' && diskStatus !== 'new') {
+                generate_list(entry.run_id);
+              }
+            } catch (e) { /* status.txt not readable yet */ }
+          }
+        }
+      } catch (e) { /* list.json not readable */ }
     }
   });
 };
